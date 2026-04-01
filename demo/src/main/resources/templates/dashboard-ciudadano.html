@@ -82,6 +82,21 @@
         .feature-card p {
             color: #666;
             font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        .feature-card a {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+        .feature-card a:hover {
+            background-color: #5a6fd6;
         }
     </style>
 </head>
@@ -104,16 +119,18 @@
 
         <div class="features">
             <div class="feature-card">
+                <h3>Registrar Incidencia</h3>
+                <p>Notifica una nueva incidencia urbana en tu municipio</p>
+                <a href="/ciudadano/incidencias/registrar">Registrar</a>
+            </div>
+            <div class="feature-card">
+                <h3>Mis Incidencias</h3>
+                <p>Consulta el estado de todas tus incidencias registradas</p>
+                <a href="/ciudadano/incidencias/mis-incidencias">Ver incidencias</a>
+            </div>
+            <div class="feature-card">
                 <h3>Mi Información</h3>
                 <p>Visualiza y actualiza tu información personal</p>
-            </div>
-            <div class="feature-card">
-                <h3>Solicitudes</h3>
-                <p>Realiza y consulta el estado de tus solicitudes</p>
-            </div>
-            <div class="feature-card">
-                <h3>Documentos</h3>
-                <p>Accede a tus documentos y certificados</p>
             </div>
             <div class="feature-card">
                 <h3>Soporte</h3>
