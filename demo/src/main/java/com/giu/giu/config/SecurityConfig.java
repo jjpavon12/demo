@@ -23,7 +23,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/login", "/registro", "/api/auth/login", "/api/auth/registro", "/hola", "/h2-console/**").permitAll()
-                .requestMatchers("/dashboard/ciudadano").hasRole("CIUDADANO")
+                .requestMatchers("/dashboard/ciudadano", "/ciudadano/incidencias/**").hasRole("CIUDADANO")
                 .requestMatchers("/dashboard/operador").hasRole("OPERADOR")
                 .requestMatchers("/dashboard/tecnico").hasRole("TECNICO")
                 .requestMatchers("/dashboard/admin").hasRole("ADMINISTRADOR")

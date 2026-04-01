@@ -1,0 +1,32 @@
+package com.giu.giu.service;
+
+import com.giu.giu.model.CategoriaIncidencia;
+import com.giu.giu.model.EstadoIncidencia;
+import com.giu.giu.model.Incidencia;
+import com.giu.giu.model.Usuario;
+import com.giu.giu.repository.IncidenciaRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class IncidenciaService {
+
+    @Autowired
+    private IncidenciaRepository incidenciaRepository;
+
+    public Incidencia registrar(String descripcion, String ubicacion, CategoriaIncidencia categoria, Usuario usuario) {
+        Incidencia incidencia = new Incidencia();
+        incidencia.setDescripcion(descripcion);
+        incidencia.setUbicacion(ubicacion);
+        incidencia.setCategoria(categoria);
+        incidencia.setEstado(EstadoIncidencia.PENDIENTE_REVISION);
+        incidencia.setUsuario(usuario);
+        return incidenciaRepository.save(incidencia);
+    }
+
+    public List<Incidencia> obtenerPorUsuario(Usuario usuario) {
+        return incidenciaRepository.findByUsuarioOrderByFechaCreacionDesc(usuario);
+    }
+}
