@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Administrador - GIU</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+        }
+        .navbar {
+            background-color: #d32f2f;
+            color: white;
+            padding: 1em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .navbar h1 {
+            font-size: 1.5em;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .navbar a:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .welcome-card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        .welcome-card h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .user-info {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        .user-info p {
+            margin: 8px 0;
+            color: #555;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .feature-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .feature-card h3 {
+            color: #d32f2f;
+            margin-bottom: 10px;
+        }
+        .feature-card p {
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>GIU - Panel Administrativo</h1>
+        <a href="/logout">Cerrar Sesión</a>
+    </nav>
+
+    <div class="container">
+        <div class="welcome-card">
+            <h2>Panel de Administrador</h2>
+            <p>Control total del sistema GIU. Acceso completo a todas las funcionalidades.</p>
+            
+            <div class="user-info">
+                <p><strong>Email:</strong> <span th:text="${usuario.email}"></span></p>
+                <p><strong>Rol:</strong> <span th:text="${rol}"></span></p>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <h3>Usuarios</h3>
+                <p>Crea, edita y elimina usuarios del sistema</p>
+            </div>
+            <div class="feature-card">
+                <h3>Permisos</h3>
+                <p>Gestiona roles y permisos de usuarios</p>
+            </div>
+            <div class="feature-card">
+                <h3>Configuración</h3>
+                <p>Configura parámetros del sistema</p>
+            </div>
+            <div class="feature-card">
+                <h3>Reportes</h3>
+                <p>Accede a todos los reportes del sistema</p>
+            </div>
+            <div class="feature-card">
+                <h3>Auditoría</h3>
+                <p>Revisa registro de todas las actividades</p>
+            </div>
+            <div class="feature-card">
+                <h3>Seguridad</h3>
+                <p>Configuración de seguridad del sistema</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
