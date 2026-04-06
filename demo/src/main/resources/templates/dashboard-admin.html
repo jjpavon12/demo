@@ -83,6 +83,95 @@
             color: #666;
             font-size: 0.9em;
         }
+        .incidencias-section {
+            margin-top: 30px;
+        }
+        .incidencias-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: #d32f2f;
+            color: white;
+            font-weight: 600;
+        }
+        tr:hover { background-color: #f9f9f9; }
+        select {
+            padding: 5px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .btn-cambiar {
+            padding: 5px 12px;
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-cambiar:hover { background-color: #b71c1c; }
+        .empty-msg {
+            background: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 8px;
+            color: #888;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .desc-link {
+            color: #d32f2f;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .desc-link:hover { color: #b71c1c; }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 25px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .modal-header h2 { margin: 0; color: #333; }
+        .close-modal {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-modal:hover { color: #000; }
     </style>
 </head>
 <body>
@@ -128,6 +217,70 @@
                 <p>Configuración de seguridad del sistema</p>
             </div>
         </div>
+
+        <div class="incidencias-section">
+            <h2>Gestión de Incidencias</h2>
+            <div th:if="${#lists.isEmpty(incidencias)}" class="empty-msg">
+                <p>No hay incidencias registradas.</p>
+            </div>
+            <table th:if="${!#lists.isEmpty(incidencias)}">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Categoría</th>
+                        <th>Descripción</th>
+                        <th>Ubicación</th>
+                        <th>Fecha</th>
+                        <th>Email</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="inc : ${incidencias}">
+                        <td th:text="${inc.id}"></td>
+                        <td th:text="${inc.categoria.descripcion}"></td>
+                        <td><span class="desc-link" th:onclick="'openModal(this)'" th:data-desc="${inc.descripcion}">Ver descripción</span></td>
+                        <td th:text="${inc.ubicacion}"></td>
+                        <td th:text="${#temporals.format(inc.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td th:text="${inc.usuario.email}"></td>
+                        <td>
+                            <form method="post" th:action="@{/dashboard/admin/cambiar-estado}" style="display:flex; align-items:center;">
+                                <input type="hidden" name="id" th:value="${inc.id}"/>
+                                <select name="estado" onchange="this.form.submit()">
+                                    <option th:each="e : ${estados}" th:value="${e}" th:text="${e.descripcion}" th:selected="${e == inc.estado}"></option>
+                                </select>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="descModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Descripción de Incidencia</h2>
+                    <span class="close-modal" onclick="closeModal()">&times;</span>
+                </div>
+                <p id="descContent" style="color: #555; line-height: 1.6; margin-bottom: 20px;"></p>
+                <button onclick="closeModal()" style="padding: 8px 16px; background-color: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer;">Cerrar</button>
+            </div>
+        </div>
+
+        <script>
+        function openModal(element) {
+            const desc = element.getAttribute('data-desc');
+            document.getElementById('descContent').textContent = desc;
+            document.getElementById('descModal').style.display = 'block';
+        }
+        function closeModal() {
+            document.getElementById('descModal').style.display = 'none';
+        }
+        window.onclick = function(event) {
+            const modal = document.getElementById('descModal');
+            if (event.target == modal) modal.style.display = 'none';
+        }
+        </script>
     </div>
 </body>
 </html>

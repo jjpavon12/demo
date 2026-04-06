@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class IncidenciaService {
@@ -28,5 +29,20 @@ public class IncidenciaService {
 
     public List<Incidencia> obtenerPorUsuario(Usuario usuario) {
         return incidenciaRepository.findByUsuarioOrderByFechaCreacionDesc(usuario);
+    }
+
+    public List<Incidencia> obtenerTodas() {
+        return incidenciaRepository.findAll();
+    }
+
+    public Optional<Incidencia> obtenerPorId(Long id) {
+        return incidenciaRepository.findById(id);
+    }
+
+    public void cambiarEstado(Long id, EstadoIncidencia nuevoEstado) {
+        incidenciaRepository.findById(id).ifPresent(inc -> {
+            inc.setEstado(nuevoEstado);
+            incidenciaRepository.save(inc);
+        });
     }
 }

@@ -22,16 +22,16 @@ public class SecurityConfig {
             .userDetailsService(usuarioDetailsService)
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/registro", "/api/auth/login", "/api/auth/registro", "/hola", "/h2-console/**").permitAll()
+                .requestMatchers("/", "/login", "/registro", "/api/auth/login", "/api/auth/registro", "/hola").permitAll()
                 .requestMatchers("/dashboard/ciudadano", "/ciudadano/incidencias/**").hasRole("CIUDADANO")
-                .requestMatchers("/dashboard/operador").hasRole("OPERADOR")
-                .requestMatchers("/dashboard/tecnico").hasRole("TECNICO")
-                .requestMatchers("/dashboard/admin").hasRole("ADMINISTRADOR")
+                .requestMatchers("/dashboard/operador", "/dashboard/operador/**").hasRole("OPERADOR")
+                .requestMatchers("/dashboard/tecnico", "/dashboard/tecnico/**").hasRole("TECNICO")
+                .requestMatchers("/dashboard/admin", "/dashboard/admin/**").hasRole("ADMINISTRADOR")
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/dashboard/home")
+                .defaultSuccessUrl("/dashboard/home", true)
                 .permitAll()
             )
             .logout(logout -> logout
@@ -40,7 +40,6 @@ public class SecurityConfig {
                 .permitAll()
             );
 
-        http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()));
         return http.build();
     }
 }
