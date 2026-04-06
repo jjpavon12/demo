@@ -1,10 +1,10 @@
 package com.giu.giu.controller;
 
+import com.giu.giu.model.CategoriaIncidencia;
 import com.giu.giu.model.EstadoIncidencia;
 import com.giu.giu.model.Usuario;
 import com.giu.giu.security.CustomUserDetails;
 import com.giu.giu.service.IncidenciaService;
-import com.giu.giu.service.UsuarioService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -15,11 +15,14 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/dashboard")
 public class DashboardController {
 
-    private final UsuarioService usuarioService;
+    private static final EstadoIncidencia[] ESTADOS_OPERADOR = {
+        EstadoIncidencia.VALIDADA,
+        EstadoIncidencia.RECHAZADA
+    };
+
     private final IncidenciaService incidenciaService;
 
-    public DashboardController(UsuarioService usuarioService, IncidenciaService incidenciaService) {
-        this.usuarioService = usuarioService;
+    public DashboardController(IncidenciaService incidenciaService) {
         this.incidenciaService = incidenciaService;
     }
 
@@ -76,7 +79,8 @@ public class DashboardController {
             model.addAttribute("usuario", usuario);
             model.addAttribute("rol", "OPERADOR");
             model.addAttribute("incidencias", incidenciaService.obtenerTodas());
-            model.addAttribute("estados", EstadoIncidencia.values());
+            model.addAttribute("estadosOperador", ESTADOS_OPERADOR);
+            model.addAttribute("categorias", CategoriaIncidencia.values());
             return "dashboard-operador";
         }
 
@@ -85,7 +89,22 @@ public class DashboardController {
 
     @PostMapping("/operador/cambiar-estado")
     public String cambiarEstadoOperador(@RequestParam Long id, @RequestParam EstadoIncidencia estado) {
+        if (incidenciaService.estaBloqueadaParaOperador(id)) {
+            return "redirect:/dashboard/operador";
+        }
+        if (estado != EstadoIncidencia.VALIDADA && estado != EstadoIncidencia.RECHAZADA) {
+            return "redirect:/dashboard/operador";
+        }
         incidenciaService.cambiarEstado(id, estado);
+        return "redirect:/dashboard/operador";
+    }
+
+    @PostMapping("/operador/cambiar-categoria")
+    public String cambiarCategoriaOperador(@RequestParam Long id, @RequestParam CategoriaIncidencia categoria) {
+        if (incidenciaService.estaBloqueadaParaOperador(id)) {
+            return "redirect:/dashboard/operador";
+        }
+        incidenciaService.cambiarCategoria(id, categoria);
         return "redirect:/dashboard/operador";
     }
 

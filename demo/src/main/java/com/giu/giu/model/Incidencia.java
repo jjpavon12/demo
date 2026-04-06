@@ -36,7 +36,7 @@ public class Incidencia {
     protected void onCreate() {
         this.fechaCreacion = LocalDateTime.now();
         if (this.estado == null) {
-            this.estado = EstadoIncidencia.PENDIENTE_REVISION;
+            this.estado = EstadoIncidencia.PENDIENTE_VALIDACION;
         }
     }
 

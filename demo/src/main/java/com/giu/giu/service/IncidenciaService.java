@@ -22,7 +22,7 @@ public class IncidenciaService {
         incidencia.setDescripcion(descripcion);
         incidencia.setUbicacion(ubicacion);
         incidencia.setCategoria(categoria);
-        incidencia.setEstado(EstadoIncidencia.PENDIENTE_REVISION);
+        incidencia.setEstado(EstadoIncidencia.PENDIENTE_VALIDACION);
         incidencia.setUsuario(usuario);
         return incidenciaRepository.save(incidencia);
     }
@@ -39,9 +39,22 @@ public class IncidenciaService {
         return incidenciaRepository.findById(id);
     }
 
+    public boolean estaBloqueadaParaOperador(Long id) {
+        return incidenciaRepository.findById(id)
+            .map(inc -> inc.getEstado() == EstadoIncidencia.VALIDADA || inc.getEstado() == EstadoIncidencia.RECHAZADA)
+            .orElse(true);
+    }
+
     public void cambiarEstado(Long id, EstadoIncidencia nuevoEstado) {
         incidenciaRepository.findById(id).ifPresent(inc -> {
             inc.setEstado(nuevoEstado);
+            incidenciaRepository.save(inc);
+        });
+    }
+
+    public void cambiarCategoria(Long id, CategoriaIncidencia nuevaCategoria) {
+        incidenciaRepository.findById(id).ifPresent(inc -> {
+            inc.setCategoria(nuevaCategoria);
             incidenciaRepository.save(inc);
         });
     }

@@ -3,125 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - GIU</title>
+    <title>Iniciar sesión — GIU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #f1f5f9;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .login-container {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 4px 24px rgba(0,0,0,.09);
+            padding: 44px 40px;
             width: 100%;
-            max-width: 400px;
+            max-width: 390px;
         }
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 1.8em;
+        .card-header { text-align: center; margin-bottom: 28px; }
+        .logo-mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            background: #1d4ed8;
+            color: #fff;
+            border-radius: 13px;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 14px;
         }
-        .form-group {
-            margin-bottom: 20px;
-        }
+        h1 { font-size: 1.3rem; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+        .subtitle { font-size: .85rem; color: #64748b; }
+        .form-group { margin-bottom: 16px; }
         label {
             display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-weight: 500;
+            font-size: .78rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
         }
-        input[type="text"],
-        input[type="password"] {
+        input[type="text"], input[type="password"] {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1em;
-            transition: border-color 0.3s ease;
+            padding: 10px 13px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: .925rem;
+            font-family: inherit;
+            color: #1e293b;
+            background: #fff;
+            transition: border-color .14s, box-shadow .14s;
         }
-        input[type="text"]:focus,
-        input[type="password"]:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
-        }
-        .form-group button {
+        input:focus { outline: none; border-color: #1d4ed8; box-shadow: 0 0 0 3px rgba(29,78,216,.12); }
+        .btn-submit {
             width: 100%;
-            padding: 12px;
-            background-color: #667eea;
-            color: white;
+            padding: 11px;
+            background: #1d4ed8;
+            color: #fff;
             border: none;
-            border-radius: 5px;
-            font-size: 1em;
+            border-radius: 8px;
+            font-size: .9rem;
             font-weight: 600;
+            font-family: inherit;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 10px;
+            margin-top: 4px;
+            transition: background .14s, box-shadow .14s;
         }
-        .form-group button:hover {
-            background-color: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        .signup-link {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .signup-link a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .signup-link a:hover {
-            text-decoration: underline;
-        }
-        .error {
-            color: #d32f2f;
-            font-size: 0.9em;
-            margin-top: 5px;
+        .btn-submit:hover { background: #1e40af; box-shadow: 0 4px 14px rgba(29,78,216,.35); }
+        .error-msg {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 9px 13px;
+            border-radius: 8px;
+            font-size: .85rem;
+            margin-bottom: 14px;
             text-align: center;
         }
+        .footer-link { text-align: center; margin-top: 20px; font-size: .85rem; color: #64748b; }
+        .footer-link a { color: #1d4ed8; font-weight: 500; text-decoration: none; }
+        .footer-link a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <h1>Iniciar Sesión</h1>
-        
-        <form method="POST" action="/login" th:action="@{/login}">
-            <div class="form-group">
-                <label for="username">Email:</label>
-                <input type="text" id="username" name="username" required>
-            </div>
-
-            <div class="form-group">
-                <label for="password">Contraseña:</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-
-            <div class="form-group">
-                <button type="submit">Iniciar Sesión</button>
-            </div>
-        </form>
-
-        <!-- Mostrar error si hay -->
-        <div th:if="${param.error}" class="error">
-            Usuario o contraseña incorrectos
+    <div class="card">
+        <div class="card-header">
+            <div class="logo-mark">GIU</div>
+            <h1>Bienvenido de nuevo</h1>
+            <p class="subtitle">Accede con tu cuenta</p>
         </div>
 
-        <!-- Para registrarse (puedes crear esta página después) -->
-        <div class="signup-link">
-            <p>¿No tienes cuenta? <a href="/registro">Regístrate</a></p>
+        <div th:if="${param.error}" class="error-msg">
+            Correo o contraseña incorrectos.
+        </div>
+
+        <form method="POST" th:action="@{/login}">
+            <div class="form-group">
+                <label for="username">Correo electrónico</label>
+                <input type="text" id="username" name="username" placeholder="tu@email.com" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" name="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-submit">Iniciar sesión</button>
+        </form>
+
+        <div class="footer-link">
+            ¿No tienes cuenta? <a href="/registro">Regístrate aquí</a>
         </div>
     </div>
 </body>

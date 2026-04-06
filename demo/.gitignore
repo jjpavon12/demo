@@ -3,6 +3,10 @@ target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+giu.db
+giu.db-journal
+giu.db-shm
+giu.db-wal
 
 ### STS ###
 .apt_generated

@@ -1,9 +1,13 @@
 package com.giu.giu.model;
 
 public enum EstadoIncidencia {
-    PENDIENTE_REVISION("Pendiente de revisión"),
-    EN_PROCESO("En proceso"),
-    SOLUCIONADA("Solucionada");
+    PENDIENTE_VALIDACION("PendienteValidacion"),
+    VALIDADA("Validada"),
+    ASIGNADA("Asignada"),
+    EN_CURSO("EnCurso"),
+    RESUELTA("Resuelta"),
+    CERRADA("Cerrada"),
+    RECHAZADA("Rechazada");
 
     private final String descripcion;
 

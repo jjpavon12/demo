@@ -1,225 +1,225 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Técnico - GIU</title>
+    <title>Panel Técnico — GIU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-        }
-        .navbar {
-            background-color: #1976d2;
-            color: white;
-            padding: 1em;
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --accent: #0284c7; --accent-dark: #0369a1; --accent-bg: #f0f9ff; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
+        nav.navbar {
+            background: var(--accent);
+            height: 60px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            justify-content: space-between;
+            padding: 0 28px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.15);
         }
-        .navbar h1 {
-            font-size: 1.5em;
-        }
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            background-color: rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-        }
-        .navbar a:hover {
-            background-color: rgba(255, 255, 255, 0.3);
-        }
-        .container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-        .welcome-card {
-            background: white;
-            padding: 30px;
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-logo {
+            background: rgba(255,255,255,.2);
+            color: #fff;
+            width: 34px; height: 34px;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .8rem; font-weight: 700;
         }
-        .welcome-card h2 {
-            color: #333;
-            margin-bottom: 15px;
-        }
-        .user-info {
-            background-color: #f9f9f9;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 15px;
-        }
-        .user-info p {
-            margin: 8px 0;
-            color: #555;
-        }
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-        .feature-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        .feature-card h3 {
-            color: #1976d2;
-            margin-bottom: 10px;
-        }
-        .feature-card p {
-            color: #666;
-            font-size: 0.9em;
-        }
-        .incidencias-section {
-            margin-top: 30px;
-        }
-        .incidencias-section h2 {
-            color: #333;
-            margin-bottom: 15px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-        th {
-            background-color: #1976d2;
-            color: white;
+        .nav-title { color: #fff; font-weight: 600; font-size: .95rem; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-email { color: rgba(255,255,255,.8); font-size: .8rem; }
+        .nav-role {
+            background: rgba(255,255,255,.2);
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: .73rem;
             font-weight: 600;
         }
-        tr:hover { background-color: #f9f9f9; }
-        select {
-            padding: 5px 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+        .nav-logout {
+            color: #fff;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: rgba(255,255,255,.15);
+            font-size: .82rem;
+            font-weight: 500;
+            transition: background .14s;
         }
-        .btn-cambiar {
-            padding: 5px 12px;
-            background-color: #1976d2;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+        .nav-logout:hover { background: rgba(255,255,255,.28); }
+        .container { max-width: 1200px; margin: 32px auto; padding: 0 24px; }
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
         }
-        .btn-cambiar:hover { background-color: #1565c0; }
+        .page-header h2 { font-size: 1.1rem; font-weight: 700; color: #0f172a; }
+        .stat-chip {
+            background: var(--accent-bg);
+            color: var(--accent-dark);
+            border: 1px solid #bae6fd;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: .8rem;
+            font-weight: 600;
+        }
+        .quick-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 28px; }
+        .quick-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 16px 18px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.07);
+            border-left: 3px solid var(--accent);
+        }
+        .quick-card h4 { font-size: .84rem; font-weight: 600; color: #0f172a; margin-bottom: 4px; }
+        .quick-card p { font-size: .77rem; color: #94a3b8; line-height: 1.4; }
+        .section-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            overflow: hidden;
+        }
+        .section-header {
+            padding: 16px 22px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .section-header h3 { font-size: .95rem; font-weight: 600; color: #0f172a; }
         .empty-msg {
-            background: white;
-            padding: 30px;
+            padding: 48px 24px;
             text-align: center;
-            border-radius: 8px;
-            color: #888;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            color: #94a3b8;
+            font-size: .9rem;
         }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: #f8fafc;
+            padding: 11px 16px;
+            text-align: left;
+            font-size: .75rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        td {
+            padding: 13px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: .875rem;
+            color: #334155;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fafafa; }
+        .td-id { color: #94a3b8; font-size: .8rem; }
         .desc-link {
-            color: #1976d2;
+            color: var(--accent);
             cursor: pointer;
-            text-decoration: underline;
+            text-decoration: none;
+            font-size: .82rem;
+            font-weight: 500;
+            border-bottom: 1px dashed var(--accent);
         }
-        .desc-link:hover { color: #1565c0; }
+        .desc-link:hover { color: var(--accent-dark); }
+        .estado-select {
+            padding: 5px 10px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: .8rem;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition: border-color .14s;
+            outline: none;
+            min-width: 150px;
+        }
+        .estado-select:focus { border-color: var(--accent); }
         .modal {
             display: none;
             position: fixed;
             z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            inset: 0;
+            background: rgba(0,0,0,.45);
         }
         .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 25px;
-            border-radius: 8px;
-            width: 80%;
-            max-width: 600px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            background: #fff;
+            margin: 6% auto;
+            padding: 28px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 580px;
+            box-shadow: 0 8px 32px rgba(0,0,0,.18);
         }
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f5f9;
         }
-        .modal-header h2 { margin: 0; color: #333; }
-        .close-modal {
-            color: #aaa;
-            font-size: 28px;
-            font-weight: bold;
+        .modal-header h3 { font-size: 1rem; font-weight: 600; color: #0f172a; margin: 0; }
+        .close-modal { color: #94a3b8; font-size: 1.4rem; cursor: pointer; line-height: 1; }
+        .close-modal:hover { color: #374151; }
+        .modal-body { color: #475569; font-size: .9rem; line-height: 1.65; margin-bottom: 20px; }
+        .modal-footer button {
+            padding: 8px 18px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: .85rem;
+            font-weight: 600;
+            font-family: inherit;
             cursor: pointer;
+            transition: background .14s;
         }
-        .close-modal:hover { color: #000; }
+        .modal-footer button:hover { background: var(--accent-dark); }
     </style>
 </head>
 <body>
     <nav class="navbar">
-        <h1>GIU - Panel Técnico</h1>
-        <a href="/logout">Cerrar Sesión</a>
+        <div class="nav-brand">
+            <div class="nav-logo">GIU</div>
+            <span class="nav-title">Panel TÃ©cnico</span>
+        </div>
+        <div class="nav-right">
+            <span class="nav-email" th:text="${usuario.email}"></span>
+            <span class="nav-role" th:text="${rol}"></span>
+            <a href="/logout" class="nav-logout">Cerrar sesión</a>
+        </div>
     </nav>
 
     <div class="container">
-        <div class="welcome-card">
-            <h2>Panel de Soporte Técnico</h2>
-            <p>Gestión de incidencias y soporte técnico del sistema.</p>
-            
-            <div class="user-info">
-                <p><strong>Email:</strong> <span th:text="${usuario.email}"></span></p>
-                <p><strong>Rol:</strong> <span th:text="${rol}"></span></p>
-            </div>
-        </div>
-
-        <div class="features">
-            <div class="feature-card">
-                <h3>Incidencias</h3>
-                <p>Gestiona y resuelve incidencias técnicas</p>
-            </div>
-            <div class="feature-card">
-                <h3>Sistema</h3>
-                <p>Monitorea el estado de los servidores</p>
-            </div>
-            <div class="feature-card">
-                <h3>Mantenimiento</h3>
-                <p>Realiza tareas de mantenimiento del sistema</p>
-            </div>
-            <div class="feature-card">
-                <h3>Base de Datos</h3>
-                <p>Administra la base de datos del sistema</p>
-            </div>
-        </div>
-
-        <div class="incidencias-section">
+        <div class="page-header">
             <h2>Gestión de Incidencias</h2>
+            <span class="stat-chip" th:text="'Total: ' + ${#lists.size(incidencias)}"></span>
+        </div>
+
+        <div class="quick-cards">
+            <div class="quick-card"><h4>Incidencias</h4><p>Gestiona y resuelve incidencias técnicas</p></div>
+            <div class="quick-card"><h4>Sistema</h4><p>Monitorea el estado de los servidores</p></div>
+            <div class="quick-card"><h4>Mantenimiento</h4><p>Tareas de mantenimiento del sistema</p></div>
+            <div class="quick-card"><h4>Base de Datos</h4><p>Administra la base de datos</p></div>
+        </div>
+
+        <div class="section-card">
+            <div class="section-header">
+                <h3>Incidencias registradas</h3>
+            </div>
             <div th:if="${#lists.isEmpty(incidencias)}" class="empty-msg">
-                <p>No hay incidencias registradas.</p>
+                No hay incidencias registradas.
             </div>
             <table th:if="${!#lists.isEmpty(incidencias)}">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Categoría</th>
+                        <th>#</th>
+                        <th>Categorí­a</th>
                         <th>Descripción</th>
                         <th>Ubicación</th>
                         <th>Fecha</th>
@@ -229,16 +229,16 @@
                 </thead>
                 <tbody>
                     <tr th:each="inc : ${incidencias}">
-                        <td th:text="${inc.id}"></td>
+                        <td class="td-id" th:text="${inc.id}"></td>
                         <td th:text="${inc.categoria.descripcion}"></td>
                         <td><span class="desc-link" th:onclick="'openModal(this)'" th:data-desc="${inc.descripcion}">Ver descripción</span></td>
                         <td th:text="${inc.ubicacion}"></td>
                         <td th:text="${#temporals.format(inc.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>
                         <td th:text="${inc.usuario.email}"></td>
                         <td>
-                            <form method="post" th:action="@{/dashboard/tecnico/cambiar-estado}" style="display:flex; align-items:center;">
+                            <form method="post" th:action="@{/dashboard/tecnico/cambiar-estado}">
                                 <input type="hidden" name="id" th:value="${inc.id}"/>
-                                <select name="estado" onchange="this.form.submit()">
+                                <select name="estado" class="estado-select" th:data-current="${inc.estado.name()}">
                                     <option th:each="e : ${estados}" th:value="${e}" th:text="${e.descripcion}" th:selected="${e == inc.estado}"></option>
                                 </select>
                             </form>
@@ -247,32 +247,53 @@
                 </tbody>
             </table>
         </div>
+    </div>
 
-        <div id="descModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>Descripción de Incidencia</h2>
-                    <span class="close-modal" onclick="closeModal()">&times;</span>
-                </div>
-                <p id="descContent" style="color: #555; line-height: 1.6; margin-bottom: 20px;"></p>
-                <button onclick="closeModal()" style="padding: 8px 16px; background-color: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer;">Cerrar</button>
+    <div id="descModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Descripción de la incidencia</h3>
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+            </div>
+            <p id="descContent" class="modal-body"></p>
+            <div class="modal-footer">
+                <button onclick="closeModal()">Cerrar</button>
             </div>
         </div>
-
-        <script>
-        function openModal(element) {
-            const desc = element.getAttribute('data-desc');
-            document.getElementById('descContent').textContent = desc;
-            document.getElementById('descModal').style.display = 'block';
-        }
-        function closeModal() {
-            document.getElementById('descModal').style.display = 'none';
-        }
-        window.onclick = function(event) {
-            const modal = document.getElementById('descModal');
-            if (event.target == modal) modal.style.display = 'none';
-        }
-        </script>
     </div>
+
+    <script>
+    var statusColors = {
+        PENDIENTE_VALIDACION: { bg: '#fef3c7', color: '#92400e', border: '#f59e0b' },
+        VALIDADA:             { bg: '#dcfce7', color: '#166534', border: '#4ade80' },
+        ASIGNADA:             { bg: '#e0e7ff', color: '#3730a3', border: '#818cf8' },
+        EN_CURSO:             { bg: '#dbeafe', color: '#1e40af', border: '#60a5fa' },
+        RESUELTA:             { bg: '#d1fae5', color: '#065f46', border: '#34d399' },
+        CERRADA:              { bg: '#e2e8f0', color: '#334155', border: '#94a3b8' },
+        RECHAZADA:            { bg: '#fee2e2', color: '#991b1b', border: '#f87171' }
+    };
+    function applySelectStyle(sel) {
+        var s = statusColors[sel.value];
+        if (s) {
+            sel.style.background = s.bg;
+            sel.style.color = s.color;
+            sel.style.borderColor = s.border;
+            return;
+        }
+        sel.style.background = '#fff';
+        sel.style.color = '#334155';
+        sel.style.borderColor = '#e2e8f0';
+    }
+    document.querySelectorAll('.estado-select').forEach(function(sel) {
+        applySelectStyle(sel);
+        sel.onchange = function() { applySelectStyle(this); this.form.submit(); };
+    });
+    function openModal(el) {
+        document.getElementById('descContent').textContent = el.getAttribute('data-desc');
+        document.getElementById('descModal').style.display = 'block';
+    }
+    function closeModal() { document.getElementById('descModal').style.display = 'none'; }
+    window.onclick = function(e) { if (e.target === document.getElementById('descModal')) closeModal(); };
+    </script>
 </body>
 </html>

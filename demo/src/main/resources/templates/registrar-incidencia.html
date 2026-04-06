@@ -3,132 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrar Incidencia - GIU</title>
+    <title>Registrar Incidencia — GIU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-        }
-        .navbar {
-            background-color: #667eea;
-            color: white;
-            padding: 1em;
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
+        nav.navbar {
+            background: #1d4ed8;
+            height: 60px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            justify-content: space-between;
+            padding: 0 28px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.15);
         }
-        .navbar h1 { font-size: 1.5em; }
-        .navbar-links { display: flex; gap: 10px; }
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            background-color: rgba(255,255,255,0.2);
-            transition: all 0.3s ease;
-        }
-        .navbar a:hover { background-color: rgba(255,255,255,0.3); }
-        .container {
-            max-width: 700px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-        .card {
-            background: white;
-            padding: 35px;
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-logo {
+            background: rgba(255,255,255,.2);
+            color: #fff;
+            width: 34px; height: 34px;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex; align-items: center; justify-content: center;
+            font-size: .8rem; font-weight: 700;
         }
-        .card h2 {
-            color: #333;
-            margin-bottom: 8px;
-            font-size: 1.6em;
+        .nav-title { color: #fff; font-weight: 600; font-size: .95rem; }
+        .nav-right { display: flex; align-items: center; gap: 10px; }
+        .nav-link {
+            color: #fff;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: rgba(255,255,255,.15);
+            font-size: .82rem;
+            font-weight: 500;
+            transition: background .14s;
         }
-        .card .subtitle {
-            color: #888;
-            margin-bottom: 30px;
-            font-size: 0.95em;
+        .nav-link:hover { background: rgba(255,255,255,.28); }
+        .nav-link-ghost { background: rgba(255,255,255,.08); }
+        .container { max-width: 680px; margin: 40px auto; padding: 0 24px; }
+        .form-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            padding: 36px;
         }
-        .form-group {
-            margin-bottom: 22px;
-        }
-        .form-group label {
+        .form-card h2 { font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+        .form-card .subtitle { color: #64748b; font-size: .84rem; margin-bottom: 28px; }
+        .form-group { margin-bottom: 20px; }
+        label {
             display: block;
-            margin-bottom: 7px;
+            font-size: .78rem;
             font-weight: 600;
-            color: #444;
-            font-size: 0.95em;
+            color: #374151;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
         }
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
+        input, select, textarea {
             width: 100%;
-            padding: 10px 14px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 0.95em;
+            padding: 10px 13px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: .9rem;
             font-family: inherit;
-            transition: border-color 0.2s;
-            background-color: #fafafa;
+            color: #1e293b;
+            background: #fff;
+            transition: border-color .14s, box-shadow .14s;
         }
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
+        input:focus, select:focus, textarea:focus {
             outline: none;
-            border-color: #667eea;
-            background-color: #fff;
+            border-color: #1d4ed8;
+            box-shadow: 0 0 0 3px rgba(29,78,216,.12);
         }
-        .form-group textarea { resize: vertical; min-height: 100px; }
+        textarea { resize: vertical; min-height: 110px; }
         .btn-submit {
             width: 100%;
             padding: 12px;
-            background-color: #667eea;
-            color: white;
+            background: #1d4ed8;
+            color: #fff;
             border: none;
-            border-radius: 5px;
-            font-size: 1em;
+            border-radius: 8px;
+            font-size: .9rem;
             font-weight: 600;
+            font-family: inherit;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: background .14s, box-shadow .14s;
         }
-        .btn-submit:hover { background-color: #5a6fd6; }
+        .btn-submit:hover { background: #1e40af; box-shadow: 0 4px 14px rgba(29,78,216,.3); }
         .back-link {
             display: inline-block;
-            margin-top: 18px;
-            color: #667eea;
+            margin-top: 16px;
+            color: #64748b;
+            font-size: .84rem;
             text-decoration: none;
-            font-size: 0.9em;
         }
-        .back-link:hover { text-decoration: underline; }
+        .back-link:hover { color: #1d4ed8; text-decoration: underline; }
     </style>
 </head>
 <body>
     <nav class="navbar">
-        <h1>GIU - Portal Ciudadano</h1>
-        <div class="navbar-links">
-            <a href="/dashboard/ciudadano">Inicio</a>
-            <a href="/logout">Cerrar Sesión</a>
+        <div class="nav-brand">
+            <div class="nav-logo">GIU</div>
+            <span class="nav-title">Portal Ciudadano</span>
+        </div>
+        <div class="nav-right">
+            <a href="/dashboard/ciudadano" class="nav-link">← Panel principal</a>
+            <a href="/logout" class="nav-link nav-link-ghost">Cerrar sesión</a>
         </div>
     </nav>
 
     <div class="container">
-        <div class="card">
-            <h2>Registrar Incidencia</h2>
-            <p class="subtitle">Rellena el formulario para notificar una incidencia urbana.</p>
+        <div class="form-card">
+            <h2>Registrar incidencia</h2>
+            <p class="subtitle">Rellena el formulario para notificar una incidencia en la vía pública.</p>
 
             <form th:action="@{/ciudadano/incidencias/registrar}" method="post">
                 <div class="form-group">
                     <label for="descripcion">Descripción</label>
                     <textarea id="descripcion" name="descripcion" placeholder="Describe la incidencia con el mayor detalle posible..." required></textarea>
                 </div>
-
                 <div class="form-group">
                     <label for="ubicacion">Ubicación</label>
                     <input type="text" id="ubicacion" name="ubicacion" placeholder="Ej: Calle Mayor, 12, Madrid" required />
                 </div>
-
                 <div class="form-group">
                     <label for="categoria">Categoría</label>
                     <select id="categoria" name="categoria" required>
@@ -139,11 +136,10 @@
                         </option>
                     </select>
                 </div>
-
-                <button type="submit" class="btn-submit">Registrar Incidencia</button>
+                <button type="submit" class="btn-submit">Registrar incidencia</button>
             </form>
 
-            <a class="back-link" href="/dashboard/ciudadano">&#8592; Volver al panel</a>
+            <a class="back-link" href="/ciudadano/incidencias/mis-incidencias">← Volver a mis incidencias</a>
         </div>
     </div>
 </body>
