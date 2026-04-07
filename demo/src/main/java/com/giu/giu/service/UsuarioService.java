@@ -28,6 +28,9 @@ public class UsuarioService {
 
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
+            if (!usuario.isValidado()) {
+                return new LoginResponse(null, null, null, "Usuario no habilitado. Espera validación del administrador.");
+            }
             // En producción, deberías comparar la contraseña hasheada
             if (passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
                 return new LoginResponse(
@@ -50,10 +53,12 @@ public class UsuarioService {
             return new LoginResponse(null, null, null, "El email ya está registrado");
         }
 
+        boolean validado = rol == Rol.CIUDADANO;
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setEmail(email);
         nuevoUsuario.setPassword(passwordEncoder.encode(password));
         nuevoUsuario.setRol(rol);
+        nuevoUsuario.setValidado(validado);
 
         Usuario usuarioGuardado = usuarioRepository.save(nuevoUsuario);
 
@@ -61,8 +66,21 @@ public class UsuarioService {
             usuarioGuardado.getId(),
             usuarioGuardado.getEmail(),
             usuarioGuardado.getRol(),
-            "Usuario registrado exitosamente"
+            validado
+                ? "Usuario registrado exitosamente"
+                : "Usuario registrado correctamente. Espera validación del administrador."
         );
+    }
+
+    public java.util.List<Usuario> obtenerUsuariosPendientes() {
+        return usuarioRepository.findByValidadoFalse();
+    }
+
+    public void validarUsuario(Long id) {
+        usuarioRepository.findById(id).ifPresent(usuario -> {
+            usuario.setValidado(true);
+            usuarioRepository.save(usuario);
+        });
     }
 
     /**

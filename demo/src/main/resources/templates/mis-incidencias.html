@@ -148,7 +148,8 @@
              th:classappend="'incidencia-card estado-' + ${inc.estado.name()}"
              class="incidencia-card">
             <div class="card-top">
-                <span class="card-categoria" th:text="${inc.categoria.descripcion}"></span>
+                <span class="card-categoria" th:each="cat, stat : ${inc.categorias}"
+                      th:text="${cat.descripcion + (stat.last ? '' : ', ')}"></span>
                 <span class="badge"
                       th:classappend="'badge-' + ${inc.estado.name()}"
                       th:text="${inc.estado.descripcion}">

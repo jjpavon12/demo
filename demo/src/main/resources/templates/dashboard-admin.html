@@ -212,6 +212,36 @@
 
         <div class="section-card">
             <div class="section-header">
+                <h3>Usuarios pendientes</h3>
+            </div>
+            <div th:if="${#lists.isEmpty(usuariosPendientes)}" class="empty-msg">
+                No hay usuarios pendientes de validación.
+            </div>
+            <table th:if="${!#lists.isEmpty(usuariosPendientes)}">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="usr : ${usuariosPendientes}">
+                        <td th:text="${usr.email}"></td>
+                        <td th:text="${usr.rol.name()}"></td>
+                        <td>
+                            <form method="post" th:action="@{/dashboard/admin/validar-usuario}">
+                                <input type="hidden" name="id" th:value="${usr.id}" />
+                                <button class="btn-validate" type="submit">Validar</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section-card">
+            <div class="section-header">
                 <h3>Incidencias registradas</h3>
             </div>
             <div th:if="${#lists.isEmpty(incidencias)}" class="empty-msg">
@@ -232,18 +262,16 @@
                 <tbody>
                     <tr th:each="inc : ${incidencias}">
                         <td class="td-id" th:text="${inc.id}"></td>
-                        <td th:text="${inc.categoria.descripcion}"></td>
+                        <td>
+                            <span th:each="cat, stat : ${inc.categorias}"
+                                  th:text="${cat.descripcion + (stat.last ? '' : ', ')}"></span>
+                        </td>
                         <td><span class="desc-link" th:onclick="'openModal(this)'" th:data-desc="${inc.descripcion}">Ver descripción</span></td>
                         <td th:text="${inc.ubicacion}"></td>
                         <td th:text="${#temporals.format(inc.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>
                         <td th:text="${inc.usuario.email}"></td>
                         <td>
-                            <form method="post" th:action="@{/dashboard/admin/cambiar-estado}">
-                                <input type="hidden" name="id" th:value="${inc.id}"/>
-                                <select name="estado" class="estado-select" th:data-current="${inc.estado.name()}">
-                                    <option th:each="e : ${estados}" th:value="${e}" th:text="${e.descripcion}" th:selected="${e == inc.estado}"></option>
-                                </select>
-                            </form>
+                            <span class="status-label" th:text="${inc.estado.descripcion}"></span>
                         </td>
                     </tr>
                 </tbody>

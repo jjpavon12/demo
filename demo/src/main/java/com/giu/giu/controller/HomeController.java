@@ -25,10 +25,14 @@ public class HomeController {
 
     @GetMapping("/login")
     public String login(@RequestParam(value = "registered", required = false) String registered,
+                        @RequestParam(value = "pending", required = false) String pending,
                         @RequestParam(value = "error", required = false) String error,
                         Model model) {
         if (registered != null) {
             model.addAttribute("registeredMessage", "Usuario registrado correctamente. Inicia sesión.");
+        }
+        if (pending != null) {
+            model.addAttribute("registeredMessage", "Tu cuenta está pendiente de validación por un administrador.");
         }
         if (error != null) {
             model.addAttribute("error", error);
@@ -49,7 +53,10 @@ public class HomeController {
 
         LoginResponse response = usuarioService.registrar(email, password, rol);
         if (response.getId() != null) {
-            return "redirect:/login?registered=true";
+            if (rol == Rol.CIUDADANO) {
+                return "redirect:/login?registered=true";
+            }
+            return "redirect:/login?pending=true";
         } else {
             model.addAttribute("error", response.getMensaje());
             return "register";

@@ -268,12 +268,16 @@
                                   th:if="${inc.estado != T(com.giu.giu.model.EstadoIncidencia).VALIDADA and inc.estado != T(com.giu.giu.model.EstadoIncidencia).RECHAZADA}">
                                 <input type="hidden" name="id" th:value="${inc.id}"/>
                                 <select name="categoria" class="categoria-select" onchange="this.form.submit()">
-                                    <option th:each="cat : ${categorias}" th:value="${cat}" th:text="${cat.descripcion}" th:selected="${cat == inc.categoria}"></option>
+                                    <option th:each="cat : ${categorias}"
+                                            th:value="${cat}"
+                                            th:text="${cat.descripcion}"
+                                            th:selected="${inc.categorias.contains(cat)}"></option>
                                 </select>
                             </form>
                             <span class="campo-bloqueado"
                                   th:if="${inc.estado == T(com.giu.giu.model.EstadoIncidencia).VALIDADA or inc.estado == T(com.giu.giu.model.EstadoIncidencia).RECHAZADA}"
-                                  th:text="${inc.categoria.descripcion}"></span>
+                                  th:each="cat, stat : ${inc.categorias}"
+                                  th:text="${cat.descripcion + (stat.last ? '' : ', ')}"></span>
                         </td>
                         <td><span class="desc-link" th:onclick="'openModal(this)'" th:data-desc="${inc.descripcion}">Ver descripción</span></td>
                         <td th:text="${inc.ubicacion}"></td>

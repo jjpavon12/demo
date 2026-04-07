@@ -2,6 +2,7 @@ package com.giu.giu.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "incidencias")
@@ -17,9 +18,11 @@ public class Incidencia {
     @Column(nullable = false)
     private String ubicacion;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "incidencia_categorias", joinColumns = @JoinColumn(name = "incidencia_id"))
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private CategoriaIncidencia categoria;
+    @Column(name = "categoria", nullable = false)
+    private Set<CategoriaIncidencia> categorias;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -67,12 +70,12 @@ public class Incidencia {
         this.ubicacion = ubicacion;
     }
 
-    public CategoriaIncidencia getCategoria() {
-        return categoria;
+    public Set<CategoriaIncidencia> getCategorias() {
+        return categorias;
     }
 
-    public void setCategoria(CategoriaIncidencia categoria) {
-        this.categoria = categoria;
+    public void setCategorias(Set<CategoriaIncidencia> categorias) {
+        this.categorias = categorias;
     }
 
     public EstadoIncidencia getEstado() {

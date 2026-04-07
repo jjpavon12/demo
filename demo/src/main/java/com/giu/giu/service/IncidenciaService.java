@@ -17,11 +17,11 @@ public class IncidenciaService {
     @Autowired
     private IncidenciaRepository incidenciaRepository;
 
-    public Incidencia registrar(String descripcion, String ubicacion, CategoriaIncidencia categoria, Usuario usuario) {
+    public Incidencia registrar(String descripcion, String ubicacion, java.util.Set<CategoriaIncidencia> categorias, Usuario usuario) {
         Incidencia incidencia = new Incidencia();
         incidencia.setDescripcion(descripcion);
         incidencia.setUbicacion(ubicacion);
-        incidencia.setCategoria(categoria);
+        incidencia.setCategorias(categorias);
         incidencia.setEstado(EstadoIncidencia.PENDIENTE_VALIDACION);
         incidencia.setUsuario(usuario);
         return incidenciaRepository.save(incidencia);
@@ -54,7 +54,7 @@ public class IncidenciaService {
 
     public void cambiarCategoria(Long id, CategoriaIncidencia nuevaCategoria) {
         incidenciaRepository.findById(id).ifPresent(inc -> {
-            inc.setCategoria(nuevaCategoria);
+            inc.setCategorias(java.util.Set.of(nuevaCategoria));
             incidenciaRepository.save(inc);
         });
     }

@@ -5,6 +5,7 @@ import com.giu.giu.model.EstadoIncidencia;
 import com.giu.giu.model.Usuario;
 import com.giu.giu.security.CustomUserDetails;
 import com.giu.giu.service.IncidenciaService;
+import com.giu.giu.service.UsuarioService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -21,9 +22,11 @@ public class DashboardController {
     };
 
     private final IncidenciaService incidenciaService;
+    private final UsuarioService usuarioService;
 
-    public DashboardController(IncidenciaService incidenciaService) {
+    public DashboardController(IncidenciaService incidenciaService, UsuarioService usuarioService) {
         this.incidenciaService = incidenciaService;
+        this.usuarioService = usuarioService;
     }
 
     /**
@@ -130,7 +133,6 @@ public class DashboardController {
 
     @PostMapping("/tecnico/cambiar-estado")
     public String cambiarEstadoTecnico(@RequestParam Long id, @RequestParam EstadoIncidencia estado) {
-        incidenciaService.cambiarEstado(id, estado);
         return "redirect:/dashboard/tecnico";
     }
 
@@ -148,6 +150,7 @@ public class DashboardController {
             model.addAttribute("rol", "ADMINISTRADOR");
             model.addAttribute("incidencias", incidenciaService.obtenerTodas());
             model.addAttribute("estados", EstadoIncidencia.values());
+            model.addAttribute("usuariosPendientes", usuarioService.obtenerUsuariosPendientes());
             return "dashboard-admin";
         }
 
@@ -156,7 +159,12 @@ public class DashboardController {
 
     @PostMapping("/admin/cambiar-estado")
     public String cambiarEstadoAdmin(@RequestParam Long id, @RequestParam EstadoIncidencia estado) {
-        incidenciaService.cambiarEstado(id, estado);
+        return "redirect:/dashboard/admin";
+    }
+
+    @PostMapping("/admin/validar-usuario")
+    public String validarUsuario(@RequestParam Long id) {
+        usuarioService.validarUsuario(id);
         return "redirect:/dashboard/admin";
     }
 }

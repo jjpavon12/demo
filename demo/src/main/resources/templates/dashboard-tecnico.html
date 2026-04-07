@@ -230,18 +230,16 @@
                 <tbody>
                     <tr th:each="inc : ${incidencias}">
                         <td class="td-id" th:text="${inc.id}"></td>
-                        <td th:text="${inc.categoria.descripcion}"></td>
+                        <td>
+                            <span th:each="cat, stat : ${inc.categorias}"
+                                  th:text="${cat.descripcion + (stat.last ? '' : ', ')}"></span>
+                        </td>
                         <td><span class="desc-link" th:onclick="'openModal(this)'" th:data-desc="${inc.descripcion}">Ver descripción</span></td>
                         <td th:text="${inc.ubicacion}"></td>
                         <td th:text="${#temporals.format(inc.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>
                         <td th:text="${inc.usuario.email}"></td>
                         <td>
-                            <form method="post" th:action="@{/dashboard/tecnico/cambiar-estado}">
-                                <input type="hidden" name="id" th:value="${inc.id}"/>
-                                <select name="estado" class="estado-select" th:data-current="${inc.estado.name()}">
-                                    <option th:each="e : ${estados}" th:value="${e}" th:text="${e.descripcion}" th:selected="${e == inc.estado}"></option>
-                                </select>
-                            </form>
+                            <span class="status-label" th:text="${inc.estado.descripcion}"></span>
                         </td>
                     </tr>
                 </tbody>

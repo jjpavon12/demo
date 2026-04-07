@@ -20,13 +20,17 @@ public class Usuario {
     @Column(nullable = false)
     private Rol rol;
 
+    @Column(nullable = false)
+    private boolean validado = true;
+
     public Usuario() {
     }
 
-    public Usuario(String email, String password, Rol rol) {
+    public Usuario(String email, String password, Rol rol, boolean validado) {
         this.email = email;
         this.password = password;
         this.rol = rol;
+        this.validado = validado;
     }
 
     // Getters y Setters
@@ -60,5 +64,13 @@ public class Usuario {
 
     public void setRol(Rol rol) {
         this.rol = rol;
+    }
+
+    public boolean isValidado() {
+        return validado;
+    }
+
+    public void setValidado(boolean validado) {
+        this.validado = validado;
     }
 }
