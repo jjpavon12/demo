@@ -26,10 +26,11 @@ public class Usuario {
     public Usuario() {
     }
 
-    public Usuario(String email, String password, Rol rol) {
+    public Usuario(String email, String password, Rol rol, boolean validado) {
         this.email = email;
         this.password = password;
         this.rol = rol;
+        this.validado = validado;
     }
 
     // Getters y Setters

@@ -112,6 +112,7 @@
         <div th:if="${param.error}" class="error-msg">
             Correo o contraseña incorrectos, o tu cuenta aún no ha sido aprobada.
         </div>
+        <div th:if="${registeredMessage}" class="alert-info" style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;padding:9px 13px;border-radius:8px;margin-bottom:14px;text-align:center;" th:text="${registeredMessage}"></div>
 
         <form method="POST" th:action="@{/login}">
             <div class="form-group">

@@ -25,6 +25,7 @@ public class HomeController {
 
     @GetMapping("/login")
     public String login(@RequestParam(value = "registered", required = false) String registered,
+                        @RequestParam(value = "pending", required = false) String pending,
                         @RequestParam(value = "error", required = false) String error,
                         @RequestParam(value = "pendiente", required = false) String pendiente,
                         Model model) {
