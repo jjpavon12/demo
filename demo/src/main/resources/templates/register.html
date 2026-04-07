@@ -111,7 +111,7 @@
                     <option value="CIUDADANO">Ciudadano</option>
                     <option value="OPERADOR">Operador</option>
                     <option value="TECNICO">Técnico</option>
-                    <option value="ADMINISTRADOR">Administrador</option>
+                    <option value="ADMINISTRADOR" th:if="${permitirAdminInicial}">Administrador (solo configuración inicial)</option>
                 </select>
             </div>
             <button type="submit" class="btn-submit">Crear cuenta</button>

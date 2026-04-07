@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Administrador â€” GIU</title>
+    <title>Panel Administrador — GIU</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -49,7 +49,7 @@
             transition: background .14s;
         }
         .nav-logout:hover { background: rgba(255,255,255,.28); }
-        .container { max-width: 1200px; margin: 32px auto; padding: 0 24px; }
+        .container { max-width: 1000px; margin: 32px auto; padding: 0 24px; }
         .page-header {
             display: flex;
             align-items: center;
@@ -57,30 +57,12 @@
             margin-bottom: 24px;
         }
         .page-header h2 { font-size: 1.1rem; font-weight: 700; color: #0f172a; }
-        .stat-chip {
-            background: var(--accent-bg);
-            color: var(--accent-dark);
-            border: 1px solid #fecaca;
-            padding: 5px 14px;
-            border-radius: 20px;
-            font-size: .8rem;
-            font-weight: 600;
-        }
-        .quick-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 28px; }
-        .quick-card {
-            background: #fff;
-            border-radius: 10px;
-            padding: 16px 18px;
-            box-shadow: 0 1px 3px rgba(0,0,0,.07);
-            border-left: 3px solid var(--accent);
-        }
-        .quick-card h4 { font-size: .84rem; font-weight: 600; color: #0f172a; margin-bottom: 4px; }
-        .quick-card p { font-size: .77rem; color: #94a3b8; line-height: 1.4; }
         .section-card {
             background: #fff;
             border-radius: 12px;
             box-shadow: 0 1px 4px rgba(0,0,0,.07);
             overflow: hidden;
+            margin-bottom: 28px;
         }
         .section-header {
             padding: 16px 22px;
@@ -90,8 +72,16 @@
             justify-content: space-between;
         }
         .section-header h3 { font-size: .95rem; font-weight: 600; color: #0f172a; }
+        .section-header .badge-count {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: .75rem;
+            font-weight: 700;
+        }
         .empty-msg {
-            padding: 48px 24px;
+            padding: 36px 24px;
             text-align: center;
             color: #94a3b8;
             font-size: .9rem;
@@ -117,79 +107,47 @@
         tr:last-child td { border-bottom: none; }
         tr:hover td { background: #fafafa; }
         .td-id { color: #94a3b8; font-size: .8rem; }
-        .cat-tag {
+        .role-badge {
             display: inline-block;
-            background: #e0e7ff;
-            color: #3730a3;
-            padding: 2px 8px;
-            border-radius: 10px;
+            padding: 2px 10px;
+            border-radius: 12px;
             font-size: .73rem;
             font-weight: 600;
-            margin: 1px 3px 1px 0;
         }
-        .desc-link {
-            color: var(--accent);
-            cursor: pointer;
-            text-decoration: none;
-            font-size: .82rem;
-            font-weight: 500;
-            border-bottom: 1px dashed var(--accent);
-        }
-        .desc-link:hover { color: var(--accent-dark); }
-        .estado-select {
-            padding: 5px 10px;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 6px;
-            font-size: .8rem;
-            font-family: inherit;
-            font-weight: 600;
-            cursor: pointer;
-            transition: border-color .14s;
-            outline: none;
-            min-width: 150px;
-        }
-        .estado-select:focus { border-color: var(--accent); }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            inset: 0;
-            background: rgba(0,0,0,.45);
-        }
-        .modal-content {
-            background: #fff;
-            margin: 6% auto;
-            padding: 28px;
+        .role-CIUDADANO { background: #dbeafe; color: #1e40af; }
+        .role-OPERADOR { background: #fff7ed; color: #c2410c; }
+        .role-TECNICO { background: #f0fdf4; color: #166534; }
+        .role-ADMINISTRADOR { background: #fef2f2; color: #991b1b; }
+        .status-badge {
+            display: inline-block;
+            padding: 2px 10px;
             border-radius: 12px;
-            width: 90%;
-            max-width: 580px;
-            box-shadow: 0 8px 32px rgba(0,0,0,.18);
+            font-size: .73rem;
+            font-weight: 600;
         }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #f1f5f9;
-        }
-        .modal-header h3 { font-size: 1rem; font-weight: 600; color: #0f172a; margin: 0; }
-        .close-modal { color: #94a3b8; font-size: 1.4rem; cursor: pointer; line-height: 1; }
-        .close-modal:hover { color: #374151; }
-        .modal-body { color: #475569; font-size: .9rem; line-height: 1.65; margin-bottom: 20px; }
-        .modal-footer button {
-            padding: 8px 18px;
-            background: var(--accent);
-            color: #fff;
+        .status-activo { background: #dcfce7; color: #166534; }
+        .status-pendiente { background: #fef3c7; color: #92400e; }
+        .btn-actions { display: flex; gap: 6px; }
+        .btn-aprobar, .btn-denegar {
+            padding: 5px 14px;
             border: none;
             border-radius: 6px;
-            font-size: .85rem;
+            font-size: .78rem;
             font-weight: 600;
             font-family: inherit;
             cursor: pointer;
-            transition: background .14s;
+            transition: background .14s, box-shadow .14s;
         }
-        .modal-footer button:hover { background: var(--accent-dark); }
+        .btn-aprobar {
+            background: #16a34a;
+            color: #fff;
+        }
+        .btn-aprobar:hover { background: #15803d; box-shadow: 0 2px 8px rgba(22,163,74,.3); }
+        .btn-denegar {
+            background: #dc2626;
+            color: #fff;
+        }
+        .btn-denegar:hover { background: #b91c1c; box-shadow: 0 2px 8px rgba(220,38,38,.3); }
     </style>
 </head>
 <body>
@@ -207,107 +165,89 @@
 
     <div class="container">
         <div class="page-header">
-            <h2>Gestión de Incidencias</h2>
-            <span class="stat-chip" th:text="'Total: ' + ${#lists.size(incidencias)}"></span>
+            <h2>Gestión de Usuarios</h2>
         </div>
 
-        <div class="quick-cards">
-            <div class="quick-card"><h4>Usuarios</h4><p>Crea, edita y elimina usuarios</p></div>
-            <div class="quick-card"><h4>Permisos</h4><p>Gestiona roles y permisos</p></div>
-            <div class="quick-card"><h4>Configuración</h4><p>Parámetros del sistema</p></div>
-            <div class="quick-card"><h4>Reportes</h4><p>Todos los reportes del sistema</p></div>
-            <div class="quick-card"><h4>Auditoría</h4><p>Registro de actividades</p></div>
-            <div class="quick-card"><h4>Seguridad</h4><p>Configuración de seguridad</p></div>
-        </div>
-
+        <!-- ========== USUARIOS PENDIENTES ========== -->
         <div class="section-card">
             <div class="section-header">
-                <h3>Incidencias registradas</h3>
+                <h3>⏳ Cuentas pendientes de aprobación</h3>
+                <span class="badge-count" th:text="${#lists.size(pendientes)} + ' pendiente(s)'"></span>
             </div>
-            <div th:if="${#lists.isEmpty(incidencias)}" class="empty-msg">
-                No hay incidencias registradas.
+            <div th:if="${#lists.isEmpty(pendientes)}" class="empty-msg">
+                No hay cuentas pendientes de aprobación.
             </div>
-            <table th:if="${!#lists.isEmpty(incidencias)}">
+            <table th:if="${!#lists.isEmpty(pendientes)}">
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Categoría</th>
-                        <th>Descripción</th>
-                        <th>Ubicación</th>
-                        <th>Fecha</th>
                         <th>Email</th>
+                        <th>Rol solicitado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="u : ${pendientes}">
+                        <td class="td-id" th:text="${u.id}"></td>
+                        <td th:text="${u.email}"></td>
+                        <td>
+                            <span class="role-badge"
+                                  th:classappend="'role-' + ${u.rol.name()}"
+                                  th:text="${u.rol.name()}"></span>
+                        </td>
+                        <td>
+                            <div class="btn-actions">
+                                <form method="post" th:action="@{/dashboard/admin/aprobar-usuario}">
+                                    <input type="hidden" name="id" th:value="${u.id}"/>
+                                    <button type="submit" class="btn-aprobar">✓ Aprobar</button>
+                                </form>
+                                <form method="post" th:action="@{/dashboard/admin/denegar-usuario}"
+                                      onsubmit="return confirm('¿Seguro que quieres eliminar esta cuenta?')">
+                                    <input type="hidden" name="id" th:value="${u.id}"/>
+                                    <button type="submit" class="btn-denegar">✗ Denegar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ========== TODOS LOS USUARIOS ========== -->
+        <div class="section-card">
+            <div class="section-header">
+                <h3>👥 Todos los usuarios</h3>
+                <span class="badge-count" th:text="${#lists.size(todosUsuarios)} + ' usuario(s)'"></span>
+            </div>
+            <div th:if="${#lists.isEmpty(todosUsuarios)}" class="empty-msg">
+                No hay usuarios registrados.
+            </div>
+            <table th:if="${!#lists.isEmpty(todosUsuarios)}">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Email</th>
+                        <th>Rol</th>
                         <th>Estado</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="inc : ${incidencias}">
-                        <td class="td-id" th:text="${inc.id}"></td>
+                    <tr th:each="u : ${todosUsuarios}">
+                        <td class="td-id" th:text="${u.id}"></td>
+                        <td th:text="${u.email}"></td>
                         <td>
-                            <span th:each="cat : ${inc.categorias}" class="cat-tag" th:text="${cat.descripcion}"></span>
+                            <span class="role-badge"
+                                  th:classappend="'role-' + ${u.rol.name()}"
+                                  th:text="${u.rol.name()}"></span>
                         </td>
-                        <td><span class="desc-link" th:onclick="'openModal(this)'" th:data-desc="${inc.descripcion}">Ver descripción</span></td>
-                        <td th:text="${inc.ubicacion}"></td>
-                        <td th:text="${#temporals.format(inc.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>
-                        <td th:text="${inc.usuario.email}"></td>
                         <td>
-                            <form method="post" th:action="@{/dashboard/admin/cambiar-estado}">
-                                <input type="hidden" name="id" th:value="${inc.id}"/>
-                                <select name="estado" class="estado-select" th:data-current="${inc.estado.name()}">
-                                    <option th:each="e : ${estados}" th:value="${e}" th:text="${e.descripcion}" th:selected="${e == inc.estado}"></option>
-                                </select>
-                            </form>
+                            <span class="status-badge status-activo" th:if="${u.activo}">Activo</span>
+                            <span class="status-badge status-pendiente" th:if="${!u.activo}">Pendiente</span>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
-
-    <div id="descModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Descripción de la incidencia</h3>
-                <span class="close-modal" onclick="closeModal()">&times;</span>
-            </div>
-            <p id="descContent" class="modal-body"></p>
-            <div class="modal-footer">
-                <button onclick="closeModal()">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-    var statusColors = {
-        PENDIENTE_VALIDACION: { bg: '#fef3c7', color: '#92400e', border: '#f59e0b' },
-        VALIDADA:             { bg: '#dcfce7', color: '#166534', border: '#4ade80' },
-        ASIGNADA:             { bg: '#e0e7ff', color: '#3730a3', border: '#818cf8' },
-        EN_CURSO:             { bg: '#dbeafe', color: '#1e40af', border: '#60a5fa' },
-        RESUELTA:             { bg: '#d1fae5', color: '#065f46', border: '#34d399' },
-        CERRADA:              { bg: '#e2e8f0', color: '#334155', border: '#94a3b8' },
-        RECHAZADA:            { bg: '#fee2e2', color: '#991b1b', border: '#f87171' }
-    };
-    function applySelectStyle(sel) {
-        var s = statusColors[sel.value];
-        if (s) {
-            sel.style.background = s.bg;
-            sel.style.color = s.color;
-            sel.style.borderColor = s.border;
-            return;
-        }
-        sel.style.background = '#fff';
-        sel.style.color = '#334155';
-        sel.style.borderColor = '#e2e8f0';
-    }
-    document.querySelectorAll('.estado-select').forEach(function(sel) {
-        applySelectStyle(sel);
-        sel.onchange = function() { applySelectStyle(this); this.form.submit(); };
-    });
-    function openModal(el) {
-        document.getElementById('descContent').textContent = el.getAttribute('data-desc');
-        document.getElementById('descModal').style.display = 'block';
-    }
-    function closeModal() { document.getElementById('descModal').style.display = 'none'; }
-    window.onclick = function(e) { if (e.target === document.getElementById('descModal')) closeModal(); };
-    </script>
 </body>
 </html>

@@ -26,9 +26,13 @@ public class HomeController {
     @GetMapping("/login")
     public String login(@RequestParam(value = "registered", required = false) String registered,
                         @RequestParam(value = "error", required = false) String error,
+                        @RequestParam(value = "pendiente", required = false) String pendiente,
                         Model model) {
         if (registered != null) {
             model.addAttribute("registeredMessage", "Usuario registrado correctamente. Inicia sesión.");
+        }
+        if (pendiente != null) {
+            model.addAttribute("pendienteMessage", "Cuenta creada. Un administrador debe aprobarla antes de que puedas iniciar sesión.");
         }
         if (error != null) {
             model.addAttribute("error", error);
@@ -38,6 +42,7 @@ public class HomeController {
 
     @GetMapping("/registro")
     public String registro(Model model) {
+        model.addAttribute("permitirAdminInicial", !usuarioService.existeAdministrador());
         return "register";
     }
 
@@ -49,8 +54,13 @@ public class HomeController {
 
         LoginResponse response = usuarioService.registrar(email, password, rol);
         if (response.getId() != null) {
+            // Si requiere aprobación, mostrar mensaje diferente
+            if (rol == Rol.OPERADOR || rol == Rol.TECNICO) {
+                return "redirect:/login?pendiente=true";
+            }
             return "redirect:/login?registered=true";
         } else {
+            model.addAttribute("permitirAdminInicial", !usuarioService.existeAdministrador());
             model.addAttribute("error", response.getMensaje());
             return "register";
         }

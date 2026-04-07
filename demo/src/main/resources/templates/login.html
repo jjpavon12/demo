@@ -86,6 +86,16 @@
             margin-bottom: 14px;
             text-align: center;
         }
+        .info-msg {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1d4ed8;
+            padding: 9px 13px;
+            border-radius: 8px;
+            font-size: .85rem;
+            margin-bottom: 14px;
+            text-align: center;
+        }
         .footer-link { text-align: center; margin-top: 20px; font-size: .85rem; color: #64748b; }
         .footer-link a { color: #1d4ed8; font-weight: 500; text-decoration: none; }
         .footer-link a:hover { text-decoration: underline; }
@@ -100,7 +110,7 @@
         </div>
 
         <div th:if="${param.error}" class="error-msg">
-            Correo o contraseña incorrectos.
+            Correo o contraseña incorrectos, o tu cuenta aún no ha sido aprobada.
         </div>
 
         <form method="POST" th:action="@{/login}">

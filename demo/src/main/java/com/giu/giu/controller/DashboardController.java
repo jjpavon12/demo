@@ -5,6 +5,7 @@ import com.giu.giu.model.EstadoIncidencia;
 import com.giu.giu.model.Usuario;
 import com.giu.giu.security.CustomUserDetails;
 import com.giu.giu.service.IncidenciaService;
+import com.giu.giu.service.UsuarioService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -24,9 +25,11 @@ public class DashboardController {
     };
 
     private final IncidenciaService incidenciaService;
+    private final UsuarioService usuarioService;
 
-    public DashboardController(IncidenciaService incidenciaService) {
+    public DashboardController(IncidenciaService incidenciaService, UsuarioService usuarioService) {
         this.incidenciaService = incidenciaService;
+        this.usuarioService = usuarioService;
     }
 
     /**
@@ -138,7 +141,7 @@ public class DashboardController {
     }
 
     /**
-     * Dashboard para ADMINISTRADOR
+     * Dashboard para ADMINISTRADOR — gestión de usuarios
      */
     @GetMapping("/admin")
     public String dashboardAdmin(Model model) {
@@ -149,17 +152,23 @@ public class DashboardController {
             Usuario usuario = userDetails.getUsuario();
             model.addAttribute("usuario", usuario);
             model.addAttribute("rol", "ADMINISTRADOR");
-            model.addAttribute("incidencias", incidenciaService.obtenerTodas());
-            model.addAttribute("estados", EstadoIncidencia.values());
+            model.addAttribute("pendientes", usuarioService.obtenerPendientes());
+            model.addAttribute("todosUsuarios", usuarioService.obtenerTodos());
             return "dashboard-admin";
         }
 
         return "redirect:/login";
     }
 
-    @PostMapping("/admin/cambiar-estado")
-    public String cambiarEstadoAdmin(@RequestParam Long id, @RequestParam EstadoIncidencia estado) {
-        incidenciaService.cambiarEstado(id, estado);
+    @PostMapping("/admin/aprobar-usuario")
+    public String aprobarUsuario(@RequestParam Long id) {
+        usuarioService.aprobarUsuario(id);
+        return "redirect:/dashboard/admin";
+    }
+
+    @PostMapping("/admin/denegar-usuario")
+    public String denegarUsuario(@RequestParam Long id) {
+        usuarioService.denegarUsuario(id);
         return "redirect:/dashboard/admin";
     }
 }

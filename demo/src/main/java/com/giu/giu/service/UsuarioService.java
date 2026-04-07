@@ -50,19 +50,35 @@ public class UsuarioService {
             return new LoginResponse(null, null, null, "El email ya está registrado");
         }
 
+        if (rol == Rol.ADMINISTRADOR && usuarioRepository.existsByRol(Rol.ADMINISTRADOR)) {
+            return new LoginResponse(null, null, null, "No está permitido registrar más administradores desde esta pantalla");
+        }
+
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setEmail(email);
         nuevoUsuario.setPassword(passwordEncoder.encode(password));
         nuevoUsuario.setRol(rol);
 
+        // Operadores y técnicos requieren aprobación del administrador
+        boolean requiereAprobacion = (rol == Rol.OPERADOR || rol == Rol.TECNICO);
+        nuevoUsuario.setActivo(!requiereAprobacion);
+
         Usuario usuarioGuardado = usuarioRepository.save(nuevoUsuario);
+
+        String mensaje = requiereAprobacion
+            ? "Cuenta creada. Un administrador debe aprobarla antes de poder iniciar sesión."
+            : "Usuario registrado exitosamente";
 
         return new LoginResponse(
             usuarioGuardado.getId(),
             usuarioGuardado.getEmail(),
             usuarioGuardado.getRol(),
-            "Usuario registrado exitosamente"
+            mensaje
         );
+    }
+
+    public boolean existeAdministrador() {
+        return usuarioRepository.existsByRol(Rol.ADMINISTRADOR);
     }
 
     /**
@@ -77,5 +93,36 @@ public class UsuarioService {
      */
     public Optional<Usuario> obtenerPorId(Long id) {
         return usuarioRepository.findById(id);
+    }
+
+    /**
+     * Lista usuarios pendientes de aprobación
+     */
+    public java.util.List<Usuario> obtenerPendientes() {
+        return usuarioRepository.findByActivoFalse();
+    }
+
+    /**
+     * Aprueba un usuario (lo activa)
+     */
+    public void aprobarUsuario(Long id) {
+        usuarioRepository.findById(id).ifPresent(u -> {
+            u.setActivo(true);
+            usuarioRepository.save(u);
+        });
+    }
+
+    /**
+     * Deniega un usuario (lo elimina)
+     */
+    public void denegarUsuario(Long id) {
+        usuarioRepository.deleteById(id);
+    }
+
+    /**
+     * Lista todos los usuarios
+     */
+    public java.util.List<Usuario> obtenerTodos() {
+        return usuarioRepository.findAll();
     }
 }
