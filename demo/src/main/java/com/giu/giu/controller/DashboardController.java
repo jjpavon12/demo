@@ -11,6 +11,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
+import java.util.List;
+
 @Controller
 @RequestMapping("/dashboard")
 public class DashboardController {
@@ -100,11 +103,11 @@ public class DashboardController {
     }
 
     @PostMapping("/operador/cambiar-categoria")
-    public String cambiarCategoriaOperador(@RequestParam Long id, @RequestParam CategoriaIncidencia categoria) {
+    public String cambiarCategoriaOperador(@RequestParam Long id, @RequestParam List<CategoriaIncidencia> categorias) {
         if (incidenciaService.estaBloqueadaParaOperador(id)) {
             return "redirect:/dashboard/operador";
         }
-        incidenciaService.cambiarCategoria(id, categoria);
+        incidenciaService.cambiarCategorias(id, new HashSet<>(categorias));
         return "redirect:/dashboard/operador";
     }
 

@@ -35,3 +35,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Local environment ###
+.local_jdk/
+.venv/

@@ -12,7 +12,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/ciudadano/incidencias")
@@ -40,12 +42,12 @@ public class IncidenciaController {
     @PostMapping("/registrar")
     public String registrarIncidencia(@RequestParam String descripcion,
                                       @RequestParam String ubicacion,
-                                      @RequestParam CategoriaIncidencia categoria,
+                                      @RequestParam List<CategoriaIncidencia> categorias,
                                       Model model) {
         Usuario usuario = getUsuarioAutenticado();
         if (usuario == null) return "redirect:/login";
 
-        incidenciaService.registrar(descripcion, ubicacion, categoria, usuario);
+        incidenciaService.registrar(descripcion, ubicacion, new HashSet<>(categorias), usuario);
         return "redirect:/ciudadano/incidencias/mis-incidencias?exito";
     }
 

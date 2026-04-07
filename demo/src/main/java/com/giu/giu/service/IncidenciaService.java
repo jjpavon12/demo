@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class IncidenciaService {
@@ -17,11 +18,11 @@ public class IncidenciaService {
     @Autowired
     private IncidenciaRepository incidenciaRepository;
 
-    public Incidencia registrar(String descripcion, String ubicacion, CategoriaIncidencia categoria, Usuario usuario) {
+    public Incidencia registrar(String descripcion, String ubicacion, Set<CategoriaIncidencia> categorias, Usuario usuario) {
         Incidencia incidencia = new Incidencia();
         incidencia.setDescripcion(descripcion);
         incidencia.setUbicacion(ubicacion);
-        incidencia.setCategoria(categoria);
+        incidencia.setCategorias(categorias);
         incidencia.setEstado(EstadoIncidencia.PENDIENTE_VALIDACION);
         incidencia.setUsuario(usuario);
         return incidenciaRepository.save(incidencia);
@@ -52,9 +53,9 @@ public class IncidenciaService {
         });
     }
 
-    public void cambiarCategoria(Long id, CategoriaIncidencia nuevaCategoria) {
+    public void cambiarCategorias(Long id, Set<CategoriaIncidencia> nuevasCategorias) {
         incidenciaRepository.findById(id).ifPresent(inc -> {
-            inc.setCategoria(nuevaCategoria);
+            inc.setCategorias(nuevasCategorias);
             incidenciaRepository.save(inc);
         });
     }

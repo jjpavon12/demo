@@ -117,6 +117,16 @@
         tr:last-child td { border-bottom: none; }
         tr:hover td { background: #fafafa; }
         .td-id { color: #94a3b8; font-size: .8rem; }
+        .cat-tag {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: .73rem;
+            font-weight: 600;
+            margin: 1px 3px 1px 0;
+        }
         .desc-link {
             color: var(--accent);
             cursor: pointer;
@@ -232,7 +242,9 @@
                 <tbody>
                     <tr th:each="inc : ${incidencias}">
                         <td class="td-id" th:text="${inc.id}"></td>
-                        <td th:text="${inc.categoria.descripcion}"></td>
+                        <td>
+                            <span th:each="cat : ${inc.categorias}" class="cat-tag" th:text="${cat.descripcion}"></span>
+                        </td>
                         <td><span class="desc-link" th:onclick="'openModal(this)'" th:data-desc="${inc.descripcion}">Ver descripción</span></td>
                         <td th:text="${inc.ubicacion}"></td>
                         <td th:text="${#temporals.format(inc.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>

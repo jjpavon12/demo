@@ -139,20 +139,94 @@
             min-width: 150px;
         }
         .estado-select:focus { border-color: var(--accent); }
-        .categoria-select {
-            width: 100%;
-            max-width: 220px;
-            padding: 5px 10px;
+        /* --- Categoria chip picker --- */
+        .cat-picker { position: relative; min-width: 200px; }
+        .cat-chips-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            padding: 6px 8px;
             border: 1.5px solid #e2e8f0;
-            border-radius: 6px;
-            font-size: .8rem;
-            font-family: inherit;
-            color: #334155;
+            border-radius: 8px;
             background: #fff;
+            min-height: 36px;
             cursor: pointer;
-            outline: none;
+            transition: border-color .14s;
         }
-        .categoria-select:focus { border-color: var(--accent); }
+        .cat-chips-area:hover { border-color: #cbd5e1; }
+        .cat-chips-area.open { border-color: var(--accent); border-radius: 8px 8px 0 0; }
+        .cat-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #fff7ed;
+            color: var(--accent-dark);
+            border: 1px solid #fed7aa;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: .72rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .cat-chip-remove {
+            cursor: pointer;
+            font-size: .8rem;
+            line-height: 1;
+            opacity: .6;
+            transition: opacity .12s;
+        }
+        .cat-chip-remove:hover { opacity: 1; }
+        .cat-placeholder {
+            color: #94a3b8;
+            font-size: .8rem;
+            padding: 2px 0;
+        }
+        .cat-dropdown {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            background: #fff;
+            border: 1.5px solid var(--accent);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 240px;
+            overflow-y: auto;
+            box-shadow: 0 8px 24px rgba(0,0,0,.15);
+        }
+        .cat-dropdown.show { display: block; }
+        .cat-dropdown label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px;
+            font-size: .8rem;
+            color: #334155;
+            cursor: pointer;
+            transition: background .1s;
+        }
+        .cat-dropdown label:hover { background: #fff7ed; }
+        .cat-dropdown input[type="checkbox"] {
+            width: 15px; height: 15px;
+            accent-color: var(--accent);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .btn-cat-save {
+            display: block;
+            width: 100%;
+            margin-top: 5px;
+            padding: 6px 12px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: .78rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background .14s;
+        }
+        .btn-cat-save:hover { background: var(--accent-dark); }
         .estado-stack {
             display: flex;
             flex-direction: column;
@@ -267,13 +341,34 @@
                                   th:action="@{/dashboard/operador/cambiar-categoria}"
                                   th:if="${inc.estado != T(com.giu.giu.model.EstadoIncidencia).VALIDADA and inc.estado != T(com.giu.giu.model.EstadoIncidencia).RECHAZADA}">
                                 <input type="hidden" name="id" th:value="${inc.id}"/>
-                                <select name="categoria" class="categoria-select" onchange="this.form.submit()">
-                                    <option th:each="cat : ${categorias}" th:value="${cat}" th:text="${cat.descripcion}" th:selected="${cat == inc.categoria}"></option>
-                                </select>
+                                <div class="cat-picker">
+                                    <div class="cat-chips-area" onclick="toggleDropdown(this)">
+                                        <span th:each="cat : ${inc.categorias}" class="cat-chip"
+                                              th:data-val="${cat.name()}">
+                                            <span th:text="${cat.descripcion}"></span>
+                                            <span class="cat-chip-remove" onclick="event.stopPropagation(); removeChip(this)">&times;</span>
+                                        </span>
+                                        <span class="cat-placeholder"
+                                              th:if="${#sets.isEmpty(inc.categorias)}">Seleccionar…</span>
+                                    </div>
+                                    <div class="cat-dropdown">
+                                        <label th:each="cat : ${categorias}">
+                                            <input type="checkbox" name="categorias"
+                                                   th:value="${cat.name()}"
+                                                   th:checked="${inc.categorias.contains(cat)}"
+                                                   onchange="syncChips(this)"/>
+                                            <span th:text="${cat.descripcion}"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn-cat-save">Guardar categorías</button>
                             </form>
-                            <span class="campo-bloqueado"
-                                  th:if="${inc.estado == T(com.giu.giu.model.EstadoIncidencia).VALIDADA or inc.estado == T(com.giu.giu.model.EstadoIncidencia).RECHAZADA}"
-                                  th:text="${inc.categoria.descripcion}"></span>
+                            <div th:if="${inc.estado == T(com.giu.giu.model.EstadoIncidencia).VALIDADA or inc.estado == T(com.giu.giu.model.EstadoIncidencia).RECHAZADA}"
+                                 style="display:flex;flex-wrap:wrap;gap:4px;">
+                                <span class="cat-chip"
+                                      th:each="cat : ${inc.categorias}"
+                                      th:text="${cat.descripcion}"></span>
+                            </div>
                         </td>
                         <td><span class="desc-link" th:onclick="'openModal(this)'" th:data-desc="${inc.descripcion}">Ver descripción</span></td>
                         <td th:text="${inc.ubicacion}"></td>
@@ -316,6 +411,7 @@
     </div>
 
     <script>
+    /* --- Estado colors --- */
     var statusColors = {
         PENDIENTE_VALIDACION: { bg: '#fef3c7', color: '#92400e', border: '#f59e0b' },
         VALIDADA:             { bg: '#dcfce7', color: '#166534', border: '#4ade80' },
@@ -327,25 +423,82 @@
     };
     function applySelectStyle(sel) {
         var s = statusColors[sel.value];
-        if (s) {
-            sel.style.background = s.bg;
-            sel.style.color = s.color;
-            sel.style.borderColor = s.border;
-            return;
-        }
-        sel.style.background = '#fff';
-        sel.style.color = '#334155';
-        sel.style.borderColor = '#e2e8f0';
+        if (s) { sel.style.background=s.bg; sel.style.color=s.color; sel.style.borderColor=s.border; return; }
+        sel.style.background='#fff'; sel.style.color='#334155'; sel.style.borderColor='#e2e8f0';
     }
-    document.querySelectorAll('.estado-select').forEach(function(sel) {
-        applySelectStyle(sel);
-    });
+    document.querySelectorAll('.estado-select').forEach(function(sel){ applySelectStyle(sel); });
+
+    /* --- Descripción modal --- */
     function openModal(el) {
         document.getElementById('descContent').textContent = el.getAttribute('data-desc');
         document.getElementById('descModal').style.display = 'block';
     }
     function closeModal() { document.getElementById('descModal').style.display = 'none'; }
-    window.onclick = function(e) { if (e.target === document.getElementById('descModal')) closeModal(); };
+
+    /* --- Categoria chip picker --- */
+    function toggleDropdown(chipsArea) {
+        var dd = chipsArea.nextElementSibling;
+        var isOpen = dd.classList.toggle('show');
+        chipsArea.classList.toggle('open', isOpen);
+        if (isOpen) {
+            var rect = chipsArea.getBoundingClientRect();
+            dd.style.left = rect.left + 'px';
+            dd.style.top = rect.bottom + 'px';
+            dd.style.width = rect.width + 'px';
+        }
+    }
+
+    function syncChips(checkbox) {
+        var picker = checkbox.closest('.cat-picker');
+        var area = picker.querySelector('.cat-chips-area');
+        var val = checkbox.value;
+        var label = checkbox.parentElement.querySelector('span').textContent;
+        if (checkbox.checked) {
+            var chip = document.createElement('span');
+            chip.className = 'cat-chip';
+            chip.setAttribute('data-val', val);
+            chip.innerHTML = '<span>' + label + '</span><span class="cat-chip-remove" onclick="event.stopPropagation(); removeChip(this)">&times;</span>';
+            var ph = area.querySelector('.cat-placeholder');
+            if (ph) ph.remove();
+            area.appendChild(chip);
+        } else {
+            var existing = area.querySelector('.cat-chip[data-val="' + val + '"]');
+            if (existing) existing.remove();
+            if (!area.querySelector('.cat-chip')) {
+                var ph2 = document.createElement('span');
+                ph2.className = 'cat-placeholder';
+                ph2.textContent = 'Seleccionar…';
+                area.appendChild(ph2);
+            }
+        }
+    }
+
+    function removeChip(x) {
+        var chip = x.closest('.cat-chip');
+        var picker = chip.closest('.cat-picker');
+        var val = chip.getAttribute('data-val');
+        var cb = picker.querySelector('input[value="' + val + '"]');
+        if (cb) cb.checked = false;
+        chip.remove();
+        var area = picker.querySelector('.cat-chips-area');
+        if (!area.querySelector('.cat-chip')) {
+            var ph = document.createElement('span');
+            ph.className = 'cat-placeholder';
+            ph.textContent = 'Seleccionar…';
+            area.appendChild(ph);
+        }
+    }
+
+    /* Cerrar dropdowns al hacer clic fuera */
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.cat-picker')) return;
+        document.querySelectorAll('.cat-dropdown.show').forEach(function(dd) {
+            dd.classList.remove('show');
+            dd.previousElementSibling.classList.remove('open');
+        });
+        /* Modal */
+        if (e.target === document.getElementById('descModal')) closeModal();
+    });
     </script>
 </body>
 </html>
