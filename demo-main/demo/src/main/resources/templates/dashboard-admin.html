@@ -1,0 +1,253 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrador — GIU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --accent: #dc2626; --accent-dark: #b91c1c; --accent-bg: #fef2f2; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
+        nav.navbar {
+            background: var(--accent);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.15);
+        }
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-logo {
+            background: rgba(255,255,255,.2);
+            color: #fff;
+            width: 34px; height: 34px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .8rem; font-weight: 700;
+        }
+        .nav-title { color: #fff; font-weight: 600; font-size: .95rem; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-email { color: rgba(255,255,255,.8); font-size: .8rem; }
+        .nav-role {
+            background: rgba(255,255,255,.2);
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: .73rem;
+            font-weight: 600;
+        }
+        .nav-logout {
+            color: #fff;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: rgba(255,255,255,.15);
+            font-size: .82rem;
+            font-weight: 500;
+            transition: background .14s;
+        }
+        .nav-logout:hover { background: rgba(255,255,255,.28); }
+        .container { max-width: 1000px; margin: 32px auto; padding: 0 24px; }
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+        .page-header h2 { font-size: 1.1rem; font-weight: 700; color: #0f172a; }
+        .section-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            overflow: hidden;
+            margin-bottom: 28px;
+        }
+        .section-header {
+            padding: 16px 22px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .section-header h3 { font-size: .95rem; font-weight: 600; color: #0f172a; }
+        .section-header .badge-count {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: .75rem;
+            font-weight: 700;
+        }
+        .empty-msg {
+            padding: 36px 24px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: .9rem;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: #f8fafc;
+            padding: 11px 16px;
+            text-align: left;
+            font-size: .75rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        td {
+            padding: 13px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: .875rem;
+            color: #334155;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fafafa; }
+        .td-id { color: #94a3b8; font-size: .8rem; }
+        .role-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: .73rem;
+            font-weight: 600;
+        }
+        .role-CIUDADANO { background: #dbeafe; color: #1e40af; }
+        .role-OPERADOR { background: #fff7ed; color: #c2410c; }
+        .role-TECNICO { background: #f0fdf4; color: #166534; }
+        .role-ADMINISTRADOR { background: #fef2f2; color: #991b1b; }
+        .status-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: .73rem;
+            font-weight: 600;
+        }
+        .status-activo { background: #dcfce7; color: #166534; }
+        .status-pendiente { background: #fef3c7; color: #92400e; }
+        .btn-actions { display: flex; gap: 6px; }
+        .btn-aprobar, .btn-denegar {
+            padding: 5px 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: .78rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background .14s, box-shadow .14s;
+        }
+        .btn-aprobar {
+            background: #16a34a;
+            color: #fff;
+        }
+        .btn-aprobar:hover { background: #15803d; box-shadow: 0 2px 8px rgba(22,163,74,.3); }
+        .btn-denegar {
+            background: #dc2626;
+            color: #fff;
+        }
+        .btn-denegar:hover { background: #b91c1c; box-shadow: 0 2px 8px rgba(220,38,38,.3); }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="nav-logo">GIU</div>
+            <span class="nav-title">Panel Administrativo</span>
+        </div>
+        <div class="nav-right">
+            <span class="nav-email" th:text="${usuario.email}"></span>
+            <span class="nav-role" th:text="${rol}"></span>
+            <a href="/logout" class="nav-logout">Cerrar sesión</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h2>Gestión de Usuarios</h2>
+        </div>
+
+        <!-- ========== USUARIOS PENDIENTES ========== -->
+        <div class="section-card">
+            <div class="section-header">
+                <h3>⏳ Cuentas pendientes de aprobación</h3>
+                <span class="badge-count" th:text="${#lists.size(pendientes)} + ' pendiente(s)'"></span>
+            </div>
+            <div th:if="${#lists.isEmpty(pendientes)}" class="empty-msg">
+                No hay cuentas pendientes de aprobación.
+            </div>
+            <table th:if="${!#lists.isEmpty(pendientes)}">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Email</th>
+                        <th>Rol solicitado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="u : ${pendientes}">
+                        <td class="td-id" th:text="${u.id}"></td>
+                        <td th:text="${u.email}"></td>
+                        <td>
+                            <span class="role-badge"
+                                  th:classappend="'role-' + ${u.rol.name()}"
+                                  th:text="${u.rol.name()}"></span>
+                        </td>
+                        <td>
+                            <div class="btn-actions">
+                                <form method="post" th:action="@{/dashboard/admin/aprobar-usuario}">
+                                    <input type="hidden" name="id" th:value="${u.id}"/>
+                                    <button type="submit" class="btn-aprobar">✓ Aprobar</button>
+                                </form>
+                                <form method="post" th:action="@{/dashboard/admin/denegar-usuario}"
+                                      onsubmit="return confirm('¿Seguro que quieres eliminar esta cuenta?')">
+                                    <input type="hidden" name="id" th:value="${u.id}"/>
+                                    <button type="submit" class="btn-denegar">✗ Denegar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ========== TODOS LOS USUARIOS ========== -->
+        <div class="section-card">
+            <div class="section-header">
+                <h3>👥 Todos los usuarios</h3>
+                <span class="badge-count" th:text="${#lists.size(todosUsuarios)} + ' usuario(s)'"></span>
+            </div>
+            <div th:if="${#lists.isEmpty(todosUsuarios)}" class="empty-msg">
+                No hay usuarios registrados.
+            </div>
+            <table th:if="${!#lists.isEmpty(todosUsuarios)}">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="u : ${todosUsuarios}">
+                        <td class="td-id" th:text="${u.id}"></td>
+                        <td th:text="${u.email}"></td>
+                        <td>
+                            <span class="role-badge"
+                                  th:classappend="'role-' + ${u.rol.name()}"
+                                  th:text="${u.rol.name()}"></span>
+                        </td>
+                        <td>
+                            <span class="status-badge status-activo" th:if="${u.activo}">Activo</span>
+                            <span class="status-badge status-pendiente" th:if="${!u.activo}">Pendiente</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIU — Gestión de Incidencias Urbanas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #f1f5f9;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 4px 24px rgba(0,0,0,.09);
+            padding: 52px 44px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .logo-mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            background: #1d4ed8;
+            color: #fff;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+        .tagline {
+            font-size: .875rem;
+            color: #64748b;
+            line-height: 1.55;
+            margin-bottom: 36px;
+        }
+        .btn {
+            display: block;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: .9rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background .14s, box-shadow .14s;
+            margin-bottom: 10px;
+            font-family: inherit;
+        }
+        .btn-primary { background: #1d4ed8; color: #fff; border: none; }
+        .btn-primary:hover { background: #1e40af; box-shadow: 0 4px 14px rgba(29,78,216,.35); }
+        .btn-outline { background: transparent; color: #1d4ed8; border: 2px solid #1d4ed8; }
+        .btn-outline:hover { background: #eff6ff; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo-mark">GIU</div>
+        <h1>Gestión de Incidencias Urbanas</h1>
+        <p class="tagline">Portal municipal para el reporte y seguimiento de incidencias en la vía pública.</p>
+        <a href="/login" class="btn btn-primary">Iniciar sesión</a>
+        <a href="/registro" class="btn btn-outline">Crear cuenta nueva</a>
+    </div>
+</body>
+</html>

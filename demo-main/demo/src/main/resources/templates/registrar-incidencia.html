@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Incidencia — GIU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
+        nav.navbar {
+            background: #1d4ed8;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.15);
+        }
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-logo {
+            background: rgba(255,255,255,.2);
+            color: #fff;
+            width: 34px; height: 34px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .8rem; font-weight: 700;
+        }
+        .nav-title { color: #fff; font-weight: 600; font-size: .95rem; }
+        .nav-right { display: flex; align-items: center; gap: 10px; }
+        .nav-link {
+            color: #fff;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: rgba(255,255,255,.15);
+            font-size: .82rem;
+            font-weight: 500;
+            transition: background .14s;
+        }
+        .nav-link:hover { background: rgba(255,255,255,.28); }
+        .nav-link-ghost { background: rgba(255,255,255,.08); }
+        .container { max-width: 680px; margin: 40px auto; padding: 0 24px; }
+        .form-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            padding: 36px;
+        }
+        .form-card h2 { font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+        .form-card .subtitle { color: #64748b; font-size: .84rem; margin-bottom: 28px; }
+        .form-group { margin-bottom: 20px; }
+        label {
+            display: block;
+            font-size: .78rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 13px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: .9rem;
+            font-family: inherit;
+            color: #1e293b;
+            background: #fff;
+            transition: border-color .14s, box-shadow .14s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #1d4ed8;
+            box-shadow: 0 0 0 3px rgba(29,78,216,.12);
+        }
+        textarea { resize: vertical; min-height: 110px; }
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 6px 14px;
+            max-height: 260px;
+            overflow-y: auto;
+            padding: 10px 12px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            background: #fff;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: .84rem;
+            font-weight: 400;
+            color: #334155;
+            text-transform: none;
+            letter-spacing: 0;
+            cursor: pointer;
+            padding: 4px 0;
+        }
+        .checkbox-item input[type="checkbox"] {
+            width: 16px; height: 16px;
+            accent-color: #1d4ed8;
+            cursor: pointer;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: #1d4ed8;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: .9rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background .14s, box-shadow .14s;
+        }
+        .btn-submit:hover { background: #1e40af; box-shadow: 0 4px 14px rgba(29,78,216,.3); }
+        .back-link {
+            display: inline-block;
+            margin-top: 16px;
+            color: #64748b;
+            font-size: .84rem;
+            text-decoration: none;
+        }
+        .back-link:hover { color: #1d4ed8; text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="nav-logo">GIU</div>
+            <span class="nav-title">Portal Ciudadano</span>
+        </div>
+        <div class="nav-right">
+            <a href="/dashboard/ciudadano" class="nav-link">← Panel principal</a>
+            <a href="/logout" class="nav-link nav-link-ghost">Cerrar sesión</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="form-card">
+            <h2>Registrar incidencia</h2>
+            <p class="subtitle">Rellena el formulario para notificar una incidencia en la vía pública.</p>
+
+            <form th:action="@{/ciudadano/incidencias/registrar}" method="post">
+                <div class="form-group">
+                    <label for="descripcion">Descripción</label>
+                    <textarea id="descripcion" name="descripcion" placeholder="Describe la incidencia con el mayor detalle posible..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="ubicacion">Ubicación</label>
+                    <input type="text" id="ubicacion" name="ubicacion" placeholder="Ej: Calle Mayor, 12, Madrid" required />
+                </div>
+                <div class="form-group">
+                    <label>Categorías <span style="font-weight:400;text-transform:none;font-size:.75rem;color:#94a3b8">(selecciona al menos una)</span></label>
+                    <div class="checkbox-grid" id="categoriasGrid">
+                        <label class="checkbox-item" th:each="cat : ${categorias}">
+                            <input type="checkbox" name="categorias" th:value="${cat.name()}" />
+                            <span th:text="${cat.descripcion}"></span>
+                        </label>
+                    </div>
+                    <p id="catError" style="display:none;color:#dc2626;font-size:.8rem;margin-top:6px">Selecciona al menos una categoría.</p>
+                </div>
+                <button type="submit" class="btn-submit" onclick="return validarCategorias()">Registrar incidencia</button>
+            </form>
+
+            <a class="back-link" href="/ciudadano/incidencias/mis-incidencias">← Volver a mis incidencias</a>
+        </div>
+    </div>
+    <script>
+    function validarCategorias() {
+        var checks = document.querySelectorAll('input[name="categorias"]:checked');
+        var err = document.getElementById('catError');
+        if (checks.length === 0) { err.style.display = 'block'; return false; }
+        err.style.display = 'none';
+        return true;
+    }
+    </script>
+</body>
+</html>

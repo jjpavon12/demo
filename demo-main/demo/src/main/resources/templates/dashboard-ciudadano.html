@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Ciudadano — GIU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
+        nav.navbar {
+            background: #1d4ed8;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.15);
+        }
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-logo {
+            background: rgba(255,255,255,.2);
+            color: #fff;
+            width: 34px; height: 34px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .8rem; font-weight: 700;
+        }
+        .nav-title { color: #fff; font-weight: 600; font-size: .95rem; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-email { color: rgba(255,255,255,.8); font-size: .8rem; }
+        .nav-logout {
+            color: #fff;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: rgba(255,255,255,.15);
+            font-size: .825rem;
+            font-weight: 500;
+            transition: background .14s;
+        }
+        .nav-logout:hover { background: rgba(255,255,255,.28); }
+        .container { max-width: 1100px; margin: 36px auto; padding: 0 24px; }
+        .page-header {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px 28px;
+            margin-bottom: 28px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .page-header h2 { font-size: 1.15rem; font-weight: 600; color: #0f172a; margin-bottom: 3px; }
+        .page-header p { color: #64748b; font-size: .84rem; }
+        .role-badge {
+            background: #eff6ff;
+            color: #1d4ed8;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: .78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+        }
+        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px; }
+        .feature-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 22px 20px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            border-top: 3px solid #1d4ed8;
+        }
+        .feature-card h3 { font-size: .9rem; font-weight: 600; color: #0f172a; margin-bottom: 8px; }
+        .feature-card p { color: #64748b; font-size: .82rem; margin-bottom: 16px; line-height: 1.5; }
+        .feature-card a {
+            display: inline-block;
+            background: #1d4ed8;
+            color: #fff;
+            text-decoration: none;
+            padding: 7px 16px;
+            border-radius: 6px;
+            font-size: .82rem;
+            font-weight: 600;
+            transition: background .14s;
+        }
+        .feature-card a:hover { background: #1e40af; }
+        .feature-card-disabled { border-top-color: #e2e8f0; }
+        .feature-card-disabled h3 { color: #94a3b8; }
+        .feature-card-disabled p { color: #cbd5e1; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="nav-logo">GIU</div>
+            <span class="nav-title">Portal Ciudadano</span>
+        </div>
+        <div class="nav-right">
+            <span class="nav-email" th:text="${usuario.email}"></span>
+            <a href="/logout" class="nav-logout">Cerrar sesión</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <div>
+                <h2>Bienvenido al portal</h2>
+                <p>Gestiona tus incidencias urbanas desde aquí.</p>
+            </div>
+            <span class="role-badge" th:text="${rol}"></span>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <h3>Registrar incidencia</h3>
+                <p>Notifica una nueva incidencia en la vía pública de tu municipio.</p>
+                <a href="/ciudadano/incidencias/registrar">Registrar</a>
+            </div>
+            <div class="feature-card">
+                <h3>Mis incidencias</h3>
+                <p>Consulta el estado de las incidencias que has enviado.</p>
+                <a href="/ciudadano/incidencias/mis-incidencias">Ver incidencias</a>
+            </div>
+            <div class="feature-card feature-card-disabled">
+                <h3>Mi información</h3>
+                <p>Visualiza y actualiza tus datos de perfil.</p>
+            </div>
+            <div class="feature-card feature-card-disabled">
+                <h3>Soporte</h3>
+                <p>Contacta con el equipo de atención al ciudadano.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

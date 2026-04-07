@@ -1,0 +1,219 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Técnico — GIU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --accent: #0284c7; --accent-dark: #0369a1; --accent-bg: #f0f9ff; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
+        nav.navbar {
+            background: var(--accent);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.15);
+        }
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-logo {
+            background: rgba(255,255,255,.2);
+            color: #fff;
+            width: 34px; height: 34px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .8rem; font-weight: 700;
+        }
+        .nav-title { color: #fff; font-weight: 600; font-size: .95rem; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-email { color: rgba(255,255,255,.8); font-size: .8rem; }
+        .nav-role {
+            background: rgba(255,255,255,.2);
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: .73rem;
+            font-weight: 600;
+        }
+        .nav-logout {
+            color: #fff;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: rgba(255,255,255,.15);
+            font-size: .82rem;
+            font-weight: 500;
+            transition: background .14s;
+        }
+        .nav-logout:hover { background: rgba(255,255,255,.28); }
+        .container { max-width: 1200px; margin: 32px auto; padding: 0 24px; }
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+        .page-header h2 { font-size: 1.1rem; font-weight: 700; color: #0f172a; }
+        .stat-chip {
+            background: var(--accent-bg);
+            color: var(--accent-dark);
+            border: 1px solid #bae6fd;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: .8rem;
+            font-weight: 600;
+        }
+        .quick-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 28px; }
+        .quick-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 16px 18px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.07);
+            border-left: 3px solid var(--accent);
+        }
+        .quick-card h4 { font-size: .84rem; font-weight: 600; color: #0f172a; margin-bottom: 4px; }
+        .quick-card p { font-size: .77rem; color: #94a3b8; line-height: 1.4; }
+        .section-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            overflow: hidden;
+        }
+        .section-header {
+            padding: 16px 22px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .section-header h3 { font-size: .95rem; font-weight: 600; color: #0f172a; }
+        .empty-msg {
+            padding: 48px 24px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: .9rem;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: #f8fafc;
+            padding: 11px 16px;
+            text-align: left;
+            font-size: .75rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        td {
+            padding: 13px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: .875rem;
+            color: #334155;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fafafa; }
+        .td-id { color: #94a3b8; font-size: .8rem; }
+        .cat-tag {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: .73rem;
+            font-weight: 600;
+            margin: 1px 3px 1px 0;
+        }
+        .desc-link {
+            color: var(--accent);
+            cursor: pointer;
+            text-decoration: none;
+            font-size: .82rem;
+            font-weight: 500;
+            border-bottom: 1px dashed var(--accent);
+        }
+        .desc-link:hover { color: var(--accent-dark); }
+        .estado-select {
+            padding: 5px 10px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: .8rem;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition: border-color .14s;
+            outline: none;
+            min-width: 150px;
+        }
+        .estado-select:focus { border-color: var(--accent); }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            inset: 0;
+            background: rgba(0,0,0,.45);
+        }
+        .modal-content {
+            background: #fff;
+            margin: 6% auto;
+            padding: 28px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 580px;
+            box-shadow: 0 8px 32px rgba(0,0,0,.18);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .modal-header h3 { font-size: 1rem; font-weight: 600; color: #0f172a; margin: 0; }
+        .close-modal { color: #94a3b8; font-size: 1.4rem; cursor: pointer; line-height: 1; }
+        .close-modal:hover { color: #374151; }
+        .modal-body { color: #475569; font-size: .9rem; line-height: 1.65; margin-bottom: 20px; }
+        .modal-footer button {
+            padding: 8px 18px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: .85rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background .14s;
+        }
+        .modal-footer button:hover { background: var(--accent-dark); }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="nav-logo">GIU</div>
+            <span class="nav-title">Panel Técnico</span>
+        </div>
+        <div class="nav-right">
+            <span class="nav-email" th:text="${usuario.email}"></span>
+            <span class="nav-role" th:text="${rol}"></span>
+            <a href="/logout" class="nav-logout">Cerrar sesión</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="section-card" style="max-width: 720px; margin: 60px auto; text-align: center;">
+            <div class="section-header" style="justify-content: center;">
+                <h3>Panel Técnico</h3>
+            </div>
+            <div class="empty-msg" style="padding: 64px 24px; font-size: 1rem;">
+                Próximamente
+            </div>
+        </div>
+    </div>
+</body>
+</html>

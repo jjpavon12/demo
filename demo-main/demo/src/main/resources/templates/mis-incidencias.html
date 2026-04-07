@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Incidencias — GIU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
+        nav.navbar {
+            background: #1d4ed8;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.15);
+        }
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-logo {
+            background: rgba(255,255,255,.2);
+            color: #fff;
+            width: 34px; height: 34px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .8rem; font-weight: 700;
+        }
+        .nav-title { color: #fff; font-weight: 600; font-size: .95rem; }
+        .nav-right { display: flex; align-items: center; gap: 10px; }
+        .nav-link {
+            color: #fff;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: rgba(255,255,255,.15);
+            font-size: .82rem;
+            font-weight: 500;
+            transition: background .14s;
+        }
+        .nav-link:hover { background: rgba(255,255,255,.28); }
+        .nav-link-ghost { background: rgba(255,255,255,.08); }
+        .container { max-width: 900px; margin: 36px auto; padding: 0 24px; }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .page-header h2 { font-size: 1.15rem; font-weight: 700; color: #0f172a; }
+        .btn-nueva {
+            background: #1d4ed8;
+            color: #fff;
+            text-decoration: none;
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: .84rem;
+            font-weight: 600;
+            transition: background .14s, box-shadow .14s;
+        }
+        .btn-nueva:hover { background: #1e40af; box-shadow: 0 4px 14px rgba(29,78,216,.3); }
+        .alert-success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            padding: 11px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: .875rem;
+        }
+        .empty-state {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            text-align: center;
+            padding: 56px 24px;
+            color: #94a3b8;
+        }
+        .empty-state p { font-size: .95rem; margin-bottom: 20px; }
+        .incidencia-card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            margin-bottom: 14px;
+            padding: 18px 22px;
+            border-left: 4px solid #e2e8f0;
+        }
+        .incidencia-card.estado-PENDIENTE_VALIDACION { border-left-color: #f59e0b; }
+        .incidencia-card.estado-VALIDADA { border-left-color: #4ade80; }
+        .incidencia-card.estado-ASIGNADA { border-left-color: #818cf8; }
+        .incidencia-card.estado-EN_CURSO { border-left-color: #60a5fa; }
+        .incidencia-card.estado-RESUELTA { border-left-color: #34d399; }
+        .incidencia-card.estado-CERRADA { border-left-color: #94a3b8; }
+        .incidencia-card.estado-RECHAZADA { border-left-color: #f87171; }
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        .card-categoria { font-weight: 600; color: #0f172a; font-size: .9rem; }
+        .card-categorias { display: flex; flex-wrap: wrap; gap: 5px; }
+        .card-categoria-tag {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: .76rem;
+            font-weight: 600;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: .73rem;
+            font-weight: 600;
+        }
+        .badge-PENDIENTE_VALIDACION { background: #fef3c7; color: #92400e; }
+        .badge-VALIDADA { background: #dcfce7; color: #166534; }
+        .badge-ASIGNADA { background: #e0e7ff; color: #3730a3; }
+        .badge-EN_CURSO { background: #dbeafe; color: #1e40af; }
+        .badge-RESUELTA { background: #d1fae5; color: #065f46; }
+        .badge-CERRADA { background: #e2e8f0; color: #334155; }
+        .badge-RECHAZADA { background: #fee2e2; color: #991b1b; }
+        .card-descripcion { color: #475569; font-size: .875rem; margin-bottom: 10px; line-height: 1.55; }
+        .card-meta { display: flex; gap: 18px; font-size: .78rem; color: #94a3b8; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="nav-logo">GIU</div>
+            <span class="nav-title">Portal Ciudadano</span>
+        </div>
+        <div class="nav-right">
+            <a href="/dashboard/ciudadano" class="nav-link">← Panel principal</a>
+            <a href="/logout" class="nav-link nav-link-ghost">Cerrar sesión</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h2>Mis Incidencias</h2>
+            <a href="/ciudadano/incidencias/registrar" class="btn-nueva">+ Nueva incidencia</a>
+        </div>
+
+        <div th:if="${param.exito}" class="alert-success">
+            Incidencia registrada correctamente. En breve será revisada por el equipo.
+        </div>
+
+        <div th:if="${#lists.isEmpty(incidencias)}" class="empty-state">
+            <p>Todavía no tienes incidencias registradas.</p>
+            <a href="/ciudadano/incidencias/registrar" class="btn-nueva">Registrar mi primera incidencia</a>
+        </div>
+
+        <div th:each="inc : ${incidencias}"
+             th:classappend="'incidencia-card estado-' + ${inc.estado.name()}"
+             class="incidencia-card">
+            <div class="card-top">
+                <div class="card-categorias">
+                    <span class="card-categoria-tag" th:each="cat : ${inc.categorias}" th:text="${cat.descripcion}"></span>
+                </div>
+                <span class="badge"
+                      th:classappend="'badge-' + ${inc.estado.name()}"
+                      th:text="${inc.estado.descripcion}">
+                </span>
+            </div>
+            <p class="card-descripcion" th:text="${inc.descripcion}"></p>
+            <div class="card-meta">
+                <span>📍 <span th:text="${inc.ubicacion}"></span></span>
+                <span>🗓 <span th:text="${#temporals.format(inc.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span></span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
