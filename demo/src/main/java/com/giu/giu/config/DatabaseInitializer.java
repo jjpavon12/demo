@@ -28,16 +28,16 @@ public class DatabaseInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        ensureValidadoColumn();
+        ensureActivoColumn();
         ensureAdminUser();
     }
 
-    private void ensureValidadoColumn() {
+    private void ensureActivoColumn() {
         List<String> columns = jdbcTemplate.query("PRAGMA table_info('usuarios')",
             (rs, rowNum) -> rs.getString("name"));
 
-        if (!columns.contains("validado")) {
-            jdbcTemplate.execute("ALTER TABLE usuarios ADD COLUMN validado INTEGER NOT NULL DEFAULT 1");
+        if (!columns.contains("activo")) {
+            jdbcTemplate.execute("ALTER TABLE usuarios ADD COLUMN activo INTEGER NOT NULL DEFAULT 1");
         }
     }
 
@@ -47,7 +47,7 @@ public class DatabaseInitializer implements ApplicationRunner {
             admin.setEmail("admin@admin");
             admin.setPassword(passwordEncoder.encode("123456"));
             admin.setRol(Rol.ADMINISTRADOR);
-            admin.setValidado(true);
+            admin.setActivo(true);
             return usuarioRepository.save(admin);
         });
     }

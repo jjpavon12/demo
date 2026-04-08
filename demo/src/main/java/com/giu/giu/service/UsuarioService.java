@@ -28,7 +28,7 @@ public class UsuarioService {
 
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
-            if (!usuario.isValidado()) {
+            if (!usuario.isActivo()) {
                 return new LoginResponse(null, null, null, "Usuario no habilitado. Espera validación del administrador.");
             }
             // En producción, deberías comparar la contraseña hasheada
@@ -61,7 +61,6 @@ public class UsuarioService {
         nuevoUsuario.setEmail(email);
         nuevoUsuario.setPassword(passwordEncoder.encode(password));
         nuevoUsuario.setRol(rol);
-        nuevoUsuario.setValidado(validado);
 
         // Operadores y técnicos requieren aprobación del administrador
         boolean requiereAprobacion = (rol == Rol.OPERADOR || rol == Rol.TECNICO);
