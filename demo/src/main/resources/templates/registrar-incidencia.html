@@ -204,6 +204,39 @@
             margin-bottom: 6px;
             display: none;
         }
+        .ubicacion-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .ubicacion-row .search-wrapper {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        .btn-mi-ubicacion {
+            padding: 10px 14px;
+            background: #fff;
+            color: #1d4ed8;
+            border: 1.5px solid #1d4ed8;
+            border-radius: 8px;
+            font-size: .82rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background .14s, color .14s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-mi-ubicacion:hover {
+            background: #1d4ed8;
+            color: #fff;
+        }
+        .btn-mi-ubicacion:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -230,11 +263,14 @@
                 </div>
                 <div class="form-group">
                     <label for="ubicacionBuscar">Ubicación</label>
-                    <p class="map-hint">Busca una dirección o haz clic en el mapa para marcar la ubicación exacta.</p>
-                    <div class="search-wrapper">
-                        <input type="text" id="ubicacionBuscar" placeholder="Escribe una dirección… (ej: Calle Mayor, 12, Madrid)" autocomplete="off" />
-                        <div class="search-spinner" id="searchSpinner"></div>
-                        <div class="suggestions" id="sugerencias"></div>
+                    <p class="map-hint">Busca una dirección, haz clic en el mapa, o usa tu ubicación actual.</p>
+                    <div class="ubicacion-row">
+                        <div class="search-wrapper">
+                            <input type="text" id="ubicacionBuscar" placeholder="Escribe una dirección… (ej: Calle Mayor, 12, Madrid)" autocomplete="off" />
+                            <div class="search-spinner" id="searchSpinner"></div>
+                            <div class="suggestions" id="sugerencias"></div>
+                        </div>
+                        <button type="button" class="btn-mi-ubicacion" id="btnMiUbicacion" onclick="usarMiUbicacion()">📍 Mi ubicación</button>
                     </div>
                     <p id="searchError" class="search-error">No se encontró la dirección. Intenta con otra o haz clic en el mapa.</p>
                     <div id="map-registrar"></div>
@@ -498,11 +534,33 @@
         }
     });
 
-    // Intentar geolocalización del navegador
-    if (navigator.geolocation) {
+    // Botón "Mi ubicación"
+    function usarMiUbicacion() {
+        var btn = document.getElementById('btnMiUbicacion');
+        if (!navigator.geolocation) {
+            alert('Tu navegador no soporta geolocalización.');
+            return;
+        }
+        btn.disabled = true;
+        btn.textContent = '⏳ Localizando…';
+
         navigator.geolocation.getCurrentPosition(function(pos) {
-            map.setView([pos.coords.latitude, pos.coords.longitude], 15);
-        }, function() {}, { timeout: 5000 });
+            var lat = pos.coords.latitude;
+            var lng = pos.coords.longitude;
+            colocarMarcador(lat, lng);
+            map.setView([lat, lng], 17);
+            reverseGeocode(lat, lng);
+            btn.disabled = false;
+            btn.textContent = '📍 Mi ubicación';
+        }, function(err) {
+            btn.disabled = false;
+            btn.textContent = '📍 Mi ubicación';
+            if (err.code === 1) {
+                alert('Has denegado el acceso a tu ubicación. Actívalo en los permisos del navegador.');
+            } else {
+                alert('No se pudo obtener tu ubicación. Intenta de nuevo.');
+            }
+        }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
     }
     </script>
 </body>
