@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrar Incidencia — GIU</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
@@ -126,6 +128,82 @@
             text-decoration: none;
         }
         .back-link:hover { color: #1d4ed8; text-decoration: underline; }
+        #map-registrar {
+            height: 300px;
+            border-radius: 8px;
+            border: 1.5px solid #e2e8f0;
+            margin-bottom: 8px;
+            z-index: 0;
+        }
+        .map-hint { font-size: .78rem; color: #64748b; margin-bottom: 4px; }
+        .coords-display {
+            font-size: .78rem;
+            color: #1d4ed8;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+        .search-wrapper {
+            position: relative;
+            margin-bottom: 8px;
+        }
+        .search-wrapper input {
+            width: 100%;
+            padding-right: 40px;
+        }
+        .search-spinner {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px; height: 18px;
+            border: 2px solid #e2e8f0;
+            border-top-color: #1d4ed8;
+            border-radius: 50%;
+            animation: spin .6s linear infinite;
+            display: none;
+        }
+        @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: #fff;
+            border: 1.5px solid #1d4ed8;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 220px;
+            overflow-y: auto;
+            box-shadow: 0 8px 24px rgba(0,0,0,.12);
+            display: none;
+        }
+        .suggestions.show { display: block; }
+        .suggestion-item {
+            padding: 10px 13px;
+            font-size: .84rem;
+            color: #334155;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background .1s;
+        }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:hover, .suggestion-item.active {
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+        .suggestion-item small {
+            display: block;
+            color: #94a3b8;
+            font-size: .74rem;
+            margin-top: 2px;
+        }
+        .search-error {
+            color: #dc2626;
+            font-size: .78rem;
+            margin-bottom: 6px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -151,8 +229,21 @@
                     <textarea id="descripcion" name="descripcion" placeholder="Describe la incidencia con el mayor detalle posible..." required></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="ubicacion">Ubicación</label>
-                    <input type="text" id="ubicacion" name="ubicacion" placeholder="Ej: Calle Mayor, 12, Madrid" required />
+                    <label for="ubicacionBuscar">Ubicación</label>
+                    <p class="map-hint">Busca una dirección o haz clic en el mapa para marcar la ubicación exacta.</p>
+                    <div class="search-wrapper">
+                        <input type="text" id="ubicacionBuscar" placeholder="Escribe una dirección… (ej: Calle Mayor, 12, Madrid)" autocomplete="off" />
+                        <div class="search-spinner" id="searchSpinner"></div>
+                        <div class="suggestions" id="sugerencias"></div>
+                    </div>
+                    <p id="searchError" class="search-error">No se encontró la dirección. Intenta con otra o haz clic en el mapa.</p>
+                    <div id="map-registrar"></div>
+                    <p id="coordsInfo" class="coords-display"></p>
+                    <input type="hidden" id="latitud" name="latitud" />
+                    <input type="hidden" id="longitud" name="longitud" />
+                    <input type="hidden" id="ubicacion" name="ubicacion" />
+                    <p id="ubicacionDisplay" style="font-size:.85rem;color:#334155;margin-top:6px;min-height:1.2em;"></p>
+                    <p id="ubicacionError" style="display:none;color:#dc2626;font-size:.8rem;margin-top:4px">Selecciona una ubicación en el mapa o busca una dirección.</p>
                 </div>
                 <div class="form-group">
                     <label>Categorías <span style="font-weight:400;text-transform:none;font-size:.75rem;color:#94a3b8">(selecciona al menos una)</span></label>
@@ -164,19 +255,254 @@
                     </div>
                     <p id="catError" style="display:none;color:#dc2626;font-size:.8rem;margin-top:6px">Selecciona al menos una categoría.</p>
                 </div>
-                <button type="submit" class="btn-submit" onclick="return validarCategorias()">Registrar incidencia</button>
+                <button type="submit" class="btn-submit" onclick="return validarFormulario()">Registrar incidencia</button>
             </form>
 
             <a class="back-link" href="/ciudadano/incidencias/mis-incidencias">← Volver a mis incidencias</a>
         </div>
     </div>
     <script>
-    function validarCategorias() {
+    function validarFormulario() {
         var checks = document.querySelectorAll('input[name="categorias"]:checked');
-        var err = document.getElementById('catError');
-        if (checks.length === 0) { err.style.display = 'block'; return false; }
-        err.style.display = 'none';
-        return true;
+        var catErr = document.getElementById('catError');
+        var ubErr = document.getElementById('ubicacionError');
+        var lat = document.getElementById('latitud').value;
+        var ub = document.getElementById('ubicacion').value;
+        var ok = true;
+
+        if (checks.length === 0) { catErr.style.display = 'block'; ok = false; }
+        else { catErr.style.display = 'none'; }
+
+        if (!lat || !ub) { ubErr.style.display = 'block'; ok = false; }
+        else { ubErr.style.display = 'none'; }
+
+        return ok;
+    }
+
+    // --- Mapa Leaflet ---
+    var map = L.map('map-registrar').setView([40.4168, -3.7038], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(map);
+
+    var marker = null;
+
+    function colocarMarcador(lat, lng) {
+        var latlng = L.latLng(lat, lng);
+        document.getElementById('latitud').value = lat;
+        document.getElementById('longitud').value = lng;
+        document.getElementById('coordsInfo').textContent = '📍 ' + lat.toFixed(6) + ', ' + lng.toFixed(6);
+        document.getElementById('ubicacionError').style.display = 'none';
+        document.getElementById('searchError').style.display = 'none';
+
+        if (marker) {
+            marker.setLatLng(latlng);
+        } else {
+            marker = L.marker(latlng, { draggable: true }).addTo(map);
+            marker.on('dragend', function(ev) {
+                var pos = ev.target.getLatLng();
+                colocarMarcador(pos.lat, pos.lng);
+                reverseGeocode(pos.lat, pos.lng);
+            });
+        }
+    }
+
+    function formatearDireccion(data, busquedaUsuario) {
+        if (!data || !data.address) return data ? data.display_name : '';
+        var a = data.address;
+        var partes = [];
+
+        // Calle + número
+        var calle = a.road || a.pedestrian || a.footway || a.street || '';
+        var numero = a.house_number || '';
+
+        // Si Nominatim no devuelve house_number, intentar extraerlo:
+        if (calle && !numero) {
+            // 1) Del display_name de Nominatim
+            var dn = data.display_name;
+            var match = dn.match(new RegExp('(?:,\\s*)(\\d+[\\w]*)(?:,\\s*' + calle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'i'))
+                     || dn.match(new RegExp(calle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?:[,\\s]+)(\\d+[\\w]*)', 'i'))
+                     || dn.match(/^[^,]*?,\s*(\d+[A-Za-z]?)\s*,/);
+            if (match) numero = match[1];
+
+            // 2) De lo que el usuario escribió en el buscador
+            if (!numero && busquedaUsuario) {
+                var qMatch = busquedaUsuario.match(/\b(\d+[A-Za-z]?)\b/);
+                if (qMatch) numero = qMatch[1];
+            }
+        }
+
+        if (calle) {
+            partes.push(numero ? calle + ' ' + numero : calle);
+        }
+
+        // Código postal
+        if (a.postcode) partes.push(a.postcode);
+
+        // Ciudad
+        var ciudad = a.city || a.town || a.village || a.municipality || '';
+        if (ciudad) partes.push(ciudad);
+
+        return partes.length > 0 ? partes.join(', ') : data.display_name;
+    }
+
+    function actualizarUbicacionTexto(texto) {
+        document.getElementById('ubicacion').value = texto;
+        document.getElementById('ubicacionDisplay').textContent = '📍 ' + texto;
+        document.getElementById('ubicacionBuscar').value = texto;
+    }
+
+    // Clic en el mapa → mover marcador + geocodificación inversa
+    map.on('click', function(e) {
+        colocarMarcador(e.latlng.lat, e.latlng.lng);
+        reverseGeocode(e.latlng.lat, e.latlng.lng);
+    });
+
+    // Geocodificación inversa (coordenadas → dirección)
+    function reverseGeocode(lat, lng) {
+        fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&zoom=18&addressdetails=1')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data && data.address) {
+                    actualizarUbicacionTexto(formatearDireccion(data));
+                }
+            })
+            .catch(function() {});
+    }
+
+    // Geocodificación directa — autocomplete con sugerencias
+    var debounceTimer = null;
+    var activeIndex = -1;
+    var sugerenciasData = [];
+    var sugerenciasDiv = document.getElementById('sugerencias');
+    var spinner = document.getElementById('searchSpinner');
+    var inputBuscar = document.getElementById('ubicacionBuscar');
+
+    inputBuscar.addEventListener('input', function() {
+        var query = this.value.trim();
+        clearTimeout(debounceTimer);
+        activeIndex = -1;
+
+        if (query.length < 3) {
+            cerrarSugerencias();
+            return;
+        }
+
+        spinner.style.display = 'block';
+        debounceTimer = setTimeout(function() {
+            fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query) + '&limit=5&addressdetails=1')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    spinner.style.display = 'none';
+                    sugerenciasData = data || [];
+                    renderSugerencias();
+                })
+                .catch(function() {
+                    spinner.style.display = 'none';
+                    cerrarSugerencias();
+                });
+        }, 350);
+    });
+
+    function renderSugerencias() {
+        sugerenciasDiv.innerHTML = '';
+        if (sugerenciasData.length === 0) {
+            cerrarSugerencias();
+            return;
+        }
+        sugerenciasData.forEach(function(item, i) {
+            var div = document.createElement('div');
+            div.className = 'suggestion-item';
+            div.setAttribute('data-index', i);
+
+            var corta = formatearDireccion(item, inputBuscar.value.trim());
+            var a = item.address || {};
+            var extra = a.state || a.country || '';
+
+            div.innerHTML = corta + (extra ? '<small>' + extra + '</small>' : '');
+            div.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                seleccionarSugerencia(i);
+            });
+            sugerenciasDiv.appendChild(div);
+        });
+        sugerenciasDiv.classList.add('show');
+    }
+
+    function seleccionarSugerencia(i) {
+        var result = sugerenciasData[i];
+        if (!result) return;
+        var lat = parseFloat(result.lat);
+        var lng = parseFloat(result.lon);
+        var busqueda = inputBuscar.value.trim();
+        colocarMarcador(lat, lng);
+        actualizarUbicacionTexto(formatearDireccion(result, busqueda));
+        map.setView([lat, lng], 17);
+        cerrarSugerencias();
+    }
+
+    function cerrarSugerencias() {
+        sugerenciasDiv.classList.remove('show');
+        sugerenciasDiv.innerHTML = '';
+        sugerenciasData = [];
+        activeIndex = -1;
+    }
+
+    // Navegación con teclado
+    inputBuscar.addEventListener('keydown', function(e) {
+        var items = sugerenciasDiv.querySelectorAll('.suggestion-item');
+        if (!items.length) {
+            if (e.key === 'Enter') e.preventDefault();
+            return;
+        }
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeIndex = Math.min(activeIndex + 1, items.length - 1);
+            actualizarActivo(items);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeIndex = Math.max(activeIndex - 1, 0);
+            actualizarActivo(items);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (activeIndex >= 0) {
+                seleccionarSugerencia(activeIndex);
+            } else if (items.length > 0) {
+                seleccionarSugerencia(0);
+            }
+        } else if (e.key === 'Escape') {
+            cerrarSugerencias();
+        }
+    });
+
+    function actualizarActivo(items) {
+        items.forEach(function(el, i) {
+            el.classList.toggle('active', i === activeIndex);
+        });
+        if (items[activeIndex]) {
+            items[activeIndex].scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    // Cerrar sugerencias al perder foco
+    inputBuscar.addEventListener('blur', function() {
+        setTimeout(cerrarSugerencias, 150);
+    });
+
+    // Buscar al pulsar Enter en el campo de búsqueda
+    document.getElementById('ubicacionBuscar').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+        }
+    });
+
+    // Intentar geolocalización del navegador
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(pos) {
+            map.setView([pos.coords.latitude, pos.coords.longitude], 15);
+        }, function() {}, { timeout: 5000 });
     }
     </script>
 </body>

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis Incidencias — GIU</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
@@ -125,6 +127,19 @@
         .badge-RECHAZADA { background: #fee2e2; color: #991b1b; }
         .card-descripcion { color: #475569; font-size: .875rem; margin-bottom: 10px; line-height: 1.55; }
         .card-meta { display: flex; gap: 18px; font-size: .78rem; color: #94a3b8; }
+        #map-mis-incidencias {
+            height: 350px;
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            margin-bottom: 24px;
+            z-index: 0;
+        }
+        .map-section-title {
+            font-size: .95rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 12px;
+        }
     </style>
 </head>
 <body>
@@ -148,6 +163,10 @@
         <div th:if="${param.exito}" class="alert-success">
             Incidencia registrada correctamente. En breve será revisada por el equipo.
         </div>
+
+        <!-- Mapa de mis incidencias -->
+        <p class="map-section-title">📍 Mapa de mis incidencias</p>
+        <div id="map-mis-incidencias"></div>
 
         <div th:if="${#lists.isEmpty(incidencias)}" class="empty-state">
             <p>Todavía no tienes incidencias registradas.</p>
@@ -173,5 +192,53 @@
             </div>
         </div>
     </div>
+
+    <script>
+    var estadoColors = {
+        PENDIENTE_VALIDACION: '#f59e0b',
+        VALIDADA: '#4ade80',
+        ASIGNADA: '#818cf8',
+        EN_CURSO: '#60a5fa',
+        RESUELTA: '#34d399',
+        CERRADA: '#94a3b8',
+        RECHAZADA: '#f87171'
+    };
+
+    var map = L.map('map-mis-incidencias').setView([40.4168, -3.7038], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(map);
+
+    fetch('/api/incidencias/mis')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var bounds = [];
+            data.forEach(function(inc) {
+                if (inc.latitud && inc.longitud) {
+                    var color = estadoColors[inc.estado] || '#64748b';
+                    var circle = L.circleMarker([inc.latitud, inc.longitud], {
+                        radius: 8,
+                        fillColor: color,
+                        color: '#fff',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.85
+                    }).addTo(map);
+                    circle.bindPopup(
+                        '<strong>' + inc.categorias.join(', ') + '</strong><br/>' +
+                        '<span style="color:' + color + ';font-weight:600">' + inc.estadoDesc + '</span><br/>' +
+                        inc.descripcion.substring(0, 100) + (inc.descripcion.length > 100 ? '...' : '') + '<br/>' +
+                        '<small>📍 ' + inc.ubicacion + '</small><br/>' +
+                        '<small>🗓 ' + inc.fecha + '</small>'
+                    );
+                    bounds.push([inc.latitud, inc.longitud]);
+                }
+            });
+            if (bounds.length > 0) {
+                map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+            }
+        });
+    </script>
 </body>
 </html>

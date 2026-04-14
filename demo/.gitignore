@@ -36,6 +36,11 @@ build/
 ### VS Code ###
 .vscode/
 
+### Docker ###
+Dockerfile
+docker-compose.yml
+data/
+
 ### Local environment ###
 .local_jdk/
 .venv/

@@ -18,10 +18,12 @@ public class IncidenciaService {
     @Autowired
     private IncidenciaRepository incidenciaRepository;
 
-    public Incidencia registrar(String descripcion, String ubicacion, Set<CategoriaIncidencia> categorias, Usuario usuario) {
+    public Incidencia registrar(String descripcion, String ubicacion, Double latitud, Double longitud, Set<CategoriaIncidencia> categorias, Usuario usuario) {
         Incidencia incidencia = new Incidencia();
         incidencia.setDescripcion(descripcion);
         incidencia.setUbicacion(ubicacion);
+        incidencia.setLatitud(latitud);
+        incidencia.setLongitud(longitud);
         incidencia.setCategorias(categorias);
         incidencia.setEstado(EstadoIncidencia.PENDIENTE_VALIDACION);
         incidencia.setUsuario(usuario);

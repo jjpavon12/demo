@@ -19,6 +19,12 @@ public class Incidencia {
     @Column(nullable = false)
     private String ubicacion;
 
+    @Column
+    private Double latitud;
+
+    @Column
+    private Double longitud;
+
     @ElementCollection(targetClass = CategoriaIncidencia.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "incidencia_categorias", joinColumns = @JoinColumn(name = "incidencia_id"))
     @Enumerated(EnumType.STRING)
@@ -69,6 +75,22 @@ public class Incidencia {
 
     public void setUbicacion(String ubicacion) {
         this.ubicacion = ubicacion;
+    }
+
+    public Double getLatitud() {
+        return latitud;
+    }
+
+    public void setLatitud(Double latitud) {
+        this.latitud = latitud;
+    }
+
+    public Double getLongitud() {
+        return longitud;
+    }
+
+    public void setLongitud(Double longitud) {
+        this.longitud = longitud;
     }
 
     public Set<CategoriaIncidencia> getCategorias() {

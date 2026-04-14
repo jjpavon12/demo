@@ -136,6 +136,7 @@ public class DashboardController {
 
     @PostMapping("/tecnico/cambiar-estado")
     public String cambiarEstadoTecnico(@RequestParam Long id, @RequestParam EstadoIncidencia estado) {
+        incidenciaService.cambiarEstado(id, estado);
         return "redirect:/dashboard/tecnico";
     }
 

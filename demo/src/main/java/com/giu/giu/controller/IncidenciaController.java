@@ -42,12 +42,14 @@ public class IncidenciaController {
     @PostMapping("/registrar")
     public String registrarIncidencia(@RequestParam String descripcion,
                                       @RequestParam String ubicacion,
+                                      @RequestParam(required = false) Double latitud,
+                                      @RequestParam(required = false) Double longitud,
                                       @RequestParam List<CategoriaIncidencia> categorias,
                                       Model model) {
         Usuario usuario = getUsuarioAutenticado();
         if (usuario == null) return "redirect:/login";
 
-        incidenciaService.registrar(descripcion, ubicacion, new HashSet<>(categorias), usuario);
+        incidenciaService.registrar(descripcion, ubicacion, latitud, longitud, new HashSet<>(categorias), usuario);
         return "redirect:/ciudadano/incidencias/mis-incidencias?exito";
     }
 

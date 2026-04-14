@@ -23,6 +23,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/login", "/registro", "/api/auth/login", "/api/auth/registro", "/hola").permitAll()
+                .requestMatchers("/api/incidencias/**").authenticated()
                 .requestMatchers("/dashboard/ciudadano", "/ciudadano/incidencias/**").hasRole("CIUDADANO")
                 .requestMatchers("/dashboard/operador", "/dashboard/operador/**").hasRole("OPERADOR")
                 .requestMatchers("/dashboard/tecnico", "/dashboard/tecnico/**").hasRole("TECNICO")
