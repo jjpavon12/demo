@@ -213,6 +213,57 @@
             </table>
         </div>
 
+        <!-- ========== SOLICITUDES DE CAMBIO DE ROL ========== -->
+        <div class="section-card">
+            <div class="section-header">
+                <h3>🔄 Solicitudes de cambio de rol</h3>
+                <span class="badge-count" th:text="${#lists.size(solicitudesRol)} + ' solicitud(es)'"></span>
+            </div>
+            <div th:if="${#lists.isEmpty(solicitudesRol)}" class="empty-msg">
+                No hay solicitudes de cambio de rol pendientes.
+            </div>
+            <table th:if="${!#lists.isEmpty(solicitudesRol)}">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Email</th>
+                        <th>Rol actual</th>
+                        <th>Rol solicitado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="u : ${solicitudesRol}">
+                        <td class="td-id" th:text="${u.id}"></td>
+                        <td th:text="${u.email}"></td>
+                        <td>
+                            <span class="role-badge"
+                                  th:classappend="'role-' + ${u.rol.name()}"
+                                  th:text="${u.rol.name()}"></span>
+                        </td>
+                        <td>
+                            <span class="role-badge"
+                                  th:classappend="'role-' + ${u.rolSolicitado.name()}"
+                                  th:text="${u.rolSolicitado.name()}"></span>
+                        </td>
+                        <td>
+                            <div class="btn-actions">
+                                <form method="post" th:action="@{/dashboard/admin/aprobar-rol}">
+                                    <input type="hidden" name="id" th:value="${u.id}"/>
+                                    <button type="submit" class="btn-aprobar">✓ Aprobar</button>
+                                </form>
+                                <form method="post" th:action="@{/dashboard/admin/denegar-rol}"
+                                      onsubmit="return confirm('¿Denegar la solicitud de cambio de rol?')">
+                                    <input type="hidden" name="id" th:value="${u.id}"/>
+                                    <button type="submit" class="btn-denegar">✗ Denegar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
         <!-- ========== TODOS LOS USUARIOS ========== -->
         <div class="section-card">
             <div class="section-header">

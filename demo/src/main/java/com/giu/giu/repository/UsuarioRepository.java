@@ -12,4 +12,5 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     List<Usuario> findByActivoFalse();
     List<Usuario> findByRolIn(List<Rol> roles);
     boolean existsByRol(Rol rol);
+    java.util.List<Usuario> findByRolSolicitadoIsNotNull();
 }

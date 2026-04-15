@@ -130,6 +130,51 @@ public class UsuarioService {
     }
 
     /**
+     * Solicita un cambio de rol (queda pendiente de aprobación del admin)
+     * Devuelve null si OK, o un mensaje de error
+     */
+    public String solicitarCambioRol(Long id, Rol nuevoRol) {
+        Optional<Usuario> opt = usuarioRepository.findById(id);
+        if (opt.isEmpty()) return "Usuario no encontrado";
+        Usuario usuario = opt.get();
+        if (usuario.getRol() == nuevoRol) return "Ya tienes ese rol";
+        if (nuevoRol == Rol.ADMINISTRADOR) return "No puedes solicitar el rol de Administrador";
+        usuario.setRolSolicitado(nuevoRol);
+        usuarioRepository.save(usuario);
+        return null;
+    }
+
+    /**
+     * Lista usuarios con solicitudes de cambio de rol pendientes
+     */
+    public java.util.List<Usuario> obtenerSolicitudesRol() {
+        return usuarioRepository.findByRolSolicitadoIsNotNull();
+    }
+
+    /**
+     * Aprueba la solicitud de cambio de rol
+     */
+    public void aprobarCambioRol(Long id) {
+        usuarioRepository.findById(id).ifPresent(u -> {
+            if (u.getRolSolicitado() != null) {
+                u.setRol(u.getRolSolicitado());
+                u.setRolSolicitado(null);
+                usuarioRepository.save(u);
+            }
+        });
+    }
+
+    /**
+     * Deniega la solicitud de cambio de rol
+     */
+    public void denegarCambioRol(Long id) {
+        usuarioRepository.findById(id).ifPresent(u -> {
+            u.setRolSolicitado(null);
+            usuarioRepository.save(u);
+        });
+    }
+
+    /**
      * Actualiza el perfil del ciudadano (email y/o contraseña, nunca el rol)
      * Devuelve null si OK, o un mensaje de error
      */

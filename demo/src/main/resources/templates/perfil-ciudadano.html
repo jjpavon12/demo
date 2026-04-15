@@ -216,6 +216,42 @@
 
                     <button type="submit" class="btn-save">Guardar cambios</button>
                 </form>
+
+                <hr class="divider"/>
+
+                <!-- Solicitud de cambio de rol -->
+                <p class="section-title">Solicitar cambio de rol</p>
+
+                <!-- Si hay solicitud pendiente -->
+                <div th:if="${usuario.rolSolicitado != null}"
+                     style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:.84rem;color:#92400e;">
+                    ⏳ Tienes una solicitud pendiente para cambiar a
+                    <strong th:text="${usuario.rolSolicitado.name()}"></strong>.
+                    Un administrador la revisará en breve.
+                </div>
+
+                <form th:if="${usuario.rolSolicitado == null}"
+                      method="post" th:action="@{/ciudadano/perfil/solicitar-rol}">
+                    <div class="form-group">
+                        <label for="rolSolicitado">Nuevo rol deseado</label>
+                        <select id="rolSolicitado" name="rolSolicitado"
+                                style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.88rem;font-family:inherit;color:#0f172a;outline:none;transition:border-color .14s;"
+                                onfocus="this.style.borderColor='#1d4ed8'" onblur="this.style.borderColor='#e2e8f0'">
+                            <th:block th:each="r : ${rolesDisponibles}">
+                                <option th:if="${r.name() != 'ADMINISTRADOR' and r != usuario.rol}"
+                                        th:value="${r.name()}"
+                                        th:text="${r.name()}"></option>
+                            </th:block>
+                        </select>
+                        <p class="form-hint">La solicitud quedará pendiente hasta que el administrador la apruebe o deniegue.</p>
+                    </div>
+                    <button type="submit" class="btn-save"
+                            style="background:#7c3aed;"
+                            onmouseover="this.style.background='#6d28d9'"
+                            onmouseout="this.style.background='#7c3aed'">
+                        Solicitar cambio de rol
+                    </button>
+                </form>
             </div>
         </div>
     </div>

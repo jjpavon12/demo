@@ -153,6 +153,7 @@ public class DashboardController {
             model.addAttribute("usuario", usuario);
             model.addAttribute("rol", "ADMINISTRADOR");
             model.addAttribute("pendientes", usuarioService.obtenerPendientes());
+            model.addAttribute("solicitudesRol", usuarioService.obtenerSolicitudesRol());
             model.addAttribute("todosUsuarios", usuarioService.obtenerTodos());
             return "dashboard-admin";
         }
@@ -169,6 +170,18 @@ public class DashboardController {
     @PostMapping("/admin/denegar-usuario")
     public String denegarUsuario(@RequestParam Long id) {
         usuarioService.denegarUsuario(id);
+        return "redirect:/dashboard/admin";
+    }
+
+    @PostMapping("/admin/aprobar-rol")
+    public String aprobarCambioRol(@RequestParam Long id) {
+        usuarioService.aprobarCambioRol(id);
+        return "redirect:/dashboard/admin";
+    }
+
+    @PostMapping("/admin/denegar-rol")
+    public String denegarCambioRol(@RequestParam Long id) {
+        usuarioService.denegarCambioRol(id);
         return "redirect:/dashboard/admin";
     }
 }

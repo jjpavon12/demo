@@ -23,6 +23,10 @@ public class Usuario {
     @Column(nullable = false)
     private boolean activo = true;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    private Rol rolSolicitado;
+
     public Usuario() {
     }
 
@@ -72,5 +76,13 @@ public class Usuario {
 
     public void setActivo(boolean activo) {
         this.activo = activo;
+    }
+
+    public Rol getRolSolicitado() {
+        return rolSolicitado;
+    }
+
+    public void setRolSolicitado(Rol rolSolicitado) {
+        this.rolSolicitado = rolSolicitado;
     }
 }

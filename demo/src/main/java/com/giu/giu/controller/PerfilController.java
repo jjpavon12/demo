@@ -1,5 +1,6 @@
 package com.giu.giu.controller;
 
+import com.giu.giu.model.Rol;
 import com.giu.giu.security.CustomUserDetails;
 import com.giu.giu.service.UsuarioService;
 import org.springframework.security.core.Authentication;
@@ -27,6 +28,8 @@ public class PerfilController {
             model.addAttribute("usuario", userDetails.getUsuario());
             model.addAttribute("exito", exito);
             model.addAttribute("error", error);
+            // Roles disponibles para solicitar (excluye ADMINISTRADOR y el rol actual)
+            model.addAttribute("rolesDisponibles", Rol.values());
             return "perfil-ciudadano";
         }
         return "redirect:/login";
@@ -65,5 +68,19 @@ public class PerfilController {
         }
 
         return "redirect:/ciudadano/perfil?exito=Perfil+actualizado+correctamente";
+    }
+
+    @PostMapping("/solicitar-rol")
+    public String solicitarRol(@RequestParam Rol rolSolicitado) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof CustomUserDetails userDetails)) {
+            return "redirect:/login";
+        }
+        Long id = userDetails.getUsuario().getId();
+        String error = usuarioService.solicitarCambioRol(id, rolSolicitado);
+        if (error != null) {
+            return "redirect:/ciudadano/perfil?error=" + error.replace(" ", "+");
+        }
+        return "redirect:/ciudadano/perfil?exito=Solicitud+enviada.+Un+administrador+la+revisará+en+breve";
     }
 }
