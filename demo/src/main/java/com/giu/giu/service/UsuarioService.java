@@ -128,4 +128,31 @@ public class UsuarioService {
     public java.util.List<Usuario> obtenerTodos() {
         return usuarioRepository.findAll();
     }
+
+    /**
+     * Actualiza el perfil del ciudadano (email y/o contraseña, nunca el rol)
+     * Devuelve null si OK, o un mensaje de error
+     */
+    public String actualizarPerfil(Long id, String nuevoEmail, String nuevaPassword) {
+        Optional<Usuario> opt = usuarioRepository.findById(id);
+        if (opt.isEmpty()) return "Usuario no encontrado";
+
+        Usuario usuario = opt.get();
+
+        // Validar que el nuevo email no esté ocupado por otro usuario
+        if (!usuario.getEmail().equals(nuevoEmail)) {
+            Optional<Usuario> existente = usuarioRepository.findByEmail(nuevoEmail);
+            if (existente.isPresent()) {
+                return "El email ya está en uso por otro usuario";
+            }
+            usuario.setEmail(nuevoEmail);
+        }
+
+        if (nuevaPassword != null && !nuevaPassword.isBlank()) {
+            usuario.setPassword(passwordEncoder.encode(nuevaPassword));
+        }
+
+        usuarioRepository.save(usuario);
+        return null;
+    }
 }

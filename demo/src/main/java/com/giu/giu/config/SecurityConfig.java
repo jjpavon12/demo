@@ -24,7 +24,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/login", "/registro", "/api/auth/login", "/api/auth/registro", "/hola").permitAll()
                 .requestMatchers("/api/incidencias/**").authenticated()
-                .requestMatchers("/dashboard/ciudadano", "/ciudadano/incidencias/**").hasRole("CIUDADANO")
+                .requestMatchers("/dashboard/ciudadano", "/ciudadano/**").hasRole("CIUDADANO")
                 .requestMatchers("/dashboard/operador", "/dashboard/operador/**").hasRole("OPERADOR")
                 .requestMatchers("/dashboard/tecnico", "/dashboard/tecnico/**").hasRole("TECNICO")
                 .requestMatchers("/dashboard/admin", "/dashboard/admin/**").hasRole("ADMINISTRADOR")

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil — GIU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
+        nav.navbar {
+            background: #1d4ed8;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.15);
+        }
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-logo {
+            background: rgba(255,255,255,.2);
+            color: #fff;
+            width: 34px; height: 34px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .8rem; font-weight: 700;
+        }
+        .nav-title { color: #fff; font-weight: 600; font-size: .95rem; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-email { color: rgba(255,255,255,.8); font-size: .8rem; }
+        .nav-logout {
+            color: #fff;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: rgba(255,255,255,.15);
+            font-size: .825rem;
+            font-weight: 500;
+            transition: background .14s;
+        }
+        .nav-logout:hover { background: rgba(255,255,255,.28); }
+        .container { max-width: 640px; margin: 40px auto; padding: 0 24px; }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #1d4ed8;
+            text-decoration: none;
+            font-size: .84rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+            transition: color .14s;
+        }
+        .back-link:hover { color: #1e40af; }
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.08);
+            overflow: hidden;
+        }
+        .card-header {
+            background: #1d4ed8;
+            padding: 24px 28px;
+            color: #fff;
+        }
+        .card-header h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+        .card-header p { font-size: .82rem; opacity: .8; }
+        .card-body { padding: 28px; }
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: .85rem;
+            font-weight: 500;
+            margin-bottom: 22px;
+        }
+        .alert-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .alert-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .section-title {
+            font-size: .78rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f8fafc;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-size: .82rem; color: #64748b; font-weight: 500; }
+        .info-value { font-size: .88rem; color: #0f172a; font-weight: 600; }
+        .role-badge {
+            background: #eff6ff;
+            color: #1d4ed8;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: .75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+        }
+        .divider { border: none; border-top: 1px solid #e2e8f0; margin: 24px 0; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label {
+            display: block;
+            font-size: .82rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: .88rem;
+            font-family: inherit;
+            color: #0f172a;
+            transition: border-color .14s, box-shadow .14s;
+            outline: none;
+        }
+        .form-group input:focus {
+            border-color: #1d4ed8;
+            box-shadow: 0 0 0 3px rgba(29,78,216,.1);
+        }
+        .form-hint {
+            font-size: .75rem;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+        .btn-save {
+            width: 100%;
+            padding: 11px;
+            background: #1d4ed8;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: .9rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background .14s;
+            margin-top: 6px;
+        }
+        .btn-save:hover { background: #1e40af; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="nav-logo">GIU</div>
+            <span class="nav-title">Portal Ciudadano</span>
+        </div>
+        <div class="nav-right">
+            <span class="nav-email" th:text="${usuario.email}"></span>
+            <a href="/logout" class="nav-logout">Cerrar sesión</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <a href="/dashboard/ciudadano" class="back-link">← Volver al panel</a>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Mi información</h2>
+                <p>Consulta y actualiza tus datos de perfil</p>
+            </div>
+            <div class="card-body">
+
+                <!-- Alertas -->
+                <div th:if="${exito}" class="alert alert-success" th:text="${exito}"></div>
+                <div th:if="${error}"  class="alert alert-error"  th:text="${error}"></div>
+
+                <!-- Datos actuales (solo lectura) -->
+                <p class="section-title">Datos actuales</p>
+                <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-value" th:text="${usuario.email}"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Rol</span>
+                    <span class="role-badge" th:text="${usuario.rol}"></span>
+                </div>
+
+                <hr class="divider"/>
+
+                <!-- Formulario de edición -->
+                <p class="section-title">Modificar datos</p>
+                <form method="post" th:action="@{/ciudadano/perfil}" onsubmit="return validar()">
+
+                    <div class="form-group">
+                        <label for="email">Nuevo email</label>
+                        <input type="email" id="email" name="email"
+                               th:value="${usuario.email}" required/>
+                        <p class="form-hint">Si cambias el email deberás volver a iniciar sesión.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Nueva contraseña</label>
+                        <input type="password" id="password" name="password"
+                               placeholder="Dejar en blanco para no cambiarla"/>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmarPassword">Confirmar nueva contraseña</label>
+                        <input type="password" id="confirmarPassword" name="confirmarPassword"
+                               placeholder="Repite la nueva contraseña"/>
+                    </div>
+
+                    <button type="submit" class="btn-save">Guardar cambios</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function validar() {
+        var pass = document.getElementById('password').value;
+        var conf = document.getElementById('confirmarPassword').value;
+        if (pass && pass !== conf) {
+            alert('Las contraseñas no coinciden.');
+            return false;
+        }
+        return true;
+    }
+    </script>
+</body>
+</html>

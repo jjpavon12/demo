@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Ciudadano — GIU</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
@@ -88,6 +90,31 @@
         .feature-card-disabled { border-top-color: #e2e8f0; }
         .feature-card-disabled h3 { color: #94a3b8; }
         .feature-card-disabled p { color: #cbd5e1; }
+        /* --- Mapa ciudadano --- */
+        .map-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 22px 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            margin-top: 28px;
+        }
+        .map-section-title {
+            font-size: .95rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+        .map-section-subtitle {
+            font-size: .8rem;
+            color: #64748b;
+            margin-bottom: 14px;
+        }
+        #map-ciudadano {
+            height: 420px;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.08);
+            z-index: 0;
+        }
     </style>
 </head>
 <body>
@@ -122,15 +149,64 @@
                 <p>Consulta el estado de las incidencias que has enviado.</p>
                 <a href="/ciudadano/incidencias/mis-incidencias">Ver incidencias</a>
             </div>
-            <div class="feature-card feature-card-disabled">
+            <div class="feature-card">
                 <h3>Mi información</h3>
                 <p>Visualiza y actualiza tus datos de perfil.</p>
+                <a href="/ciudadano/perfil">Ver perfil</a>
             </div>
             <div class="feature-card feature-card-disabled">
                 <h3>Soporte</h3>
                 <p>Contacta con el equipo de atención al ciudadano.</p>
             </div>
         </div>
+
+        <!-- Mapa de incidencias del municipio -->
+        <div class="map-section">
+            <p class="map-section-title">🗺️ Mapa de incidencias del municipio</p>
+            <p class="map-section-subtitle">Visualiza las incidencias urbanas reportadas en tu municipio.</p>
+            <div id="map-ciudadano"></div>
+        </div>
     </div>
+
+    <script>
+    /* --- Mapa ciudadano: todas las incidencias, sin colores de estado --- */
+    var mapCiu = L.map('map-ciudadano').setView([40.4168, -3.7038], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(mapCiu);
+
+    var estadosVisibles = ['PENDIENTE_VALIDACION', 'VALIDADA', 'ASIGNADA', 'EN_CURSO'];
+
+    fetch('/api/incidencias')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var bounds = [];
+            data.forEach(function(inc) {
+                if (!estadosVisibles.includes(inc.estado)) return;
+                if (inc.latitud && inc.longitud) {
+                    var circle = L.circleMarker([inc.latitud, inc.longitud], {
+                        radius: 9,
+                        fillColor: '#1d4ed8',
+                        color: '#fff',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(mapCiu);
+                    circle.bindPopup(
+                        '<strong>#' + inc.id + '</strong><br/>' +
+                        '<span style="font-size:.82rem;color:#475569">' + inc.categorias.join(', ') + '</span><br/>' +
+                        '<span style="font-size:.82rem">' + inc.descripcion.substring(0, 120) + (inc.descripcion.length > 120 ? '...' : '') + '</span><br/>' +
+                        '<small>📍 ' + inc.ubicacion + '</small><br/>' +
+                        '<small>🗓 ' + inc.fecha + '</small>'
+                    );
+                    bounds.push([inc.latitud, inc.longitud]);
+                }
+            });
+            if (bounds.length > 0) {
+                mapCiu.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+            }
+        });
+    </script>
 </body>
 </html>
