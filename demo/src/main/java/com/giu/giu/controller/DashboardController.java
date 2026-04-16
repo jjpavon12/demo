@@ -187,9 +187,16 @@ public class DashboardController {
 
     @PostMapping("/admin/eliminar-usuario")
     public String eliminarUsuario(@RequestParam Long id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof CustomUserDetails) {
+            CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+            if (userDetails.getUsuario().getId().equals(id)) {
+                return "redirect:/dashboard/admin";
+            }
+        }
+
         String error = usuarioService.eliminarUsuario(id);
         if (error != null) {
-            // Podrías agregar un mensaje de error, pero por simplicidad, redirigimos
             return "redirect:/dashboard/admin";
         }
         return "redirect:/dashboard/admin";
