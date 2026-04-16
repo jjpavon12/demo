@@ -123,6 +123,23 @@ public class UsuarioService {
     }
 
     /**
+     * Elimina un usuario activo (solo para administradores)
+     */
+    public String eliminarUsuario(Long id) {
+        Optional<Usuario> opt = usuarioRepository.findById(id);
+        if (opt.isEmpty()) return "Usuario no encontrado";
+        Usuario usuario = opt.get();
+        if (usuario.getRol() == Rol.ADMINISTRADOR) {
+            long numAdmins = usuarioRepository.countByRol(Rol.ADMINISTRADOR);
+            if (numAdmins <= 1) {
+                return "No se puede eliminar el último administrador";
+            }
+        }
+        usuarioRepository.deleteById(id);
+        return null; // Éxito
+    }
+
+    /**
      * Lista todos los usuarios
      */
     public java.util.List<Usuario> obtenerTodos() {

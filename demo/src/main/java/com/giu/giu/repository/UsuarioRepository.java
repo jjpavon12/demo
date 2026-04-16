@@ -13,4 +13,5 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     List<Usuario> findByRolIn(List<Rol> roles);
     boolean existsByRol(Rol rol);
     java.util.List<Usuario> findByRolSolicitadoIsNotNull();
+    long countByRol(Rol rol);
 }

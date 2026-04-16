@@ -280,6 +280,7 @@
                         <th>Email</th>
                         <th>Rol</th>
                         <th>Estado</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -294,6 +295,14 @@
                         <td>
                             <span class="status-badge status-activo" th:if="${u.activo}">Activo</span>
                             <span class="status-badge status-pendiente" th:if="${!u.activo}">Pendiente</span>
+                        </td>
+                        <td>
+                            <form method="post" th:action="@{/dashboard/admin/eliminar-usuario}"
+                                  onsubmit="return confirm('¿Estás seguro de que quieres eliminar la cuenta de ' + this.querySelector('input[name=\'email\']').value + '?')">
+                                <input type="hidden" name="id" th:value="${u.id}"/>
+                                <input type="hidden" name="email" th:value="${u.email}"/>
+                                <button type="submit" class="btn-denegar">Eliminar</button>
+                            </form>
                         </td>
                     </tr>
                 </tbody>

@@ -184,4 +184,14 @@ public class DashboardController {
         usuarioService.denegarCambioRol(id);
         return "redirect:/dashboard/admin";
     }
+
+    @PostMapping("/admin/eliminar-usuario")
+    public String eliminarUsuario(@RequestParam Long id) {
+        String error = usuarioService.eliminarUsuario(id);
+        if (error != null) {
+            // Podrías agregar un mensaje de error, pero por simplicidad, redirigimos
+            return "redirect:/dashboard/admin";
+        }
+        return "redirect:/dashboard/admin";
+    }
 }
