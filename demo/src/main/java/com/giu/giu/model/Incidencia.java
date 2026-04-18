@@ -35,6 +35,13 @@ public class Incidencia {
     @Column(nullable = false)
     private EstadoIncidencia estado;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    private PrioridadIncidencia prioridad;
+
+    @Column(nullable = false)
+    private boolean prioridadAsignada = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
@@ -47,6 +54,9 @@ public class Incidencia {
         this.fechaCreacion = LocalDateTime.now();
         if (this.estado == null) {
             this.estado = EstadoIncidencia.PENDIENTE_VALIDACION;
+        }
+        if (this.prioridad == null) {
+            this.prioridad = PrioridadIncidencia.BAJA;
         }
     }
 
@@ -107,6 +117,22 @@ public class Incidencia {
 
     public void setEstado(EstadoIncidencia estado) {
         this.estado = estado;
+    }
+
+    public PrioridadIncidencia getPrioridad() {
+        return prioridad;
+    }
+
+    public void setPrioridad(PrioridadIncidencia prioridad) {
+        this.prioridad = prioridad;
+    }
+
+    public boolean isPrioridadAsignada() {
+        return prioridadAsignada;
+    }
+
+    public void setPrioridadAsignada(boolean prioridadAsignada) {
+        this.prioridadAsignada = prioridadAsignada;
     }
 
     public Usuario getUsuario() {

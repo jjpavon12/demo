@@ -139,6 +139,23 @@
             min-width: 150px;
         }
         .estado-select:focus { border-color: var(--accent); }
+        .prioridad-select {
+            padding: 5px 10px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: .8rem;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition: border-color .14s;
+            outline: none;
+            min-width: 120px;
+        }
+        .prioridad-select:focus { 
+            border-color: var(--accent);
+            background: #ffffff !important;
+            color: #334155 !important;
+        }
         /* --- Categoria chip picker --- */
         .cat-picker { position: relative; min-width: 200px; }
         .cat-chips-area {
@@ -244,6 +261,26 @@
             color: #334155;
             font-size: .8rem;
             font-weight: 600;
+        }
+        .campo-bloqueado.prioridad-BAJA {
+            background: #dbeafe;
+            color: #0c4a6e;
+            border-color: #0284c7;
+        }
+        .campo-bloqueado.prioridad-MEDIA {
+            background: #fef08a;
+            color: #713f12;
+            border-color: #eab308;
+        }
+        .campo-bloqueado.prioridad-ALTA {
+            background: #fed7aa;
+            color: #7c2d12;
+            border-color: #fb923c;
+        }
+        .campo-bloqueado.prioridad-CRITICA {
+            background: #fecaca;
+            color: #7f1d1d;
+            border-color: #ef4444;
         }
         .modal {
             display: none;
@@ -368,6 +405,7 @@
                         <th>Ubicación</th>
                         <th>Fecha</th>
                         <th>Email</th>
+                        <th>Prioridad</th>
                         <th>Estado</th>
                     </tr>
                 </thead>
@@ -412,6 +450,23 @@
                         <td th:text="${inc.ubicacion}"></td>
                         <td th:text="${#temporals.format(inc.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>
                         <td th:text="${inc.usuario.email}"></td>
+                        <td>
+                            <form method="post"
+                                  th:action="@{/dashboard/operador/cambiar-prioridad}"
+                                  style="display: inline;"
+                                  th:if="${inc.estado != T(com.giu.giu.model.EstadoIncidencia).VALIDADA and inc.estado != T(com.giu.giu.model.EstadoIncidencia).RECHAZADA}">
+                                <input type="hidden" name="id" th:value="${inc.id}"/>
+                                <select name="prioridad" class="prioridad-select" th:data-asignada="${inc.prioridadAsignada}" th:data-current="${inc.prioridad}" onchange="applyPriorityStyle(this); this.form.submit();">
+                                    <option value="" disabled th:selected="${!inc.prioridadAsignada}">Elegir prioridad</option>
+                                    <option th:each="p : ${prioridades}" th:value="${p}" th:text="${p.descripcion}" th:selected="${inc.prioridadAsignada and inc.prioridad == p}"></option>
+                                </select>
+                            </form>
+                            <span class="campo-bloqueado"
+                                  th:if="${inc.estado == T(com.giu.giu.model.EstadoIncidencia).VALIDADA or inc.estado == T(com.giu.giu.model.EstadoIncidencia).RECHAZADA}"
+                                  th:classappend="${'prioridad-' + inc.prioridad}"
+                                  th:text="${inc.prioridad.descripcion}">
+                            </span>
+                        </td>
                         <td>
                             <div class="estado-stack">
                                 <form method="post"
@@ -459,12 +514,53 @@
         CERRADA:              { bg: '#e2e8f0', color: '#334155', border: '#94a3b8' },
         RECHAZADA:            { bg: '#fee2e2', color: '#991b1b', border: '#f87171' }
     };
+    
+    /* --- Prioridad colors --- */
+    var priorityColors = {
+        BAJA:     { bg: '#dbeafe', color: '#0c4a6e', border: '#0284c7' },
+        MEDIA:    { bg: '#fef08a', color: '#713f12', border: '#eab308' },
+        ALTA:     { bg: '#fed7aa', color: '#7c2d12', border: '#fb923c' },
+        CRITICA:  { bg: '#fecaca', color: '#7f1d1d', border: '#ef4444' }
+    };
+    
     function applySelectStyle(sel) {
         var s = statusColors[sel.value];
         if (s) { sel.style.background=s.bg; sel.style.color=s.color; sel.style.borderColor=s.border; return; }
         sel.style.background='#fff'; sel.style.color='#334155'; sel.style.borderColor='#e2e8f0';
     }
+    
+    function applyPriorityStyle(sel) {
+        // Si no hay valor (placeholder), mantener blanco
+        if (!sel.value) {
+            sel.style.background = '#ffffff';
+            sel.style.color = '#94a3b8';
+            sel.style.borderColor = '#e2e8f0';
+            return;
+        }
+        // Colorear todos los valores
+        var s = priorityColors[sel.value];
+        if (s) {
+            sel.style.background = s.bg;
+            sel.style.color = s.color;
+            sel.style.borderColor = s.border;
+            return;
+        }
+        sel.style.background = '#ffffff';
+        sel.style.color = '#94a3b8';
+        sel.style.borderColor = '#e2e8f0';
+    }
+    
     document.querySelectorAll('.estado-select').forEach(function(sel){ applySelectStyle(sel); });
+    
+    // Para select de prioridad: restaurar valor si fue asignado
+    document.querySelectorAll('.prioridad-select').forEach(function(sel){ 
+        var asignada = sel.getAttribute('data-asignada');
+        var current = sel.getAttribute('data-current');
+        if (asignada === 'true' && current && current !== '') {
+            sel.value = current;
+            applyPriorityStyle(sel);
+        }
+    });
 
     /* --- Descripción modal --- */
     function openModal(el) {

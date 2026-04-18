@@ -3,6 +3,7 @@ package com.giu.giu.service;
 import com.giu.giu.model.CategoriaIncidencia;
 import com.giu.giu.model.EstadoIncidencia;
 import com.giu.giu.model.Incidencia;
+import com.giu.giu.model.PrioridadIncidencia;
 import com.giu.giu.model.Usuario;
 import com.giu.giu.repository.IncidenciaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +59,14 @@ public class IncidenciaService {
     public void cambiarCategorias(Long id, Set<CategoriaIncidencia> nuevasCategorias) {
         incidenciaRepository.findById(id).ifPresent(inc -> {
             inc.setCategorias(nuevasCategorias);
+            incidenciaRepository.save(inc);
+        });
+    }
+
+    public void cambiarPrioridad(Long id, PrioridadIncidencia nuevaPrioridad) {
+        incidenciaRepository.findById(id).ifPresent(inc -> {
+            inc.setPrioridad(nuevaPrioridad);
+            inc.setPrioridadAsignada(true);
             incidenciaRepository.save(inc);
         });
     }

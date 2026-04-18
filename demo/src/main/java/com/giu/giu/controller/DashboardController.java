@@ -2,6 +2,7 @@ package com.giu.giu.controller;
 
 import com.giu.giu.model.CategoriaIncidencia;
 import com.giu.giu.model.EstadoIncidencia;
+import com.giu.giu.model.PrioridadIncidencia;
 import com.giu.giu.model.Usuario;
 import com.giu.giu.security.CustomUserDetails;
 import com.giu.giu.service.IncidenciaService;
@@ -87,6 +88,7 @@ public class DashboardController {
             model.addAttribute("incidencias", incidenciaService.obtenerTodas());
             model.addAttribute("estadosOperador", ESTADOS_OPERADOR);
             model.addAttribute("categorias", CategoriaIncidencia.values());
+            model.addAttribute("prioridades", PrioridadIncidencia.values());
             return "dashboard-operador";
         }
 
@@ -111,6 +113,12 @@ public class DashboardController {
             return "redirect:/dashboard/operador";
         }
         incidenciaService.cambiarCategorias(id, new HashSet<>(categorias));
+        return "redirect:/dashboard/operador";
+    }
+
+    @PostMapping("/operador/cambiar-prioridad")
+    public String cambiarPrioridadOperador(@RequestParam Long id, @RequestParam PrioridadIncidencia prioridad) {
+        incidenciaService.cambiarPrioridad(id, prioridad);
         return "redirect:/dashboard/operador";
     }
 
