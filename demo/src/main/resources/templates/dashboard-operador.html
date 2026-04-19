@@ -49,7 +49,7 @@
             transition: background .14s;
         }
         .nav-logout:hover { background: rgba(255,255,255,.28); }
-        .container { max-width: 1200px; margin: 32px auto; padding: 0 24px; }
+        .container { max-width: 1250px; margin: 32px auto; padding: 0 24px; }
         .page-header {
             display: flex;
             align-items: center;
@@ -351,7 +351,7 @@
             height: 400px;
             border-radius: 12px;
             box-shadow: 0 1px 4px rgba(0,0,0,.07);
-            margin-bottom: 28px;
+            margin-bottom: 10px;
             z-index: 0;
         }
         .map-section-title {
@@ -360,6 +360,74 @@
             color: #0f172a;
             margin-bottom: 12px;
         }
+        /* --- Filter bar operador --- */
+        .filter-bar {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 3px; }
+        .filter-label { font-size: .7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .4px; }
+        .filter-input {
+            padding: 6px 10px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: .82rem;
+            font-family: inherit;
+            color: #334155;
+            outline: none;
+            transition: border-color .14s;
+            background: #fff;
+            width: 90px;
+        }
+        .filter-select {
+            padding: 6px 10px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: .82rem;
+            font-family: inherit;
+            color: #334155;
+            outline: none;
+            transition: border-color .14s;
+            background: #fff;
+            min-width: 150px;
+        }
+        .filter-date { width: 140px; }
+        .filter-input:focus, .filter-select:focus { border-color: var(--accent); }
+        .filter-actions { display: flex; gap: 8px; align-items: flex-end; }
+        .btn-apply {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 7px 18px;
+            border-radius: 6px;
+            font-size: .82rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background .14s;
+        }
+        .btn-apply:hover { background: var(--accent-dark); }
+        .btn-clear {
+            background: #fff;
+            color: #64748b;
+            border: 1.5px solid #e2e8f0;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: .82rem;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all .14s;
+        }
+        .btn-clear:hover { border-color: #94a3b8; color: #334155; }
+        .map-counter { font-size: .82rem; color: #64748b; margin-bottom: 10px; }
         .map-legend {
             display: flex;
             flex-wrap: wrap;
@@ -420,6 +488,54 @@
             <span class="map-legend-item"><span class="map-legend-dot" style="background:#94a3b8"></span> Cerrada</span>
             <span class="map-legend-item"><span class="map-legend-dot" style="background:#f87171"></span> Rechazada</span>
         </div>
+        <div class="filter-bar">
+            <div class="filter-group">
+                <span class="filter-label">ID de Incidencia</span>
+                <input type="text" id="filt-op-id" class="filter-input" placeholder="Ej. 12">
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Categoría</span>
+                <select id="filt-op-cat" class="filter-select">
+                    <option value="">Todas las categorías</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Estado</span>
+                <select id="filt-op-estado" class="filter-select">
+                    <option value="">Todos los estados</option>
+                    <option value="PENDIENTE_VALIDACION">Pendiente</option>
+                    <option value="VALIDADA">Validada</option>
+                    <option value="ASIGNADA">Asignada</option>
+                    <option value="EN_CURSO">En curso</option>
+                    <option value="RESUELTA">Resuelta</option>
+                    <option value="CERRADA">Cerrada</option>
+                    <option value="RECHAZADA">Rechazada</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Prioridad</span>
+                <select id="filt-op-prioridad" class="filter-select">
+                    <option value="">Todas las prioridades</option>
+                    <option value="BAJA">Baja</option>
+                    <option value="MEDIA">Media</option>
+                    <option value="ALTA">Alta</option>
+                    <option value="CRITICA">Crítica</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Fecha desde</span>
+                <input type="date" id="filt-op-desde" class="filter-input filter-date">
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Fecha hasta</span>
+                <input type="date" id="filt-op-hasta" class="filter-input filter-date">
+            </div>
+            <div class="filter-actions">
+                <button class="btn-apply" onclick="applyFiltersOp()">Aplicar</button>
+                <button class="btn-clear" onclick="clearFiltersOp()">Limpiar</button>
+            </div>
+        </div>
+        <p id="map-counter-op" class="map-counter"></p>
         <div id="map-operador"></div>
 
         <div class="section-card">
@@ -432,7 +548,7 @@
             <table th:if="${!#lists.isEmpty(incidencias)}">
                 <thead>
                     <tr>
-                        <th>#</th>
+                        <th>ID</th>
                         <th>Categoría</th>
                         <th>Descripción</th>
                         <th>Ubicación</th>
@@ -444,7 +560,13 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="inc : ${incidencias}" th:id="'row-' + ${inc.id}" th:data-id="${inc.id}" th:data-ubi="${inc.ubicacion}">
+                    <tr th:each="inc : ${incidencias}" th:id="'row-' + ${inc.id}"
+                        th:data-id="${inc.id}"
+                        th:data-ubi="${inc.ubicacion}"
+                        th:data-estado="${inc.estado.name()}"
+                        th:data-prioridad="${inc.prioridad != null ? inc.prioridad.name() : ''}"
+                        th:data-fecha="${#temporals.format(inc.fechaCreacion, 'yyyy-MM-dd')}"
+                        th:attr="data-categorias=${#strings.listJoin(inc.categorias.![descripcion], ',')}">
                         <td class="td-id" th:text="${inc.id}"></td>
                         <td>
                             <form method="post"
@@ -757,35 +879,94 @@
         maxZoom: 19
     }).addTo(mapOp);
 
+    var allDataOp = [];
+    var markersLayerOp = L.layerGroup().addTo(mapOp);
+
+    function parseFechaOp(str) {
+        var parts = str.split(' ')[0].split('/');
+        return new Date(parts[2], parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+    }
+
+    function renderMarkersOp(data) {
+        markersLayerOp.clearLayers();
+        var bounds = [];
+        data.forEach(function(inc) {
+            if (inc.latitud && inc.longitud) {
+                var color = estadoColorsMap[inc.estado] || '#64748b';
+                var circle = L.circleMarker([inc.latitud, inc.longitud], {
+                    radius: 9, fillColor: color, color: '#fff',
+                    weight: 2, opacity: 1, fillOpacity: 0.85
+                });
+                circle.bindPopup(
+                    '<strong>ID de Incidencia: ' + inc.id + '</strong><br/>' +
+                    '<span style="font-size:.82rem;color:#475569">' + inc.categorias.join(', ') + '</span><br/>' +
+                    inc.descripcion.substring(0, 120) + (inc.descripcion.length > 120 ? '...' : '') + '<br/>' +
+                    '<small>📍 ' + inc.ubicacion + '</small><br/>' +
+                    '<small>🗓 ' + inc.fecha + '</small>'
+                );
+                markersLayerOp.addLayer(circle);
+                bounds.push([inc.latitud, inc.longitud]);
+            }
+        });
+        var n = markersLayerOp.getLayers().length;
+        document.getElementById('map-counter-op').textContent = 'Mostrando ' + n + ' incidencia' + (n !== 1 ? 's' : '') + ' en el mapa';
+        if (bounds.length > 0) mapOp.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+    }
+
+    function filterTableOp(filteredData) {
+        var idSet = new Set(filteredData.map(function(inc) { return String(inc.id); }));
+        document.querySelectorAll('tr[data-id]').forEach(function(row) {
+            row.style.display = idSet.has(row.getAttribute('data-id')) ? '' : 'none';
+        });
+    }
+
+    function applyFiltersOp() {
+        var idVal = document.getElementById('filt-op-id').value.trim();
+        var catVal = document.getElementById('filt-op-cat').value;
+        var estadoVal = document.getElementById('filt-op-estado').value;
+        var priorVal = document.getElementById('filt-op-prioridad').value;
+        var desdeVal = document.getElementById('filt-op-desde').value;
+        var hastaVal = document.getElementById('filt-op-hasta').value;
+        var filtered = allDataOp.filter(function(inc) {
+            if (idVal && String(inc.id) !== idVal) return false;
+            if (catVal && !inc.categorias.includes(catVal)) return false;
+            if (estadoVal && inc.estado !== estadoVal) return false;
+            if (priorVal && inc.prioridad !== priorVal) return false;
+            if (desdeVal || hastaVal) {
+                var f = parseFechaOp(inc.fecha);
+                if (desdeVal && f < new Date(desdeVal)) return false;
+                if (hastaVal) { var h = new Date(hastaVal); h.setDate(h.getDate() + 1); if (f >= h) return false; }
+            }
+            return true;
+        });
+        renderMarkersOp(filtered);
+        filterTableOp(filtered);
+    }
+
+    function clearFiltersOp() {
+        document.getElementById('filt-op-id').value = '';
+        document.getElementById('filt-op-cat').value = '';
+        document.getElementById('filt-op-estado').value = '';
+        document.getElementById('filt-op-prioridad').value = '';
+        document.getElementById('filt-op-desde').value = '';
+        document.getElementById('filt-op-hasta').value = '';
+        renderMarkersOp(allDataOp);
+        filterTableOp(allDataOp);
+    }
+
     fetch('/api/incidencias')
         .then(function(r) { return r.json(); })
         .then(function(data) {
-            var bounds = [];
-            data.forEach(function(inc) {
-                if (inc.latitud && inc.longitud) {
-                    var color = estadoColorsMap[inc.estado] || '#64748b';
-                    var circle = L.circleMarker([inc.latitud, inc.longitud], {
-                        radius: 9,
-                        fillColor: color,
-                        color: '#fff',
-                        weight: 2,
-                        opacity: 1,
-                        fillOpacity: 0.85
-                    }).addTo(mapOp);
-                    circle.bindPopup(
-                        '<strong>#' + inc.id + '</strong> — ' + inc.categorias.join(', ') + '<br/>' +
-                        '<span style="color:' + color + ';font-weight:600">' + inc.estadoDesc + '</span><br/>' +
-                        inc.descripcion.substring(0, 120) + (inc.descripcion.length > 120 ? '...' : '') + '<br/>' +
-                        '<small>📍 ' + inc.ubicacion + '</small><br/>' +
-                        '<small>👤 ' + inc.email + '</small><br/>' +
-                        '<small>🗓 ' + inc.fecha + '</small>'
-                    );
-                    bounds.push([inc.latitud, inc.longitud]);
-                }
+            allDataOp = data;
+            var cats = new Set();
+            data.forEach(function(inc) { inc.categorias.forEach(function(c) { cats.add(c); }); });
+            var sel = document.getElementById('filt-op-cat');
+            Array.from(cats).sort().forEach(function(c) {
+                var opt = document.createElement('option');
+                opt.value = c; opt.textContent = c;
+                sel.appendChild(opt);
             });
-            if (bounds.length > 0) {
-                mapOp.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
-            }
+            renderMarkersOp(data);
         });
     </script>
 </body>
