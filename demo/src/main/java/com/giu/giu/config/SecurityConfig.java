@@ -22,7 +22,7 @@ public class SecurityConfig {
             .userDetailsService(usuarioDetailsService)
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/registro", "/api/auth/login", "/api/auth/registro", "/hola").permitAll()
+                .requestMatchers("/", "/login", "/registro", "/api/auth/login", "/api/auth/registro", "/hola", "/images/**").permitAll()
                 .requestMatchers("/api/incidencias/**").authenticated()
                 .requestMatchers("/dashboard/ciudadano", "/ciudadano/**").hasRole("CIUDADANO")
                 .requestMatchers("/dashboard/operador", "/dashboard/operador/**").hasRole("OPERADOR")

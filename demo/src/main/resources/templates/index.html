@@ -9,7 +9,7 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', system-ui, sans-serif;
-            background: #f1f5f9;
+            background: linear-gradient(rgba(15,23,42,.45), rgba(15,23,42,.45)), url('/images/giu.jpg') center/cover fixed;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -69,7 +69,21 @@
 </head>
 <body>
     <div class="card">
-        <div class="logo-mark">GIU</div>
+        <div class="logo-mark" style="background:none;padding:0;">
+            <svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="lg1" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#5ab5fd"/>
+                        <stop offset="100%" stop-color="#1848d4"/>
+                    </linearGradient>
+                </defs>
+                <rect width="60" height="60" rx="14" fill="url(#lg1)"/>
+                <rect x="1" y="1" width="58" height="26" rx="13" fill="rgba(255,255,255,0.08)"/>
+                <path d="M22,13 A17,17 0 1,0 22,47 L52,30 Z" fill="rgba(255,255,255,0.18)"/>
+                <circle cx="22" cy="30" r="6" fill="rgba(0,0,0,0.12)"/>
+                <text x="30" y="40" font-family="Inter,system-ui,sans-serif" font-size="19" font-weight="700" fill="white" text-anchor="middle" letter-spacing="1">GIU</text>
+            </svg>
+        </div>
         <h1>Gestión de Incidencias Urbanas</h1>
         <p class="tagline">Portal municipal para el reporte y seguimiento de incidencias en la vía pública.</p>
         <a href="/login" class="btn btn-primary">Iniciar sesión</a>
