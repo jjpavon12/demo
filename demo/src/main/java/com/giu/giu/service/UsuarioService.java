@@ -2,20 +2,28 @@ package com.giu.giu.service;
 
 import com.giu.giu.dto.LoginRequest;
 import com.giu.giu.dto.LoginResponse;
+import com.giu.giu.model.CategoriaIncidencia;
+import com.giu.giu.model.EquipoTecnicoConfig;
 import com.giu.giu.model.Rol;
 import com.giu.giu.model.Usuario;
+import com.giu.giu.repository.EquipoTecnicoConfigRepository;
 import com.giu.giu.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class UsuarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private EquipoTecnicoConfigRepository equipoTecnicoConfigRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -31,7 +39,6 @@ public class UsuarioService {
             if (!usuario.isActivo()) {
                 return new LoginResponse(null, null, null, "Usuario no habilitado. Espera validación del administrador.");
             }
-            // En producción, deberías comparar la contraseña hasheada
             if (passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
                 return new LoginResponse(
                     usuario.getId(),
@@ -119,6 +126,8 @@ public class UsuarioService {
      * Deniega un usuario (lo elimina)
      */
     public void denegarUsuario(Long id) {
+        equipoTecnicoConfigRepository.findByUsuarioId(id)
+            .ifPresent(equipoTecnicoConfigRepository::delete);
         usuarioRepository.deleteById(id);
     }
 
@@ -128,6 +137,7 @@ public class UsuarioService {
     public String eliminarUsuario(Long id) {
         Optional<Usuario> opt = usuarioRepository.findById(id);
         if (opt.isEmpty()) return "Usuario no encontrado";
+
         Usuario usuario = opt.get();
         if (usuario.getRol() == Rol.ADMINISTRADOR) {
             long numAdmins = usuarioRepository.countByRol(Rol.ADMINISTRADOR);
@@ -135,8 +145,12 @@ public class UsuarioService {
                 return "No se puede eliminar el último administrador";
             }
         }
+
+        equipoTecnicoConfigRepository.findByUsuarioId(id)
+            .ifPresent(equipoTecnicoConfigRepository::delete);
+
         usuarioRepository.deleteById(id);
-        return null; // Éxito
+        return null;
     }
 
     /**
@@ -153,9 +167,11 @@ public class UsuarioService {
     public String solicitarCambioRol(Long id, Rol nuevoRol) {
         Optional<Usuario> opt = usuarioRepository.findById(id);
         if (opt.isEmpty()) return "Usuario no encontrado";
+
         Usuario usuario = opt.get();
         if (usuario.getRol() == nuevoRol) return "Ya tienes ese rol";
         if (nuevoRol == Rol.ADMINISTRADOR) return "No puedes solicitar el rol de Administrador";
+
         usuario.setRolSolicitado(nuevoRol);
         usuarioRepository.save(usuario);
         return null;
@@ -201,7 +217,6 @@ public class UsuarioService {
 
         Usuario usuario = opt.get();
 
-        // Validar que el nuevo email no esté ocupado por otro usuario
         if (!usuario.getEmail().equals(nuevoEmail)) {
             Optional<Usuario> existente = usuarioRepository.findByEmail(nuevoEmail);
             if (existente.isPresent()) {
@@ -215,6 +230,49 @@ public class UsuarioService {
         }
 
         usuarioRepository.save(usuario);
+        return null;
+    }
+
+    /**
+     * Obtiene la configuración del equipo técnico del usuario, si existe
+     */
+    public Optional<EquipoTecnicoConfig> obtenerConfigEquipoTecnico(Long usuarioId) {
+        return equipoTecnicoConfigRepository.findByUsuarioId(usuarioId);
+    }
+
+    /**
+     * Crea o actualiza la configuración del equipo técnico
+     */
+    public String configurarEquipoTecnico(Long usuarioId, String nombreEquipo, Set<CategoriaIncidencia> especialidades) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findById(usuarioId);
+        if (usuarioOpt.isEmpty()) {
+            return "Usuario no encontrado";
+        }
+
+        Usuario usuario = usuarioOpt.get();
+
+        if (usuario.getRol() != Rol.TECNICO) {
+            return "Solo los usuarios técnicos pueden configurar un equipo técnico";
+        }
+
+        if (nombreEquipo == null || nombreEquipo.isBlank()) {
+            return "El nombre del equipo es obligatorio";
+        }
+
+        if (especialidades == null || especialidades.isEmpty()) {
+            return "Debes seleccionar al menos una categoría";
+        }
+
+        Set<CategoriaIncidencia> especialidadesLimpias = new HashSet<>(especialidades);
+
+        EquipoTecnicoConfig config = equipoTecnicoConfigRepository.findByUsuarioId(usuarioId)
+            .orElseGet(EquipoTecnicoConfig::new);
+
+        config.setUsuario(usuario);
+        config.setNombreEquipo(nombreEquipo.trim());
+        config.setEspecialidades(especialidadesLimpias);
+
+        equipoTecnicoConfigRepository.save(config);
         return null;
     }
 }

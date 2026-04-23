@@ -1,7 +1,9 @@
 package com.giu.giu.controller;
 
 import com.giu.giu.model.CategoriaIncidencia;
+import com.giu.giu.model.EquipoTecnicoConfig;
 import com.giu.giu.model.EstadoIncidencia;
+import com.giu.giu.model.Incidencia;
 import com.giu.giu.model.PrioridadIncidencia;
 import com.giu.giu.model.Usuario;
 import com.giu.giu.security.CustomUserDetails;
@@ -13,8 +15,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/dashboard")
@@ -33,9 +39,6 @@ public class DashboardController {
         this.usuarioService = usuarioService;
     }
 
-    /**
-     * Página de Home - Redirige según el rol del usuario
-     */
     @GetMapping("/home")
     public String home() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -43,25 +46,21 @@ public class DashboardController {
         if (auth != null && auth.getPrincipal() instanceof CustomUserDetails) {
             CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
             String rol = userDetails.getUsuario().getRol().name().toLowerCase();
-            
-            // Mapear ADMINISTRADOR a "admin"
+
             if (rol.equals("administrador")) {
                 rol = "admin";
             }
-            
+
             return "redirect:/dashboard/" + rol;
         }
 
         return "redirect:/login";
     }
 
-    /**
-     * Dashboard para CIUDADANO
-     */
     @GetMapping("/ciudadano")
     public String dashboardCiudadano(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        
+
         if (auth != null && auth.getPrincipal() instanceof CustomUserDetails) {
             CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
             Usuario usuario = userDetails.getUsuario();
@@ -73,22 +72,34 @@ public class DashboardController {
         return "redirect:/login";
     }
 
-    /**
-     * Dashboard para OPERADOR
-     */
     @GetMapping("/operador")
     public String dashboardOperador(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        
+
         if (auth != null && auth.getPrincipal() instanceof CustomUserDetails) {
             CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
             Usuario usuario = userDetails.getUsuario();
+
+            List<Incidencia> incidencias = incidenciaService.obtenerTodas();
+            Map<Long, List<EquipoTecnicoConfig>> equiposSugeridosPorIncidencia = new HashMap<>();
+
+            for (Incidencia inc : incidencias) {
+                if (inc.getEstado() == EstadoIncidencia.VALIDADA || inc.getEstado() == EstadoIncidencia.ASIGNADA) {
+                    equiposSugeridosPorIncidencia.put(
+                        inc.getId(),
+                        incidenciaService.obtenerEquiposTecnicosOrdenadosParaIncidencia(inc)
+                    );
+                }
+            }
+
             model.addAttribute("usuario", usuario);
             model.addAttribute("rol", "OPERADOR");
-            model.addAttribute("incidencias", incidenciaService.obtenerTodas());
+            model.addAttribute("incidencias", incidencias);
             model.addAttribute("estadosOperador", ESTADOS_OPERADOR);
             model.addAttribute("categorias", CategoriaIncidencia.values());
             model.addAttribute("prioridades", PrioridadIncidencia.values());
+            model.addAttribute("equiposSugeridosPorIncidencia", equiposSugeridosPorIncidencia);
+
             return "dashboard-operador";
         }
 
@@ -122,24 +133,66 @@ public class DashboardController {
         return "redirect:/dashboard/operador";
     }
 
-    /**
-     * Dashboard para TECNICO
-     */
+    @PostMapping("/operador/asignar-incidencia")
+    public String asignarIncidencia(@RequestParam Long incidenciaId, @RequestParam Long tecnicoId) {
+        incidenciaService.asignarATecnico(incidenciaId, tecnicoId);
+        return "redirect:/dashboard/operador";
+    }
+
     @GetMapping("/tecnico")
     public String dashboardTecnico(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        
+
         if (auth != null && auth.getPrincipal() instanceof CustomUserDetails) {
             CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-            Usuario usuario = userDetails.getUsuario();
+            Long usuarioId = userDetails.getUsuario().getId();
+
+            Optional<Usuario> usuarioOpt = usuarioService.obtenerPorId(usuarioId);
+            if (usuarioOpt.isEmpty()) {
+                return "redirect:/logout";
+            }
+
+            Usuario usuario = usuarioOpt.get();
+            Optional<EquipoTecnicoConfig> configOpt = usuarioService.obtenerConfigEquipoTecnico(usuario.getId());
+
             model.addAttribute("usuario", usuario);
             model.addAttribute("rol", "TECNICO");
-            model.addAttribute("incidencias", incidenciaService.obtenerTodas());
+            model.addAttribute("configEquipo", configOpt.orElse(null));
+            model.addAttribute("incidencias", incidenciaService.obtenerAsignadasATecnico(usuario));
             model.addAttribute("estados", EstadoIncidencia.values());
+
             return "dashboard-tecnico";
         }
 
         return "redirect:/login";
+    }
+
+    @PostMapping("/tecnico/configurar-equipo")
+    public String configurarEquipoTecnico(@RequestParam String nombreEquipo,
+                                          @RequestParam(required = false) List<CategoriaIncidencia> especialidades) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !(auth.getPrincipal() instanceof CustomUserDetails)) {
+            return "redirect:/login";
+        }
+
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        Long usuarioId = userDetails.getUsuario().getId();
+
+        Set<CategoriaIncidencia> categoriasSeleccionadas =
+            especialidades != null ? new HashSet<>(especialidades) : new HashSet<>();
+
+        String error = usuarioService.configurarEquipoTecnico(
+            usuarioId,
+            nombreEquipo,
+            categoriasSeleccionadas
+        );
+
+        if (error != null) {
+            return "redirect:/dashboard/tecnico?error=1";
+        }
+
+        return "redirect:/dashboard/tecnico?ok=1";
     }
 
     @PostMapping("/tecnico/cambiar-estado")
@@ -148,13 +201,10 @@ public class DashboardController {
         return "redirect:/dashboard/tecnico";
     }
 
-    /**
-     * Dashboard para ADMINISTRADOR — gestión de usuarios
-     */
     @GetMapping("/admin")
     public String dashboardAdmin(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        
+
         if (auth != null && auth.getPrincipal() instanceof CustomUserDetails) {
             CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
             Usuario usuario = userDetails.getUsuario();

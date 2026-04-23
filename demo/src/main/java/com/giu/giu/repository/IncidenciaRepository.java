@@ -1,5 +1,6 @@
 package com.giu.giu.repository;
 
+import com.giu.giu.model.EstadoIncidencia;
 import com.giu.giu.model.Incidencia;
 import com.giu.giu.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,4 +12,8 @@ import java.util.List;
 public interface IncidenciaRepository extends JpaRepository<Incidencia, Long> {
 
     List<Incidencia> findByUsuarioOrderByFechaCreacionDesc(Usuario usuario);
+
+    List<Incidencia> findByTecnicoAsignadoOrderByFechaAsignacionDesc(Usuario tecnicoAsignado);
+
+    List<Incidencia> findByEstadoOrderByFechaCreacionDesc(EstadoIncidencia estado);
 }

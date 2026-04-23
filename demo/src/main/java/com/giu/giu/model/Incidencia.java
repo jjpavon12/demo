@@ -46,6 +46,14 @@ public class Incidencia {
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
+    // NUEVO: técnico asignado
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tecnico_asignado_id")
+    private Usuario tecnicoAsignado;
+
+    @Column
+    private LocalDateTime fechaAsignacion;
+
     @Column(nullable = false)
     private LocalDateTime fechaCreacion;
 
@@ -62,7 +70,6 @@ public class Incidencia {
 
     public Incidencia() {}
 
-    // Getters y Setters
     public Long getId() {
         return id;
     }
@@ -141,6 +148,22 @@ public class Incidencia {
 
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
+    }
+
+    public Usuario getTecnicoAsignado() {
+        return tecnicoAsignado;
+    }
+
+    public void setTecnicoAsignado(Usuario tecnicoAsignado) {
+        this.tecnicoAsignado = tecnicoAsignado;
+    }
+
+    public LocalDateTime getFechaAsignacion() {
+        return fechaAsignacion;
+    }
+
+    public void setFechaAsignacion(LocalDateTime fechaAsignacion) {
+        this.fechaAsignacion = fechaAsignacion;
     }
 
     public LocalDateTime getFechaCreacion() {

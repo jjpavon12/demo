@@ -7,8 +7,30 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        :root { --accent: #0284c7; --accent-dark: #0369a1; --accent-bg: #f0f9ff; }
-        body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
+
+        :root {
+            --accent: #0284c7;
+            --accent-dark: #0369a1;
+            --accent-bg: #f0f9ff;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --success-bg: #ecfdf5;
+            --success-text: #166534;
+            --success-border: #bbf7d0;
+            --error-bg: #fef2f2;
+            --error-text: #b91c1c;
+            --error-border: #fecaca;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
         nav.navbar {
             background: var(--accent);
             height: 60px;
@@ -18,18 +40,12 @@
             padding: 0 28px;
             box-shadow: 0 1px 4px rgba(0,0,0,.15);
         }
+
         .nav-brand { display: flex; align-items: center; gap: 10px; }
-        .nav-logo {
-            background: rgba(255,255,255,.2);
-            color: #fff;
-            width: 34px; height: 34px;
-            border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: .8rem; font-weight: 700;
-        }
         .nav-title { color: #fff; font-weight: 600; font-size: .95rem; }
         .nav-right { display: flex; align-items: center; gap: 12px; }
         .nav-email { color: rgba(255,255,255,.8); font-size: .8rem; }
+
         .nav-role {
             background: rgba(255,255,255,.2);
             color: #fff;
@@ -38,6 +54,7 @@
             font-size: .73rem;
             font-weight: 600;
         }
+
         .nav-logout {
             color: #fff;
             text-decoration: none;
@@ -46,16 +63,22 @@
             background: rgba(255,255,255,.15);
             font-size: .82rem;
             font-weight: 500;
-            transition: background .14s;
         }
-        .nav-logout:hover { background: rgba(255,255,255,.28); }
-        .container { max-width: 1200px; margin: 32px auto; padding: 0 24px; }
+
+        .container {
+            max-width: 1200px;
+            margin: 32px auto;
+            padding: 0 24px 48px;
+        }
+
         .section-card {
             background: #fff;
             border-radius: 12px;
             box-shadow: 0 1px 4px rgba(0,0,0,.07);
             overflow: hidden;
+            margin-bottom: 24px;
         }
+
         .section-header {
             padding: 16px 22px;
             border-bottom: 1px solid #f1f5f9;
@@ -63,28 +86,194 @@
             align-items: center;
             justify-content: space-between;
         }
-        .section-header h3 { font-size: .95rem; font-weight: 600; color: #0f172a; }
+
+        .section-header h3 {
+            font-size: .95rem;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .section-body {
+            padding: 24px;
+        }
+
         .empty-msg {
-            padding: 48px 24px;
+            padding: 36px 24px;
             text-align: center;
             color: #94a3b8;
-            font-size: .9rem;
+            font-size: .92rem;
+        }
+
+        .badge-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .badge {
+            background: var(--accent-bg);
+            color: var(--accent-dark);
+            border: 1px solid #bae6fd;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: .82rem;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            text-align: left;
+            vertical-align: top;
+            font-size: .88rem;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #334155;
+            font-weight: 700;
+        }
+
+        .status-box {
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin-bottom: 18px;
+            border: 1px solid;
+            font-size: .92rem;
+        }
+
+        .status-success {
+            background: var(--success-bg);
+            color: var(--success-text);
+            border-color: var(--success-border);
+        }
+
+        .status-error {
+            background: var(--error-bg);
+            color: var(--error-text);
+            border-color: var(--error-border);
+        }
+
+        .config-button {
+            display: inline-block;
+            text-decoration: none;
+            background: var(--accent);
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+
+        .config-summary {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 22px;
+        }
+
+        .summary-row {
+            margin-bottom: 10px;
+            color: #334155;
+            font-size: .92rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: .92rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: .95rem;
+        }
+
+        .helper-text {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: .84rem;
+        }
+
+        .general-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            padding: 12px 14px;
+            border: 1px solid #bae6fd;
+            background: #f0f9ff;
+            border-radius: 10px;
+            font-weight: 600;
+            color: var(--accent-dark);
+        }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 10px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            background: #fff;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 12px;
+            min-height: 52px;
+        }
+
+        .error-inline {
+            display: none;
+            color: #dc2626;
+            margin-top: 10px;
+            font-size: .88rem;
+            font-weight: 500;
+        }
+
+        .submit-btn {
+            border: none;
+            background: var(--accent);
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: .92rem;
+            cursor: pointer;
+        }
+
+        .config-form-collapsed {
+            display: none;
         }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-brand">
-            <div class="nav-logo" style="background:none;padding:0;">
-                <svg width="34" height="34" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-                    <defs><linearGradient id="nlg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#2dd4bf"/><stop offset="100%" stop-color="#0d6e65"/></linearGradient></defs>
-                    <rect width="60" height="60" rx="14" fill="url(#nlg)"/>
-                    <rect x="1" y="1" width="58" height="26" rx="13" fill="rgba(255,255,255,0.08)"/>
-                    <path d="M22,13 A17,17 0 1,0 22,47 L52,30 Z" fill="rgba(255,255,255,0.18)"/>
-                    <circle cx="22" cy="30" r="6" fill="rgba(0,0,0,0.12)"/>
-                    <text x="30" y="40" font-family="Inter,system-ui,sans-serif" font-size="19" font-weight="700" fill="white" text-anchor="middle" letter-spacing="1">GIU</text>
-                </svg>
-            </div>
             <span class="nav-title">Panel Técnico</span>
         </div>
         <div class="nav-right">
@@ -95,14 +284,210 @@
     </nav>
 
     <div class="container">
-        <div class="section-card" style="max-width: 720px; margin: 60px auto; text-align: center;">
-            <div class="section-header" style="justify-content: center;">
-                <h3>Panel Técnico</h3>
+        <div class="section-card">
+            <div class="section-header">
+                <h3>Configuración del equipo técnico</h3>
+                <button type="button" class="config-button" id="toggleConfigBtn">Configurar equipo técnico</button>
             </div>
-            <div class="empty-msg" style="padding: 64px 24px; font-size: 1rem;">
-                Próximamente
+
+            <div class="section-body">
+                <div th:if="${param.ok}" class="status-box status-success">
+                    La configuración del equipo técnico se ha guardado correctamente.
+                </div>
+
+                <div th:if="${param.error}" class="status-box status-error">
+                    No se pudo guardar la configuración.
+                </div>
+
+                <div th:if="${configEquipo != null}" class="config-summary">
+                    <div class="summary-row">
+                        <strong>Nombre del equipo:</strong>
+                        <span th:text="${configEquipo.nombreEquipo}"></span>
+                    </div>
+
+                    <div class="summary-row">
+                        <strong>Especialidades:</strong>
+                        <div class="badge-list">
+                            <span class="badge"
+                                  th:each="cat : ${configEquipo.especialidades}"
+                                  th:text="${cat.descripcion}">
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${configEquipo == null}" class="config-summary">
+                    <div class="summary-row">Todavía no has configurado tu equipo técnico.</div>
+                </div>
+
+                <div id="configFormWrapper" th:attr="data-has-config=${configEquipo != null}">
+                    <form th:action="@{/dashboard/tecnico/configurar-equipo}" method="post" onsubmit="return validarFormulario()">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="nombreEquipo">Nombre del equipo</label>
+                                <input id="nombreEquipo"
+                                       class="form-input"
+                                       type="text"
+                                       name="nombreEquipo"
+                                       th:value="${configEquipo != null ? configEquipo.nombreEquipo : ''}"
+                                       required>
+                                <div class="helper-text">Este nombre quedará asociado a tu usuario técnico.</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Especialidades</label>
+
+                                <label class="general-option">
+                                    <input type="checkbox" id="propositoGeneral">
+                                    <span>Propósito general (seleccionar todas)</span>
+                                </label>
+
+                                <div class="checkbox-grid">
+                                    <label class="checkbox-item" th:each="cat : ${T(com.giu.giu.model.CategoriaIncidencia).values()}">
+                                        <input type="checkbox"
+                                               name="especialidades"
+                                               th:value="${cat.name()}"
+                                               class="especialidad-checkbox"
+                                               th:checked="${configEquipo != null and configEquipo.especialidades.contains(cat)}">
+                                        <span th:text="${cat.descripcion}"></span>
+                                    </label>
+                                </div>
+
+                                <div id="especialidadesError" class="error-inline">
+                                    Debes seleccionar al menos una categoría.
+                                </div>
+                            </div>
+
+                            <div>
+                                <button type="submit" class="submit-btn">Guardar configuración</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <div class="section-header">
+                <h3>Incidencias asignadas a tu equipo</h3>
+            </div>
+
+            <div class="section-body" th:if="${!#lists.isEmpty(incidencias)}">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Categorías</th>
+                            <th>Descripción</th>
+                            <th>Ubicación</th>
+                            <th>Estado</th>
+                            <th>Fecha asignación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="inc : ${incidencias}">
+                            <td th:text="${inc.id}"></td>
+                            <td>
+                                <div class="badge-list">
+                                    <span class="badge"
+                                          th:each="cat : ${inc.categorias}"
+                                          th:text="${cat.descripcion}">
+                                    </span>
+                                </div>
+                            </td>
+                            <td th:text="${inc.descripcion}"></td>
+                            <td th:text="${inc.ubicacion}"></td>
+                            <td th:text="${inc.estado.descripcion}"></td>
+                            <td th:text="${inc.fechaAsignacion != null ? #temporals.format(inc.fechaAsignacion, 'dd/MM/yyyy HH:mm') : '-'}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="empty-msg" th:if="${#lists.isEmpty(incidencias)}">
+                No tienes incidencias asignadas actualmente.
             </div>
         </div>
     </div>
+
+    <script>
+        const generalCheckbox = document.getElementById('propositoGeneral');
+        const especialidadCheckboxes = document.querySelectorAll('.especialidad-checkbox');
+        const errorBox = document.getElementById('especialidadesError');
+        const toggleBtn = document.getElementById('toggleConfigBtn');
+        const formWrapper = document.getElementById('configFormWrapper');
+
+        function syncGeneralCheckbox() {
+            const allChecked = Array.from(especialidadCheckboxes).length > 0 &&
+                Array.from(especialidadCheckboxes).every(cb => cb.checked);
+            generalCheckbox.checked = allChecked;
+        }
+
+        function toggleAllEspecialidades(checked) {
+            especialidadCheckboxes.forEach(cb => cb.checked = checked);
+        }
+
+        function abrirFormulario() {
+            formWrapper.classList.remove('config-form-collapsed');
+        }
+
+        function cerrarFormulario() {
+            formWrapper.classList.add('config-form-collapsed');
+        }
+
+        function toggleFormulario() {
+            formWrapper.classList.toggle('config-form-collapsed');
+        }
+
+        generalCheckbox.addEventListener('change', function () {
+            toggleAllEspecialidades(this.checked);
+            if (this.checked) errorBox.style.display = 'none';
+        });
+
+        especialidadCheckboxes.forEach(cb => {
+            cb.addEventListener('change', function () {
+                syncGeneralCheckbox();
+                const anyChecked = Array.from(especialidadCheckboxes).some(item => item.checked);
+                if (anyChecked) errorBox.style.display = 'none';
+            });
+        });
+
+        toggleBtn.addEventListener('click', toggleFormulario);
+
+        function validarFormulario() {
+            const anyChecked = Array.from(especialidadCheckboxes).some(cb => cb.checked);
+            if (!anyChecked) {
+                errorBox.style.display = 'block';
+                return false;
+            }
+            errorBox.style.display = 'none';
+            return true;
+        }
+
+        function inicializarVisibilidadFormulario() {
+            const hasConfig = formWrapper.dataset.hasConfig === 'true';
+            const guardadoOk = new URLSearchParams(window.location.search).has('ok');
+            const hayError = new URLSearchParams(window.location.search).has('error');
+
+            if (hayError) {
+                abrirFormulario();
+                return;
+            }
+
+            if (guardadoOk && hasConfig) {
+                cerrarFormulario();
+                return;
+            }
+
+            if (hasConfig) {
+                cerrarFormulario();
+            } else {
+                abrirFormulario();
+            }
+        }
+
+        syncGeneralCheckbox();
+        inicializarVisibilidadFormulario();
+    </script>
 </body>
 </html>

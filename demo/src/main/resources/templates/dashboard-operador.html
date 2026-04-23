@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Operador â€” GIU</title>
+    <title>Panel Operador — GIU</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>    <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -96,7 +96,11 @@
             color: #94a3b8;
             font-size: .9rem;
         }
-        table { width: 100%; border-collapse: collapse; }
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+        table { width: 100%; min-width: 1750px; border-collapse: collapse; }
         th {
             background: #f8fafc;
             padding: 11px 16px;
@@ -249,6 +253,17 @@
             flex-direction: column;
             gap: 8px;
             min-width: 170px;
+        }
+        .acciones-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 240px;
+        }
+        .acciones-stack form {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
         .campo-bloqueado {
             display: inline-flex;
@@ -545,7 +560,8 @@
             <div th:if="${#lists.isEmpty(incidencias)}" class="empty-msg">
                 No hay incidencias registradas.
             </div>
-            <table th:if="${!#lists.isEmpty(incidencias)}">
+            <div class="table-wrapper" th:if="${!#lists.isEmpty(incidencias)}">
+            <table>
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -557,6 +573,7 @@
                         <th>Email</th>
                         <th>Prioridad</th>
                         <th>Estado</th>
+                        <th>Asignación</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -571,7 +588,7 @@
                         <td>
                             <form method="post"
                                   th:action="@{/dashboard/operador/cambiar-categoria}"
-                                  th:if="${inc.estado != T(com.giu.giu.model.EstadoIncidencia).VALIDADA and inc.estado != T(com.giu.giu.model.EstadoIncidencia).RECHAZADA}">
+                                  th:if="${inc.estado == T(com.giu.giu.model.EstadoIncidencia).PENDIENTE_VALIDACION}">
                                 <input type="hidden" name="id" th:value="${inc.id}"/>
                                 <div class="cat-picker">
                                     <div class="cat-chips-area" onclick="toggleDropdown(this)">
@@ -595,7 +612,7 @@
                                 </div>
                                 <button type="submit" class="btn-cat-save">Guardar categorías</button>
                             </form>
-                            <div th:if="${inc.estado == T(com.giu.giu.model.EstadoIncidencia).VALIDADA or inc.estado == T(com.giu.giu.model.EstadoIncidencia).RECHAZADA}"
+                            <div th:if="${inc.estado != T(com.giu.giu.model.EstadoIncidencia).PENDIENTE_VALIDACION}"
                                  style="display:flex;flex-wrap:wrap;gap:4px;">
                                 <span class="cat-chip"
                                       th:each="cat : ${inc.categorias}"
@@ -611,7 +628,7 @@
                             <form method="post"
                                   th:action="@{/dashboard/operador/cambiar-prioridad}"
                                   style="display: inline;"
-                                  th:if="${inc.estado != T(com.giu.giu.model.EstadoIncidencia).VALIDADA and inc.estado != T(com.giu.giu.model.EstadoIncidencia).RECHAZADA}">
+                                  th:if="${inc.estado == T(com.giu.giu.model.EstadoIncidencia).PENDIENTE_VALIDACION}">
                                 <input type="hidden" name="id" th:value="${inc.id}"/>
                                 <select name="prioridad" class="prioridad-select" th:data-asignada="${inc.prioridadAsignada}" th:data-current="${inc.prioridad}" onchange="applyPriorityStyle(this); this.form.submit();">
                                     <option value="" disabled th:selected="${!inc.prioridadAsignada}">Elegir prioridad</option>
@@ -619,7 +636,7 @@
                                 </select>
                             </form>
                             <span class="campo-bloqueado"
-                                  th:if="${inc.estado == T(com.giu.giu.model.EstadoIncidencia).VALIDADA or inc.estado == T(com.giu.giu.model.EstadoIncidencia).RECHAZADA}"
+                                  th:if="${inc.estado != T(com.giu.giu.model.EstadoIncidencia).PENDIENTE_VALIDACION}"
                                   th:classappend="${'prioridad-' + inc.prioridad}"
                                   th:text="${inc.prioridad.descripcion}">
                             </span>
@@ -628,7 +645,7 @@
                             <div class="estado-stack">
                                 <form method="post"
                                       th:action="@{/dashboard/operador/cambiar-estado}"
-                                      th:if="${inc.estado != T(com.giu.giu.model.EstadoIncidencia).VALIDADA and inc.estado != T(com.giu.giu.model.EstadoIncidencia).RECHAZADA}">
+                                      th:if="${inc.estado == T(com.giu.giu.model.EstadoIncidencia).PENDIENTE_VALIDACION}">
                                     <input type="hidden" name="id" th:value="${inc.id}"/>
                                     <select name="estado" class="estado-select" onchange="if (this.value) { applySelectStyle(this); this.form.submit(); }">
                                         <option value="">Validar o rechazar...</option>
@@ -636,14 +653,47 @@
                                     </select>
                                 </form>
                                 <span class="campo-bloqueado"
-                                      th:if="${inc.estado == T(com.giu.giu.model.EstadoIncidencia).VALIDADA or inc.estado == T(com.giu.giu.model.EstadoIncidencia).RECHAZADA}"
+                                      th:if="${inc.estado != T(com.giu.giu.model.EstadoIncidencia).PENDIENTE_VALIDACION}"
                                       th:text="${inc.estado.descripcion}">
                                 </span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="acciones-stack">
+                                <div th:if="${inc.estado == T(com.giu.giu.model.EstadoIncidencia).VALIDADA or inc.estado == T(com.giu.giu.model.EstadoIncidencia).ASIGNADA}">
+                                    <form method="post" th:action="@{/dashboard/operador/asignar-incidencia}">
+                                        <input type="hidden" name="incidenciaId" th:value="${inc.id}"/>
+                                        <select name="tecnicoId" class="estado-select" required>
+                                            <option value="">Selecciona un equipo técnico...</option>
+                                            <option th:each="equipo : ${equiposSugeridosPorIncidencia[inc.id]}"
+                                                    th:value="${equipo.usuario.id}"
+                                                    th:selected="${inc.tecnicoAsignado != null and inc.tecnicoAsignado.id == equipo.usuario.id}"
+                                                    th:text="${equipo.nombreEquipo + ' — ' + equipo.usuario.email}">
+                                            </option>
+                                        </select>
+                                        <button type="submit" class="btn-cat-save"
+                                                th:text="${inc.estado == T(com.giu.giu.model.EstadoIncidencia).ASIGNADA ? 'Reasignar incidencia' : 'Asignar incidencia'}">
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <div th:if="${inc.tecnicoAsignado != null}"
+                                     class="campo-bloqueado"
+                                     style="line-height:1.4; display:block;">
+                                    <strong>Equipo actual:</strong><br>
+                                    <span th:text="${inc.tecnicoAsignado.email}"></span>
+                                </div>
+
+                                <div th:if="${inc.estado != T(com.giu.giu.model.EstadoIncidencia).VALIDADA and inc.estado != T(com.giu.giu.model.EstadoIncidencia).ASIGNADA and inc.tecnicoAsignado == null}"
+                                     class="campo-bloqueado">
+                                    -
+                                </div>
                             </div>
                         </td>
                     </tr>
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 
