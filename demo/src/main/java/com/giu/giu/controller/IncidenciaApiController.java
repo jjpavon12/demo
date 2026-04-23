@@ -61,6 +61,8 @@ public class IncidenciaApiController {
                 .collect(Collectors.toList()));
         map.put("fecha", inc.getFechaCreacion().format(FMT));
         map.put("email", inc.getUsuario().getEmail());
+        map.put("prioridad", inc.getPrioridad() != null ? inc.getPrioridad().name() : null);
+        map.put("prioridadDesc", inc.getPrioridad() != null ? inc.getPrioridad().getDescripcion() : null);
         return map;
     }
 }

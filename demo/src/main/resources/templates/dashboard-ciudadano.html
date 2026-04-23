@@ -90,6 +90,74 @@
         .feature-card-disabled { border-top-color: #e2e8f0; }
         .feature-card-disabled h3 { color: #94a3b8; }
         .feature-card-disabled p { color: #cbd5e1; }
+        /* --- Filter bar --- */
+        .filter-bar {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 3px; }
+        .filter-label { font-size: .7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .4px; }
+        .filter-input {
+            padding: 6px 10px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: .82rem;
+            font-family: inherit;
+            color: #334155;
+            outline: none;
+            transition: border-color .14s;
+            background: #fff;
+            width: 90px;
+        }
+        .filter-select {
+            padding: 6px 10px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: .82rem;
+            font-family: inherit;
+            color: #334155;
+            outline: none;
+            transition: border-color .14s;
+            background: #fff;
+            min-width: 170px;
+        }
+        .filter-date { width: 140px; }
+        .filter-input:focus, .filter-select:focus { border-color: #1d4ed8; }
+        .filter-actions { display: flex; gap: 8px; align-items: flex-end; }
+        .btn-apply {
+            background: #1d4ed8;
+            color: #fff;
+            border: none;
+            padding: 7px 18px;
+            border-radius: 6px;
+            font-size: .82rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background .14s;
+        }
+        .btn-apply:hover { background: #1e40af; }
+        .btn-clear {
+            background: #fff;
+            color: #64748b;
+            border: 1.5px solid #e2e8f0;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: .82rem;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all .14s;
+        }
+        .btn-clear:hover { border-color: #94a3b8; color: #334155; }
+        .map-counter { font-size: .82rem; color: #64748b; margin-bottom: 10px; }
         /* --- Mapa ciudadano --- */
         .map-section {
             background: #fff;
@@ -173,12 +241,36 @@
         <div class="map-section">
             <p class="map-section-title">🗺️ Mapa de incidencias del municipio</p>
             <p class="map-section-subtitle">Visualiza las incidencias urbanas reportadas en tu municipio.</p>
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <span class="filter-label">ID de Incidencia</span>
+                    <input type="text" id="filt-id" class="filter-input" placeholder="Ej. 12">
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Categoría</span>
+                    <select id="filt-cat" class="filter-select">
+                        <option value="">Todas las categorías</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Fecha desde</span>
+                    <input type="date" id="filt-desde" class="filter-input filter-date">
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Fecha hasta</span>
+                    <input type="date" id="filt-hasta" class="filter-input filter-date">
+                </div>
+                <div class="filter-actions">
+                    <button class="btn-apply" onclick="applyFilters()">Aplicar</button>
+                    <button class="btn-clear" onclick="clearFilters()">Limpiar</button>
+                </div>
+            </div>
+            <p id="map-counter" class="map-counter"></p>
             <div id="map-ciudadano"></div>
         </div>
     </div>
 
     <script>
-    /* --- Mapa ciudadano: todas las incidencias, sin colores de estado --- */
     var mapCiu = L.map('map-ciudadano').setView([40.4168, -3.7038], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
@@ -186,35 +278,83 @@
     }).addTo(mapCiu);
 
     var estadosVisibles = ['PENDIENTE_VALIDACION', 'VALIDADA', 'ASIGNADA', 'EN_CURSO'];
+    var allDataCiu = [];
+    var markersLayerCiu = L.layerGroup().addTo(mapCiu);
+
+    function parseFecha(str) {
+        var parts = str.split(' ')[0].split('/');
+        return new Date(parts[2], parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+    }
+
+    function renderMarkers(data) {
+        markersLayerCiu.clearLayers();
+        var bounds = [];
+        data.forEach(function(inc) {
+            if (!estadosVisibles.includes(inc.estado)) return;
+            if (inc.latitud && inc.longitud) {
+                var circle = L.circleMarker([inc.latitud, inc.longitud], {
+                    radius: 9, fillColor: '#1d4ed8', color: '#fff',
+                    weight: 2, opacity: 1, fillOpacity: 0.8
+                });
+                circle.bindPopup(
+                    '<strong>ID de Incidencia: ' + inc.id + '</strong><br/>' +
+                    '<span style="font-size:.82rem;color:#475569">' + inc.categorias.join(', ') + '</span><br/>' +
+                    '<span style="font-size:.82rem">' + inc.descripcion.substring(0, 120) + (inc.descripcion.length > 120 ? '...' : '') + '</span><br/>' +
+                    '<small>📍 ' + inc.ubicacion + '</small><br/>' +
+                    '<small>🗓 ' + inc.fecha + '</small>'
+                );
+                markersLayerCiu.addLayer(circle);
+                bounds.push([inc.latitud, inc.longitud]);
+            }
+        });
+        var n = markersLayerCiu.getLayers().length;
+        document.getElementById('map-counter').textContent = 'Mostrando ' + n + ' incidencia' + (n !== 1 ? 's' : '') + ' en el mapa';
+        if (bounds.length > 0) mapCiu.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+    }
+
+    function applyFilters() {
+        var idVal = document.getElementById('filt-id').value.trim();
+        var catVal = document.getElementById('filt-cat').value;
+        var desdeVal = document.getElementById('filt-desde').value;
+        var hastaVal = document.getElementById('filt-hasta').value;
+        var filtered = allDataCiu.filter(function(inc) {
+            if (idVal && String(inc.id) !== idVal) return false;
+            if (catVal && !inc.categorias.includes(catVal)) return false;
+            if (desdeVal || hastaVal) {
+                var f = parseFecha(inc.fecha);
+                if (desdeVal && f < new Date(desdeVal)) return false;
+                if (hastaVal) { var h = new Date(hastaVal); h.setDate(h.getDate() + 1); if (f >= h) return false; }
+            }
+            return true;
+        });
+        renderMarkers(filtered);
+    }
+
+    function clearFilters() {
+        document.getElementById('filt-id').value = '';
+        document.getElementById('filt-cat').value = '';
+        document.getElementById('filt-desde').value = '';
+        document.getElementById('filt-hasta').value = '';
+        renderMarkers(allDataCiu);
+    }
 
     fetch('/api/incidencias')
         .then(function(r) { return r.json(); })
         .then(function(data) {
-            var bounds = [];
+            allDataCiu = data;
+            var cats = new Set();
             data.forEach(function(inc) {
-                if (!estadosVisibles.includes(inc.estado)) return;
-                if (inc.latitud && inc.longitud) {
-                    var circle = L.circleMarker([inc.latitud, inc.longitud], {
-                        radius: 9,
-                        fillColor: '#1d4ed8',
-                        color: '#fff',
-                        weight: 2,
-                        opacity: 1,
-                        fillOpacity: 0.8
-                    }).addTo(mapCiu);
-                    circle.bindPopup(
-                        '<strong>#' + inc.id + '</strong><br/>' +
-                        '<span style="font-size:.82rem;color:#475569">' + inc.categorias.join(', ') + '</span><br/>' +
-                        '<span style="font-size:.82rem">' + inc.descripcion.substring(0, 120) + (inc.descripcion.length > 120 ? '...' : '') + '</span><br/>' +
-                        '<small>📍 ' + inc.ubicacion + '</small><br/>' +
-                        '<small>🗓 ' + inc.fecha + '</small>'
-                    );
-                    bounds.push([inc.latitud, inc.longitud]);
+                if (estadosVisibles.includes(inc.estado)) {
+                    inc.categorias.forEach(function(c) { cats.add(c); });
                 }
             });
-            if (bounds.length > 0) {
-                mapCiu.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
-            }
+            var sel = document.getElementById('filt-cat');
+            Array.from(cats).sort().forEach(function(c) {
+                var opt = document.createElement('option');
+                opt.value = c; opt.textContent = c;
+                sel.appendChild(opt);
+            });
+            renderMarkers(data);
         });
     </script>
 </body>

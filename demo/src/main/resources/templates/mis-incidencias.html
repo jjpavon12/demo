@@ -125,6 +125,7 @@
         .badge-RESUELTA { background: #d1fae5; color: #065f46; }
         .badge-CERRADA { background: #e2e8f0; color: #334155; }
         .badge-RECHAZADA { background: #fee2e2; color: #991b1b; }
+        .card-id { font-size: 1rem; font-weight: 700; color: #0f172a; }
         .card-descripcion { color: #475569; font-size: .875rem; margin-bottom: 10px; line-height: 1.55; }
         .card-meta { display: flex; gap: 18px; font-size: .78rem; color: #94a3b8; }
         #map-mis-incidencias {
@@ -185,14 +186,15 @@
         <div th:each="inc : ${incidencias}"
              th:classappend="'incidencia-card estado-' + ${inc.estado.name()}"
              class="incidencia-card">
-            <div class="card-top">
-                <div class="card-categorias">
-                    <span class="card-categoria-tag" th:each="cat : ${inc.categorias}" th:text="${cat.descripcion}"></span>
-                </div>
+            <div class="card-top" style="margin-bottom:8px;">
+                <span class="card-id">ID de Incidencia: <span th:text="${inc.id}"></span></span>
                 <span class="badge"
                       th:classappend="'badge-' + ${inc.estado.name()}"
                       th:text="${inc.estado.descripcion}">
                 </span>
+            </div>
+            <div class="card-categorias" style="margin-bottom:8px;">
+                <span class="card-categoria-tag" th:each="cat : ${inc.categorias}" th:text="${cat.descripcion}"></span>
             </div>
             <p class="card-descripcion" th:text="${inc.descripcion}"></p>
             <div class="card-meta">
@@ -235,7 +237,8 @@
                         fillOpacity: 0.85
                     }).addTo(map);
                     circle.bindPopup(
-                        '<strong>' + inc.categorias.join(', ') + '</strong><br/>' +
+                        '<strong>ID de Incidencia: ' + inc.id + '</strong><br/>' +
+                        '<span style="font-size:.82rem;color:#475569">' + inc.categorias.join(', ') + '</span><br/>' +
                         '<span style="color:' + color + ';font-weight:600">' + inc.estadoDesc + '</span><br/>' +
                         inc.descripcion.substring(0, 100) + (inc.descripcion.length > 100 ? '...' : '') + '<br/>' +
                         '<small>📍 ' + inc.ubicacion + '</small><br/>' +
