@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Perfil — GIU</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(rgba(241,245,249,.82), rgba(241,245,249,.82)), url('/images/giu.jpg') center/cover fixed; }
+        body { font-family: 'Sora', system-ui, sans-serif; background: linear-gradient(rgba(241,245,249,.85), rgba(241,245,249,.85)), url('/images/giu.jpg') center/cover fixed; }
         nav.navbar {
-            background: #1d4ed8;
+            background: #15803d;
             height: 60px;
             display: flex;
             align-items: center;
@@ -45,14 +45,14 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            color: #1d4ed8;
+            color: #15803d;
             text-decoration: none;
             font-size: .84rem;
             font-weight: 500;
             margin-bottom: 20px;
             transition: color .14s;
         }
-        .back-link:hover { color: #1e40af; }
+        .back-link:hover { color: #14532d; }
         .card {
             background: #fff;
             border-radius: 14px;
@@ -60,7 +60,7 @@
             overflow: hidden;
         }
         .card-header {
-            background: #1d4ed8;
+            background: #15803d;
             padding: 24px 28px;
             color: #fff;
         }
@@ -97,8 +97,8 @@
         .info-label { font-size: .82rem; color: #64748b; font-weight: 500; }
         .info-value { font-size: .88rem; color: #0f172a; font-weight: 600; }
         .role-badge {
-            background: #eff6ff;
-            color: #1d4ed8;
+            background: #f0fdf4;
+            color: #15803d;
             padding: 3px 10px;
             border-radius: 20px;
             font-size: .75rem;
@@ -127,8 +127,8 @@
             outline: none;
         }
         .form-group input:focus {
-            border-color: #1d4ed8;
-            box-shadow: 0 0 0 3px rgba(29,78,216,.1);
+            border-color: #15803d;
+            box-shadow: 0 0 0 3px rgba(21,128,61,.1);
         }
         .form-hint {
             font-size: .75rem;
@@ -138,7 +138,7 @@
         .btn-save {
             width: 100%;
             padding: 11px;
-            background: #1d4ed8;
+            background: #15803d;
             color: #fff;
             border: none;
             border-radius: 8px;
@@ -149,7 +149,7 @@
             transition: background .14s;
             margin-top: 6px;
         }
-        .btn-save:hover { background: #1e40af; }
+        .btn-save:hover { background: #14532d; }
     </style>
 </head>
 <body>
@@ -157,12 +157,12 @@
         <div class="nav-brand">
             <div class="nav-logo" style="background:none;padding:0;">
                 <svg width="34" height="34" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-                    <defs><linearGradient id="nlg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#5ab5fd"/><stop offset="100%" stop-color="#1848d4"/></linearGradient></defs>
+                    <defs><linearGradient id="nlg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#86efac"/><stop offset="100%" stop-color="#14532d"/></linearGradient></defs>
                     <rect width="60" height="60" rx="14" fill="url(#nlg)"/>
                     <rect x="1" y="1" width="58" height="26" rx="13" fill="rgba(255,255,255,0.08)"/>
                     <path d="M22,13 A17,17 0 1,0 22,47 L52,30 Z" fill="rgba(255,255,255,0.18)"/>
                     <circle cx="22" cy="30" r="6" fill="rgba(0,0,0,0.12)"/>
-                    <text x="30" y="40" font-family="Inter,system-ui,sans-serif" font-size="19" font-weight="700" fill="white" text-anchor="middle" letter-spacing="1">GIU</text>
+                    <text x="30" y="40" font-family="Sora,system-ui,sans-serif" font-size="19" font-weight="700" fill="white" text-anchor="middle" letter-spacing="1">GIU</text>
                 </svg>
             </div>
             <span class="nav-title">Portal Ciudadano</span>
@@ -245,7 +245,7 @@
                         <label for="rolSolicitado">Nuevo rol deseado</label>
                         <select id="rolSolicitado" name="rolSolicitado"
                                 style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.88rem;font-family:inherit;color:#0f172a;outline:none;transition:border-color .14s;"
-                                onfocus="this.style.borderColor='#1d4ed8'" onblur="this.style.borderColor='#e2e8f0'">
+                                onfocus="this.style.borderColor='#15803d'" onblur="this.style.borderColor='#e2e8f0'">
                             <th:block th:each="r : ${rolesDisponibles}">
                                 <option th:if="${r.name() != 'ADMINISTRADOR' and r != usuario.rol}"
                                         th:value="${r.name()}"
