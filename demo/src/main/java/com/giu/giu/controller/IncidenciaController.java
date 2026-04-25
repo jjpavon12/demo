@@ -11,10 +11,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/ciudadano/incidencias")
@@ -23,44 +29,60 @@ public class IncidenciaController {
     @Autowired
     private IncidenciaService incidenciaService;
 
-    /**
-     * Formulario para registrar una nueva incidencia
-     */
     @GetMapping("/registrar")
     public String mostrarFormulario(Model model) {
         Usuario usuario = getUsuarioAutenticado();
         if (usuario == null) return "redirect:/login";
-
         model.addAttribute("categorias", CategoriaIncidencia.values());
         model.addAttribute("usuario", usuario);
         return "registrar-incidencia";
     }
 
-    /**
-     * Procesa el envío del formulario de nueva incidencia
-     */
     @PostMapping("/registrar")
     public String registrarIncidencia(@RequestParam String descripcion,
                                       @RequestParam String ubicacion,
                                       @RequestParam(required = false) Double latitud,
                                       @RequestParam(required = false) Double longitud,
                                       @RequestParam List<CategoriaIncidencia> categorias,
+                                      @RequestParam(required = false) MultipartFile imagen,
                                       Model model) {
         Usuario usuario = getUsuarioAutenticado();
         if (usuario == null) return "redirect:/login";
 
-        incidenciaService.registrar(descripcion, ubicacion, latitud, longitud, new HashSet<>(categorias), usuario);
+        String imagenNombre = null;
+        if (imagen != null && !imagen.isEmpty()) {
+            String contentType = imagen.getContentType();
+            if (contentType == null || (!contentType.equals("image/jpeg") && !contentType.equals("image/png"))) {
+                model.addAttribute("errorImagen", "Solo se permiten imágenes .jpg, .jpeg o .png");
+                model.addAttribute("categorias", CategoriaIncidencia.values());
+                return "registrar-incidencia";
+            }
+            if (imagen.getSize() > 5L * 1024 * 1024) {
+                model.addAttribute("errorImagen", "La imagen no puede superar los 5 MB");
+                model.addAttribute("categorias", CategoriaIncidencia.values());
+                return "registrar-incidencia";
+            }
+            try {
+                String ext = contentType.equals("image/png") ? ".png" : ".jpg";
+                imagenNombre = UUID.randomUUID().toString() + ext;
+                Path uploadDir = Paths.get("uploads/incidencias");
+                Files.createDirectories(uploadDir);
+                Files.copy(imagen.getInputStream(), uploadDir.resolve(imagenNombre), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                model.addAttribute("errorImagen", "Error al guardar la imagen. Inténtalo de nuevo.");
+                model.addAttribute("categorias", CategoriaIncidencia.values());
+                return "registrar-incidencia";
+            }
+        }
+
+        incidenciaService.registrar(descripcion, ubicacion, latitud, longitud, new HashSet<>(categorias), imagenNombre, usuario);
         return "redirect:/ciudadano/incidencias/mis-incidencias?exito";
     }
 
-    /**
-     * Lista de incidencias del ciudadano autenticado
-     */
     @GetMapping("/mis-incidencias")
     public String misIncidencias(Model model) {
         Usuario usuario = getUsuarioAutenticado();
         if (usuario == null) return "redirect:/login";
-
         List<Incidencia> incidencias = incidenciaService.obtenerPorUsuario(usuario);
         model.addAttribute("incidencias", incidencias);
         model.addAttribute("usuario", usuario);

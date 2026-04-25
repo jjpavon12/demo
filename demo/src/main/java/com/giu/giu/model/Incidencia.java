@@ -25,6 +25,9 @@ public class Incidencia {
     @Column
     private Double longitud;
 
+    @Column
+    private String imagenNombre;
+
     @ElementCollection(targetClass = CategoriaIncidencia.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "incidencia_categorias", joinColumns = @JoinColumn(name = "incidencia_id"))
     @Enumerated(EnumType.STRING)
@@ -108,6 +111,14 @@ public class Incidencia {
 
     public void setLongitud(Double longitud) {
         this.longitud = longitud;
+    }
+
+    public String getImagenNombre() {
+        return imagenNombre;
+    }
+
+    public void setImagenNombre(String imagenNombre) {
+        this.imagenNombre = imagenNombre;
     }
 
     public Set<CategoriaIncidencia> getCategorias() {

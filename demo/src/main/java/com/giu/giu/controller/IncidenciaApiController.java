@@ -5,10 +5,17 @@ import com.giu.giu.model.Usuario;
 import com.giu.giu.security.CustomUserDetails;
 import com.giu.giu.service.IncidenciaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,6 +52,19 @@ public class IncidenciaApiController {
                     .collect(Collectors.toList());
         }
         return Collections.emptyList();
+    }
+
+    @GetMapping("/imagen/{nombre}")
+    public ResponseEntity<Resource> servirImagen(@PathVariable String nombre) throws IOException {
+        Path imagePath = Paths.get("uploads/incidencias").resolve(nombre).normalize();
+        Resource resource = new UrlResource(imagePath.toUri());
+        if (!resource.exists() || !resource.isReadable()) {
+            return ResponseEntity.notFound().build();
+        }
+        String contentType = nombre.toLowerCase().endsWith(".png") ? "image/png" : "image/jpeg";
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .body(resource);
     }
 
     private Map<String, Object> toMap(Incidencia inc) {

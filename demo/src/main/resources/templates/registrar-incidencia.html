@@ -21,12 +21,32 @@
         }
         .nav-brand { display: flex; align-items: center; gap: 10px; }
         .nav-logo {
-            background: rgba(255,255,255,.2);
-            color: #fff;
-            width: 34px; height: 34px;
-            border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: .8rem; font-weight: 700;
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #052e16, #14532d);
+            box-shadow: 0 4px 14px rgba(5,46,22,.55);
+            border: 1px solid rgba(255,255,255,.18);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .nav-logo::before {
+            content: "";
+            position: absolute;
+            inset: 5px;
+            border: 1.5px solid rgba(255,255,255,.32);
+            border-radius: 6px;
+        }
+        .nav-logo::after {
+            content: "";
+            position: absolute;
+            right: -4px; top: -4px;
+            width: 14px; height: 14px;
+            border-radius: 5px;
+            background: rgba(255,255,255,.22);
         }
         .nav-title { color: #fff; font-weight: 600; font-size: .95rem; }
         .nav-right { display: flex; align-items: center; gap: 10px; }
@@ -237,21 +257,67 @@
             opacity: .5;
             cursor: not-allowed;
         }
+        .foto-upload-zone {
+            border: 2px dashed #e2e8f0;
+            border-radius: 10px;
+            padding: 22px 16px;
+            text-align: center;
+            background: #f8fafc;
+            transition: border-color .14s;
+        }
+        .foto-upload-zone:hover { border-color: #15803d; }
+        .btn-adjuntar {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 20px;
+            background: #fff;
+            color: #15803d;
+            border: 1.5px solid #15803d;
+            border-radius: 8px;
+            font-size: .85rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background .14s, color .14s;
+        }
+        .btn-adjuntar:hover { background: #15803d; color: #fff; }
+        .foto-hint { font-size: .76rem; color: #94a3b8; margin-top: 8px; }
+        .foto-preview-zone {
+            display: none;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px;
+            background: #f8fafc;
+        }
+        .foto-preview-zone img {
+            max-width: 100%;
+            max-height: 220px;
+            border-radius: 8px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
+        .foto-actions { display: flex; gap: 8px; margin-top: 10px; justify-content: center; }
+        .btn-foto-accion {
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: .8rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all .14s;
+        }
+        .btn-cambiar { background: #fff; color: #15803d; border: 1.5px solid #15803d; }
+        .btn-cambiar:hover { background: #15803d; color: #fff; }
+        .btn-eliminar { background: #fff; color: #dc2626; border: 1.5px solid #dc2626; }
+        .btn-eliminar:hover { background: #dc2626; color: #fff; }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-brand">
-            <div class="nav-logo" style="background:none;padding:0;">
-                <svg width="34" height="34" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-                    <defs><linearGradient id="nlg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#86efac"/><stop offset="100%" stop-color="#14532d"/></linearGradient></defs>
-                    <rect width="60" height="60" rx="14" fill="url(#nlg)"/>
-                    <rect x="1" y="1" width="58" height="26" rx="13" fill="rgba(255,255,255,0.08)"/>
-                    <path d="M22,13 A17,17 0 1,0 22,47 L52,30 Z" fill="rgba(255,255,255,0.18)"/>
-                    <circle cx="22" cy="30" r="6" fill="rgba(0,0,0,0.12)"/>
-                    <text x="30" y="40" font-family="Sora,system-ui,sans-serif" font-size="19" font-weight="700" fill="white" text-anchor="middle" letter-spacing="1">GIU</text>
-                </svg>
-            </div>
+            <div class="nav-logo"><span style="position:relative;z-index:1;color:#fff;font-size:.62rem;font-weight:800;letter-spacing:.06em;">GIU</span></div>
             <span class="nav-title">Portal Ciudadano</span>
         </div>
         <div class="nav-right">
@@ -265,7 +331,7 @@
             <h2>Registrar incidencia</h2>
             <p class="subtitle">Rellena el formulario para notificar una incidencia en la vía pública.</p>
 
-            <form th:action="@{/ciudadano/incidencias/registrar}" method="post">
+            <form th:action="@{/ciudadano/incidencias/registrar}" method="post" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="descripcion">Descripción</label>
                     <textarea id="descripcion" name="descripcion" placeholder="Describe la incidencia con el mayor detalle posible..." required></textarea>
@@ -300,6 +366,26 @@
                     </div>
                     <p id="catError" style="display:none;color:#dc2626;font-size:.8rem;margin-top:6px">Selecciona al menos una categoría.</p>
                 </div>
+                <div class="form-group">
+                    <label>Foto de la incidencia <span style="font-weight:400;text-transform:none;font-size:.75rem;color:#94a3b8">(opcional)</span></label>
+                    <div class="foto-upload-zone" id="fotoUploadZone">
+                        <button type="button" class="btn-adjuntar" onclick="document.getElementById('imagen').click()">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            Adjuntar imagen
+                        </button>
+                        <p class="foto-hint">Formatos permitidos: .jpg, .jpeg, .png · Máximo 5 MB</p>
+                    </div>
+                    <div class="foto-preview-zone" id="fotoPreviewZone">
+                        <img id="fotoPreviewImg" src="" alt="Vista previa"/>
+                        <div class="foto-actions">
+                            <button type="button" class="btn-foto-accion btn-cambiar" onclick="document.getElementById('imagen').click()">Cambiar imagen</button>
+                            <button type="button" class="btn-foto-accion btn-eliminar" onclick="eliminarImagen()">Eliminar</button>
+                        </div>
+                    </div>
+                    <input type="file" id="imagen" name="imagen" accept=".jpg,.jpeg,.png" style="display:none" onchange="previewImagen(this)"/>
+                    <p id="errorFoto" style="display:none;color:#dc2626;font-size:.8rem;margin-top:6px;"></p>
+                    <p th:if="${errorImagen}" style="color:#dc2626;font-size:.8rem;margin-top:6px;" th:text="${errorImagen}"></p>
+                </div>
                 <button type="submit" class="btn-submit" onclick="return validarFormulario()">Registrar incidencia</button>
             </form>
 
@@ -307,6 +393,40 @@
         </div>
     </div>
     <script>
+    function previewImagen(input) {
+        var errEl = document.getElementById('errorFoto');
+        var file = input.files[0];
+        if (!file) return;
+        var valid = ['image/jpeg', 'image/png'];
+        if (!valid.includes(file.type)) {
+            errEl.textContent = 'Solo se permiten imágenes .jpg, .jpeg o .png';
+            errEl.style.display = 'block';
+            input.value = '';
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            errEl.textContent = 'La imagen no puede superar los 5 MB';
+            errEl.style.display = 'block';
+            input.value = '';
+            return;
+        }
+        errEl.style.display = 'none';
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('fotoPreviewImg').src = e.target.result;
+            document.getElementById('fotoUploadZone').style.display = 'none';
+            document.getElementById('fotoPreviewZone').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function eliminarImagen() {
+        document.getElementById('imagen').value = '';
+        document.getElementById('fotoPreviewImg').src = '';
+        document.getElementById('fotoPreviewZone').style.display = 'none';
+        document.getElementById('fotoUploadZone').style.display = 'block';
+    }
+
     function validarFormulario() {
         var checks = document.querySelectorAll('input[name="categorias"]:checked');
         var catErr = document.getElementById('catError');

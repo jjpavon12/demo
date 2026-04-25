@@ -20,12 +20,32 @@
         }
         .nav-brand { display: flex; align-items: center; gap: 10px; }
         .nav-logo {
-            background: rgba(255,255,255,.2);
-            color: #fff;
-            width: 34px; height: 34px;
-            border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: .8rem; font-weight: 700;
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #052e16, #14532d);
+            box-shadow: 0 4px 14px rgba(5,46,22,.55);
+            border: 1px solid rgba(255,255,255,.18);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .nav-logo::before {
+            content: "";
+            position: absolute;
+            inset: 5px;
+            border: 1.5px solid rgba(255,255,255,.32);
+            border-radius: 6px;
+        }
+        .nav-logo::after {
+            content: "";
+            position: absolute;
+            right: -4px; top: -4px;
+            width: 14px; height: 14px;
+            border-radius: 5px;
+            background: rgba(255,255,255,.22);
         }
         .nav-title { color: #fff; font-weight: 600; font-size: .95rem; }
         .nav-right { display: flex; align-items: center; gap: 12px; }
@@ -50,9 +70,9 @@
         }
         .nav-logout:hover { background: rgba(255,255,255,.28); }
         .container { max-width: 1400px; margin: 32px auto; padding: 0 24px; }
-        .main-layout { display: grid; grid-template-columns: 1fr 380px; gap: 24px; }
-        .main-layout .map-section { order: 1; }
-        .main-layout .sidebar { order: 2; display: flex; flex-direction: column; gap: 20px; }
+        .main-layout { display: flex; flex-direction: column; gap: 24px; }
+        .main-layout .map-section { width: 100%; }
+        .main-layout .sidebar { width: 100%; }
         .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
         .page-header h2 { font-size: 1.1rem; font-weight: 700; color: #0f172a; }
         .stat-chip {
@@ -361,7 +381,7 @@
         .dup-item strong { color: var(--accent-dark); }
         .row-highlight td { background: #fff7ed !important; transition: background 1.5s; }
         #map-operador {
-            height: 400px;
+            height: 480px;
             border-radius: 12px;
             box-shadow: 0 1px 4px rgba(0,0,0,.07);
             margin-bottom: 10px;
@@ -465,16 +485,7 @@
 <body>
     <nav class="navbar">
         <div class="nav-brand">
-            <div class="nav-logo" style="background:none;padding:0;">
-                <svg width="34" height="34" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-                    <defs><linearGradient id="nlg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fb923c"/><stop offset="100%" stop-color="#c2410c"/></linearGradient></defs>
-                    <rect width="60" height="60" rx="14" fill="url(#nlg)"/>
-                    <rect x="1" y="1" width="58" height="26" rx="13" fill="rgba(255,255,255,0.08)"/>
-                    <path d="M22,13 A17,17 0 1,0 22,47 L52,30 Z" fill="rgba(255,255,255,0.18)"/>
-                    <circle cx="22" cy="30" r="6" fill="rgba(0,0,0,0.12)"/>
-                    <text x="30" y="40" font-family="Nunito,system-ui,sans-serif" font-size="19" font-weight="700" fill="white" text-anchor="middle" letter-spacing="1">GIU</text>
-                </svg>
-            </div>
+            <div class="nav-logo"><span style="position:relative;z-index:1;color:#fff;font-size:.62rem;font-weight:800;letter-spacing:.06em;">GIU</span></div>
             <span class="nav-title">Panel Operador</span>
         </div>
         <div class="nav-right">
@@ -622,7 +633,7 @@
                                       th:text="${cat.descripcion}"></span>
                             </div>
                         </td>
-                        <td><span class="desc-link" th:onclick="'openModal(this)'" th:data-desc="${inc.descripcion}">Ver descripción</span></td>
+                        <td><span class="desc-link" th:onclick="'openModal(this)'" th:data-desc="${inc.descripcion}" th:attr="data-imagen=${inc.imagenNombre}">Ver descripción</span></td>
                         <td th:text="${inc.ubicacion}"></td>
                         <td class="td-dup" style="text-align:center;"></td>
                         <td th:text="${#temporals.format(inc.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>
@@ -721,6 +732,7 @@
                 <span class="close-modal" onclick="closeModal()">&times;</span>
             </div>
             <p id="descContent" class="modal-body"></p>
+            <img id="descImagen" src="" alt="Foto de la incidencia" style="display:none;max-width:100%;max-height:260px;border-radius:8px;object-fit:contain;margin-top:12px;border:1px solid #e2e8f0;"/>
             <div class="modal-footer">
                 <button onclick="closeModal()">Cerrar</button>
             </div>
@@ -789,6 +801,14 @@
     /* --- Descripción modal --- */
     function openModal(el) {
         document.getElementById('descContent').textContent = el.getAttribute('data-desc');
+        var img = el.getAttribute('data-imagen');
+        var modalImg = document.getElementById('descImagen');
+        if (img && img !== '' && img !== 'null') {
+            modalImg.src = '/api/incidencias/imagen/' + img;
+            modalImg.style.display = 'block';
+        } else {
+            modalImg.style.display = 'none';
+        }
         document.getElementById('descModal').style.display = 'block';
     }
     function closeModal() { document.getElementById('descModal').style.display = 'none'; }
