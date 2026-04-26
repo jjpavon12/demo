@@ -46,7 +46,7 @@ public class Incidencia {
     private boolean prioridadAsignada = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id", nullable = false)
+    @JoinColumn(name = "usuario_id", nullable = true)
     private Usuario usuario;
 
     // NUEVO: técnico asignado
@@ -60,6 +60,9 @@ public class Incidencia {
     @Column(nullable = false)
     private LocalDateTime fechaCreacion;
 
+    @Column
+    private LocalDateTime fechaModificacion;
+
     @PrePersist
     protected void onCreate() {
         this.fechaCreacion = LocalDateTime.now();
@@ -69,6 +72,11 @@ public class Incidencia {
         if (this.prioridad == null) {
             this.prioridad = PrioridadIncidencia.BAJA;
         }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.fechaModificacion = LocalDateTime.now();
     }
 
     public Incidencia() {}
@@ -183,5 +191,13 @@ public class Incidencia {
 
     public void setFechaCreacion(LocalDateTime fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
+    }
+
+    public LocalDateTime getFechaModificacion() {
+        return fechaModificacion;
+    }
+
+    public void setFechaModificacion(LocalDateTime fechaModificacion) {
+        this.fechaModificacion = fechaModificacion;
     }
 }

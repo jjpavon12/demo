@@ -83,6 +83,9 @@
 </head>
 <body>
     <div class="card">
+        <div th:if="${param.cuentaEliminada}" style="background:#dcfce7;border:1px solid #86efac;color:#166534;padding:10px 14px;border-radius:8px;margin-bottom:20px;font-size:.84rem;font-weight:500;">
+            Tu cuenta ha sido eliminada correctamente.
+        </div>
         <div class="logo-mark"><span style="position:relative;z-index:1;color:#fff;font-size:.92rem;font-weight:800;letter-spacing:.08em;">GIU</span></div>
         <h1>Gestión de Incidencias Urbanas</h1>
         <p class="tagline">Portal municipal para el reporte y seguimiento de incidencias en la vía pública.</p>
