@@ -26,17 +26,32 @@
         }
         .card-header { text-align: center; margin-bottom: 28px; }
         .logo-mark {
+            position: relative;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 48px;
-            height: 48px;
-            background: #15803d;
-            color: #fff;
-            border-radius: 13px;
-            font-size: 1rem;
-            font-weight: 700;
+            width: 56px;
+            height: 56px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #052e16, #14532d);
+            box-shadow: 0 8px 24px rgba(5,46,22,.45);
+            overflow: hidden;
             margin-bottom: 14px;
+        }
+        .logo-mark::before {
+            content: "";
+            position: absolute;
+            inset: 7px;
+            border: 1.5px solid rgba(255,255,255,.28);
+            border-radius: 9px;
+        }
+        .logo-mark::after {
+            content: "";
+            position: absolute;
+            right: -6px; top: -6px;
+            width: 20px; height: 20px;
+            border-radius: 8px;
+            background: rgba(255,255,255,.18);
         }
         h1 { font-size: 1.3rem; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
         .subtitle { font-size: .85rem; color: #64748b; }
@@ -71,7 +86,7 @@
             background: #15803d;
             color: #fff;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: .9rem;
             font-weight: 600;
             font-family: inherit;
@@ -88,21 +103,7 @@
 <body>
     <div class="card">
         <div class="card-header">
-            <div class="logo-mark" style="background:none;padding:0;">
-                <svg width="48" height="48" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="lg1" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stop-color="#86efac"/>
-                            <stop offset="100%" stop-color="#14532d"/>
-                        </linearGradient>
-                    </defs>
-                    <rect width="60" height="60" rx="14" fill="url(#lg1)"/>
-                    <rect x="1" y="1" width="58" height="26" rx="13" fill="rgba(255,255,255,0.08)"/>
-                    <path d="M22,13 A17,17 0 1,0 22,47 L52,30 Z" fill="rgba(255,255,255,0.18)"/>
-                    <circle cx="22" cy="30" r="6" fill="rgba(0,0,0,0.12)"/>
-                    <text x="30" y="40" font-family="Sora,system-ui,sans-serif" font-size="19" font-weight="700" fill="white" text-anchor="middle" letter-spacing="1">GIU</text>
-                </svg>
-            </div>
+            <div class="logo-mark"><span style="position:relative;z-index:1;color:#fff;font-size:.92rem;font-weight:800;letter-spacing:.08em;">GIU</span></div>
             <h1>Crear cuenta</h1>
             <p class="subtitle">Regístrate para acceder al portal</p>
         </div>

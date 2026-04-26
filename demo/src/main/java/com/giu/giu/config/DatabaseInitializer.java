@@ -14,6 +14,8 @@ import java.util.List;
 @Component
 public class DatabaseInitializer implements ApplicationRunner {
 
+    public static final String EMAIL_ANONIMO = "anonimo@giu.internal";
+
     private final JdbcTemplate jdbcTemplate;
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
@@ -30,6 +32,7 @@ public class DatabaseInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         ensureActivoColumn();
         ensureAdminUser();
+        ensureAnonimoUser();
     }
 
     private void ensureActivoColumn() {
@@ -49,6 +52,17 @@ public class DatabaseInitializer implements ApplicationRunner {
             admin.setRol(Rol.ADMINISTRADOR);
             admin.setActivo(true);
             return usuarioRepository.save(admin);
+        });
+    }
+
+    private void ensureAnonimoUser() {
+        usuarioRepository.findByEmail(EMAIL_ANONIMO).orElseGet(() -> {
+            Usuario anonimo = new Usuario();
+            anonimo.setEmail(EMAIL_ANONIMO);
+            anonimo.setPassword(passwordEncoder.encode("BLOQUEADO-" + System.nanoTime()));
+            anonimo.setRol(Rol.CIUDADANO);
+            anonimo.setActivo(false);
+            return usuarioRepository.save(anonimo);
         });
     }
 }

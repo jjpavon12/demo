@@ -42,6 +42,34 @@
         }
 
         .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-logo {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #052e16, #14532d);
+            box-shadow: 0 4px 14px rgba(5,46,22,.55);
+            border: 1px solid rgba(255,255,255,.18);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .nav-logo::before {
+            content: "";
+            position: absolute;
+            inset: 5px;
+            border: 1.5px solid rgba(255,255,255,.32);
+            border-radius: 6px;
+        }
+        .nav-logo::after {
+            content: "";
+            position: absolute;
+            right: -4px; top: -4px;
+            width: 14px; height: 14px;
+            border-radius: 5px;
+            background: rgba(255,255,255,.22);
+        }
         .nav-title { color: #fff; font-weight: 600; font-size: .95rem; }
         .nav-right { display: flex; align-items: center; gap: 12px; }
         .nav-email { color: rgba(255,255,255,.8); font-size: .8rem; }
@@ -274,11 +302,13 @@
 <body>
     <nav class="navbar">
         <div class="nav-brand">
+            <div class="nav-logo"><span style="position:relative;z-index:1;color:#fff;font-size:.62rem;font-weight:800;letter-spacing:.06em;">GIU</span></div>
             <span class="nav-title">Panel Técnico</span>
         </div>
         <div class="nav-right">
             <span class="nav-email" th:text="${usuario.email}"></span>
             <span class="nav-role" th:text="${rol}"></span>
+            <a href="/mi-cuenta/eliminar" class="nav-logout" style="background:rgba(220,38,38,.25);">Eliminar cuenta</a>
             <a href="/logout" class="nav-logout">Cerrar sesión</a>
         </div>
     </nav>

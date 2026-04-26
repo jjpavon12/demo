@@ -15,12 +15,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/dashboard")
@@ -72,6 +74,11 @@ public class DashboardController {
         return "redirect:/login";
     }
 
+    private static final Set<EstadoIncidencia> ESTADOS_VERIFICADOS = Set.of(
+        EstadoIncidencia.VALIDADA, EstadoIncidencia.ASIGNADA,
+        EstadoIncidencia.EN_CURSO, EstadoIncidencia.RESUELTA, EstadoIncidencia.CERRADA
+    );
+
     @GetMapping("/operador")
     public String dashboardOperador(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -80,10 +87,33 @@ public class DashboardController {
             CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
             Usuario usuario = userDetails.getUsuario();
 
-            List<Incidencia> incidencias = incidenciaService.obtenerTodas();
-            Map<Long, List<EquipoTecnicoConfig>> equiposSugeridosPorIncidencia = new HashMap<>();
+            List<Incidencia> todas = incidenciaService.obtenerTodas();
 
-            for (Incidencia inc : incidencias) {
+            List<Incidencia> pendientes = todas.stream()
+                .filter(i -> i.getEstado() == EstadoIncidencia.PENDIENTE_VALIDACION)
+                .sorted(Comparator.comparing(Incidencia::getFechaCreacion).reversed())
+                .collect(Collectors.toList());
+
+            List<Incidencia> verificadas = todas.stream()
+                .filter(i -> ESTADOS_VERIFICADOS.contains(i.getEstado()))
+                .sorted(Comparator.comparing(Incidencia::getFechaModificacion,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .collect(Collectors.toList());
+
+            List<Incidencia> rechazadas = todas.stream()
+                .filter(i -> i.getEstado() == EstadoIncidencia.RECHAZADA)
+                .sorted(Comparator.comparing(Incidencia::getFechaModificacion,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .collect(Collectors.toList());
+
+            Map<Long, List<EquipoTecnicoConfig>> equiposSugeridosPorIncidencia = new HashMap<>();
+            for (Incidencia inc : pendientes) {
+                equiposSugeridosPorIncidencia.put(
+                    inc.getId(),
+                    incidenciaService.obtenerEquiposTecnicosOrdenadosParaIncidencia(inc)
+                );
+            }
+            for (Incidencia inc : verificadas) {
                 if (inc.getEstado() == EstadoIncidencia.VALIDADA || inc.getEstado() == EstadoIncidencia.ASIGNADA) {
                     equiposSugeridosPorIncidencia.put(
                         inc.getId(),
@@ -94,7 +124,9 @@ public class DashboardController {
 
             model.addAttribute("usuario", usuario);
             model.addAttribute("rol", "OPERADOR");
-            model.addAttribute("incidencias", incidencias);
+            model.addAttribute("incidencias", pendientes);
+            model.addAttribute("incidenciasVerificadas", verificadas);
+            model.addAttribute("incidenciasRechazadas", rechazadas);
             model.addAttribute("estadosOperador", ESTADOS_OPERADOR);
             model.addAttribute("categorias", CategoriaIncidencia.values());
             model.addAttribute("prioridades", PrioridadIncidencia.values());
@@ -104,6 +136,19 @@ public class DashboardController {
         }
 
         return "redirect:/login";
+    }
+
+    @PostMapping("/operador/validar-y-asignar")
+    public String validarYAsignar(@RequestParam Long id,
+                                  @RequestParam(required = false) String tecnicoId) {
+        if (incidenciaService.estaBloqueadaParaOperador(id)) {
+            return "redirect:/dashboard/operador";
+        }
+        incidenciaService.cambiarEstado(id, EstadoIncidencia.VALIDADA);
+        if (tecnicoId != null && !tecnicoId.isBlank()) {
+            incidenciaService.asignarATecnico(id, Long.parseLong(tecnicoId));
+        }
+        return "redirect:/dashboard/operador";
     }
 
     @PostMapping("/operador/cambiar-estado")

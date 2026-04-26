@@ -31,7 +31,7 @@ public class IncidenciaService {
     @Autowired
     private EquipoTecnicoConfigRepository equipoTecnicoConfigRepository;
 
-    public Incidencia registrar(String descripcion, String ubicacion, Double latitud, Double longitud, Set<CategoriaIncidencia> categorias, Usuario usuario) {
+    public Incidencia registrar(String descripcion, String ubicacion, Double latitud, Double longitud, Set<CategoriaIncidencia> categorias, String imagenNombre, Usuario usuario) {
         Incidencia incidencia = new Incidencia();
         incidencia.setDescripcion(descripcion);
         incidencia.setUbicacion(ubicacion);
@@ -40,6 +40,7 @@ public class IncidenciaService {
         incidencia.setCategorias(categorias);
         incidencia.setEstado(EstadoIncidencia.PENDIENTE_VALIDACION);
         incidencia.setUsuario(usuario);
+        incidencia.setImagenNombre(imagenNombre);
         return incidenciaRepository.save(incidencia);
     }
 

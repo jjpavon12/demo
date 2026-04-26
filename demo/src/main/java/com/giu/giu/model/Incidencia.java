@@ -25,6 +25,9 @@ public class Incidencia {
     @Column
     private Double longitud;
 
+    @Column
+    private String imagenNombre;
+
     @ElementCollection(targetClass = CategoriaIncidencia.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "incidencia_categorias", joinColumns = @JoinColumn(name = "incidencia_id"))
     @Enumerated(EnumType.STRING)
@@ -43,7 +46,7 @@ public class Incidencia {
     private boolean prioridadAsignada = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id", nullable = false)
+    @JoinColumn(name = "usuario_id", nullable = true)
     private Usuario usuario;
 
     // NUEVO: técnico asignado
@@ -57,6 +60,9 @@ public class Incidencia {
     @Column(nullable = false)
     private LocalDateTime fechaCreacion;
 
+    @Column
+    private LocalDateTime fechaModificacion;
+
     @PrePersist
     protected void onCreate() {
         this.fechaCreacion = LocalDateTime.now();
@@ -66,6 +72,11 @@ public class Incidencia {
         if (this.prioridad == null) {
             this.prioridad = PrioridadIncidencia.BAJA;
         }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.fechaModificacion = LocalDateTime.now();
     }
 
     public Incidencia() {}
@@ -108,6 +119,14 @@ public class Incidencia {
 
     public void setLongitud(Double longitud) {
         this.longitud = longitud;
+    }
+
+    public String getImagenNombre() {
+        return imagenNombre;
+    }
+
+    public void setImagenNombre(String imagenNombre) {
+        this.imagenNombre = imagenNombre;
     }
 
     public Set<CategoriaIncidencia> getCategorias() {
@@ -172,5 +191,13 @@ public class Incidencia {
 
     public void setFechaCreacion(LocalDateTime fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
+    }
+
+    public LocalDateTime getFechaModificacion() {
+        return fechaModificacion;
+    }
+
+    public void setFechaModificacion(LocalDateTime fechaModificacion) {
+        this.fechaModificacion = fechaModificacion;
     }
 }

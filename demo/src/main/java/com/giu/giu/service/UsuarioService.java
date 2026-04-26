@@ -4,17 +4,23 @@ import com.giu.giu.dto.LoginRequest;
 import com.giu.giu.dto.LoginResponse;
 import com.giu.giu.model.CategoriaIncidencia;
 import com.giu.giu.model.EquipoTecnicoConfig;
+import com.giu.giu.model.Incidencia;
 import com.giu.giu.model.Rol;
 import com.giu.giu.model.Usuario;
 import com.giu.giu.repository.EquipoTecnicoConfigRepository;
+import com.giu.giu.repository.IncidenciaRepository;
 import com.giu.giu.repository.UsuarioRepository;
+import com.giu.giu.config.DatabaseInitializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService {
@@ -24,6 +30,9 @@ public class UsuarioService {
 
     @Autowired
     private EquipoTecnicoConfigRepository equipoTecnicoConfigRepository;
+
+    @Autowired
+    private IncidenciaRepository incidenciaRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -106,10 +115,12 @@ public class UsuarioService {
     }
 
     /**
-     * Lista usuarios pendientes de aprobación
+     * Lista usuarios pendientes de aprobación (excluye el usuario del sistema ANÓNIMO)
      */
-    public java.util.List<Usuario> obtenerPendientes() {
-        return usuarioRepository.findByActivoFalse();
+    public List<Usuario> obtenerPendientes() {
+        return usuarioRepository.findByActivoFalse().stream()
+            .filter(u -> !DatabaseInitializer.EMAIL_ANONIMO.equals(u.getEmail()))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -139,6 +150,9 @@ public class UsuarioService {
         if (opt.isEmpty()) return "Usuario no encontrado";
 
         Usuario usuario = opt.get();
+        if (DatabaseInitializer.EMAIL_ANONIMO.equals(usuario.getEmail())) {
+            return "No se puede eliminar el usuario del sistema";
+        }
         if (usuario.getRol() == Rol.ADMINISTRADOR) {
             long numAdmins = usuarioRepository.countByRol(Rol.ADMINISTRADOR);
             if (numAdmins <= 1) {
@@ -154,10 +168,12 @@ public class UsuarioService {
     }
 
     /**
-     * Lista todos los usuarios
+     * Lista todos los usuarios (excluye el usuario del sistema ANÓNIMO)
      */
-    public java.util.List<Usuario> obtenerTodos() {
-        return usuarioRepository.findAll();
+    public List<Usuario> obtenerTodos() {
+        return usuarioRepository.findAll().stream()
+            .filter(u -> !DatabaseInitializer.EMAIL_ANONIMO.equals(u.getEmail()))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -230,6 +246,53 @@ public class UsuarioService {
         }
 
         usuarioRepository.save(usuario);
+        return null;
+    }
+
+    /**
+     * Elimina la cuenta propia del usuario (no permitido para ADMINISTRADOR).
+     * Las incidencias creadas quedan con autor anónimo (usuario = null).
+     * Las incidencias asignadas a este técnico quedan sin asignar.
+     */
+    @Transactional
+    public String eliminarCuentaPropia(Long id, String password) {
+        Optional<Usuario> opt = usuarioRepository.findById(id);
+        if (opt.isEmpty()) return "Usuario no encontrado";
+
+        Usuario usuario = opt.get();
+
+        if (usuario.getRol() == Rol.ADMINISTRADOR) {
+            return "Los administradores no pueden eliminar su cuenta";
+        }
+        if (DatabaseInitializer.EMAIL_ANONIMO.equals(usuario.getEmail())) {
+            return "Esta cuenta no puede eliminarse";
+        }
+
+        if (!passwordEncoder.matches(password, usuario.getPassword())) {
+            return "Contraseña incorrecta";
+        }
+
+        Usuario anonimo = usuarioRepository.findByEmail(DatabaseInitializer.EMAIL_ANONIMO)
+            .orElseThrow(() -> new IllegalStateException("Usuario ANÓNIMO del sistema no encontrado"));
+
+        // Reasignar las incidencias creadas por este usuario al ANÓNIMO
+        for (Incidencia inc : incidenciaRepository.findByUsuarioOrderByFechaCreacionDesc(usuario)) {
+            inc.setUsuario(anonimo);
+            incidenciaRepository.save(inc);
+        }
+
+        // Desasignar incidencias donde este usuario era técnico responsable
+        for (Incidencia inc : incidenciaRepository.findByTecnicoAsignadoOrderByFechaAsignacionDesc(usuario)) {
+            inc.setTecnicoAsignado(null);
+            inc.setFechaAsignacion(null);
+            incidenciaRepository.save(inc);
+        }
+
+        // Eliminar configuración de equipo técnico si existe
+        equipoTecnicoConfigRepository.findByUsuarioId(id)
+            .ifPresent(equipoTecnicoConfigRepository::delete);
+
+        usuarioRepository.deleteById(id);
         return null;
     }
 

@@ -22,8 +22,9 @@ public class SecurityConfig {
             .userDetailsService(usuarioDetailsService)
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/registro", "/api/auth/login", "/api/auth/registro", "/hola", "/images/**").permitAll()
+                .requestMatchers("/", "/login", "/registro", "/api/auth/login", "/api/auth/registro", "/hola", "/images/**", "/api/incidencias/publicas").permitAll()
                 .requestMatchers("/api/incidencias/**").authenticated()
+                .requestMatchers("/mi-cuenta/**").hasAnyRole("CIUDADANO", "OPERADOR", "TECNICO")
                 .requestMatchers("/dashboard/ciudadano", "/ciudadano/**").hasRole("CIUDADANO")
                 .requestMatchers("/dashboard/operador", "/dashboard/operador/**").hasRole("OPERADOR")
                 .requestMatchers("/dashboard/tecnico", "/dashboard/tecnico/**").hasRole("TECNICO")
@@ -32,7 +33,7 @@ public class SecurityConfig {
             )
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/dashboard/home", true)
+                .defaultSuccessUrl("/dashboard/home", false)
                 .permitAll()
             )
             .logout(logout -> logout
