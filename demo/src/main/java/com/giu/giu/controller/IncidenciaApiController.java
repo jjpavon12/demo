@@ -30,9 +30,27 @@ public class IncidenciaApiController {
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    /**
-     * Devuelve TODAS las incidencias (para operador/técnico)
-     */
+    /** Devuelve incidencias con coordenadas para el mapa público */
+    @GetMapping("/publicas")
+    public List<Map<String, Object>> publicas() {
+        return incidenciaService.obtenerTodas().stream()
+                .filter(inc -> inc.getLatitud() != null && inc.getLongitud() != null)
+                .map(inc -> {
+                    Map<String, Object> m = new LinkedHashMap<>();
+                    m.put("latitud", inc.getLatitud());
+                    m.put("longitud", inc.getLongitud());
+                    m.put("estado", inc.getEstado().name());
+                    m.put("estadoDesc", inc.getEstado().getDescripcion());
+                    m.put("descripcion", inc.getDescripcion());
+                    m.put("categorias", inc.getCategorias().stream()
+                            .map(c -> c.getDescripcion()).collect(Collectors.toList()));
+                    m.put("imagenNombre", inc.getImagenNombre());
+                    return m;
+                })
+                .collect(Collectors.toList());
+    }
+
+    /** Devuelve TODAS las incidencias (para operador/técnico) */
     @GetMapping
     public List<Map<String, Object>> todas() {
         return incidenciaService.obtenerTodas().stream()
