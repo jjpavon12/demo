@@ -26,6 +26,9 @@ import java.util.UUID;
 @RequestMapping("/ciudadano/incidencias")
 public class IncidenciaController {
 
+    private static final double CM_MIN_LAT = 39.88, CM_MAX_LAT = 41.17;
+    private static final double CM_MIN_LON = -4.58, CM_MAX_LON = -3.05;
+
     @Autowired
     private IncidenciaService incidenciaService;
 
@@ -75,6 +78,12 @@ public class IncidenciaController {
             }
         }
 
+        if (fueraDeCAM(latitud, longitud)) {
+            model.addAttribute("errorUbicacion", "La ubicación seleccionada está fuera de la Comunidad de Madrid. Solo se pueden registrar incidencias dentro de la CAM.");
+            model.addAttribute("categorias", CategoriaIncidencia.values());
+            return "registrar-incidencia";
+        }
+
         incidenciaService.registrar(descripcion, ubicacion, latitud, longitud, new HashSet<>(categorias), imagenNombre, usuario);
         return "redirect:/ciudadano/incidencias/mis-incidencias?exito";
     }
@@ -87,6 +96,11 @@ public class IncidenciaController {
         model.addAttribute("incidencias", incidencias);
         model.addAttribute("usuario", usuario);
         return "mis-incidencias";
+    }
+
+    private boolean fueraDeCAM(Double lat, Double lon) {
+        return lat != null && lon != null &&
+               (lat < CM_MIN_LAT || lat > CM_MAX_LAT || lon < CM_MIN_LON || lon > CM_MAX_LON);
     }
 
     private Usuario getUsuarioAutenticado() {
