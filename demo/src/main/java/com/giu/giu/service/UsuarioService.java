@@ -69,6 +69,10 @@ public class UsuarioService {
             return new LoginResponse(null, null, null, "El email ya está registrado");
         }
 
+        if (password.length() < 6) {
+            return new LoginResponse(null, null, null, "La contraseña debe tener al menos 6 caracteres");
+        }
+
         if (rol == Rol.ADMINISTRADOR && usuarioRepository.existsByRol(Rol.ADMINISTRADOR)) {
             return new LoginResponse(null, null, null, "No está permitido registrar más administradores desde esta pantalla");
         }
