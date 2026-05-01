@@ -1,13 +1,14 @@
 package com.giu.giu.controller;
 
-import com.giu.giu.dto.LoginResponse;
-import com.giu.giu.model.Rol;
-import com.giu.giu.service.UsuarioService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import com.giu.giu.dto.LoginResponse;
+import com.giu.giu.model.Rol;
+import com.giu.giu.service.UsuarioService;
 
 @Controller
 public class HomeController {
@@ -50,10 +51,11 @@ public class HomeController {
     @PostMapping("/registro")
     public String registroSubmit(@RequestParam String email,
                                  @RequestParam String password,
+                                 @RequestParam String confirmPassword,
                                  @RequestParam(defaultValue = "CIUDADANO") Rol rol,
                                  Model model) {
 
-        LoginResponse response = usuarioService.registrar(email, password, rol);
+        LoginResponse response = usuarioService.registrar(email, password, confirmPassword, rol);
         if (response.getId() != null) {
             // Si requiere aprobación, mostrar mensaje diferente
             if (rol == Rol.OPERADOR || rol == Rol.TECNICO) {

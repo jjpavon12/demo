@@ -64,9 +64,21 @@ public class UsuarioService {
     /**
      * Registra un nuevo usuario con un rol específico
      */
-    public LoginResponse registrar(String email, String password, Rol rol) {
+    public LoginResponse registrar(String email, String password, String confirmPassword, Rol rol) {
         if (usuarioRepository.findByEmail(email).isPresent()) {
             return new LoginResponse(null, null, null, "El email ya está registrado");
+        }
+
+        if (password == null || password.isEmpty()) {
+            return new LoginResponse(null, null, null, "La contraseña no puede estar vacía");
+        }
+
+        if (confirmPassword == null || confirmPassword.isEmpty()) {
+            return new LoginResponse(null, null, null, "La confirmación de contraseña no puede estar vacía");
+        }
+
+        if (!password.equals(confirmPassword)) {
+            return new LoginResponse(null, null, null, "Las contraseñas no coinciden");
         }
 
         if (password.length() < 6) {
