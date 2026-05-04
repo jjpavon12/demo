@@ -154,6 +154,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
         }
 
         th, td {
@@ -162,6 +163,7 @@
             text-align: left;
             vertical-align: top;
             font-size: .88rem;
+            overflow: hidden;
         }
 
         th {
@@ -169,6 +171,14 @@
             color: #334155;
             font-weight: 700;
         }
+
+        table th:nth-child(1), table td:nth-child(1) { width: 4%; }
+        table th:nth-child(2), table td:nth-child(2) { width: 17%; }
+        table th:nth-child(3), table td:nth-child(3) { width: 19%; word-break: break-word; }
+        table th:nth-child(4), table td:nth-child(4) { width: 22%; word-break: break-word; }
+        table th:nth-child(5), table td:nth-child(5) { width: 9%; }
+        table th:nth-child(6), table td:nth-child(6) { width: 14%; }
+        table th:nth-child(7), table td:nth-child(7) { width: 15%; }
 
         .status-box {
             border-radius: 12px;
@@ -320,6 +330,28 @@
         .btn-apply:hover { background: var(--accent-dark); }
         .btn-clear { background: #fff; color: #64748b; border: 1.5px solid #e2e8f0; padding: 6px 14px; border-radius: 6px; font-size: .82rem; font-weight: 500; font-family: inherit; cursor: pointer; }
         .btn-clear:hover { border-color: #94a3b8; color: #334155; }
+
+        /* ---- Botones de acción en tabla ---- */
+        .btn-accion {
+            display: inline-flex; align-items: center; gap: 5px;
+            border: none; border-radius: 7px; padding: 7px 13px;
+            font-size: .78rem; font-weight: 700; font-family: inherit;
+            cursor: pointer; transition: all .15s; white-space: nowrap;
+        }
+        .btn-iniciar {
+            background: #dbeafe; color: #1e40af; border: 1.5px solid #93c5fd;
+        }
+        .btn-iniciar:hover { background: #bfdbfe; border-color: #3b82f6; }
+        .btn-resolver {
+            background: #dcfce7; color: #166534; border: 1.5px solid #86efac;
+        }
+        .btn-resolver:hover { background: #bbf7d0; border-color: #22c55e; }
+
+        /* ---- Badges de estado en tabla ---- */
+        .badge-estado { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: .75rem; font-weight: 700; }
+        .badge-ASIGNADA   { background: #e0e7ff; color: #3730a3; }
+        .badge-EN_CURSO   { background: #dbeafe; color: #1e40af; }
+        .badge-RESUELTA   { background: #dcfce7; color: #166534; }
     </style>
 </head>
 <body>
@@ -490,6 +522,7 @@
                             <th>Ubicación</th>
                             <th>Estado</th>
                             <th>Fecha asignación</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -505,8 +538,27 @@
                             </td>
                             <td th:text="${inc.descripcion}"></td>
                             <td th:text="${inc.ubicacion}"></td>
-                            <td th:text="${inc.estado.descripcion}"></td>
+                            <td>
+                                <span class="badge-estado"
+                                      th:classappend="${'badge-' + inc.estado.name()}"
+                                      th:text="${inc.estado.descripcion}"></span>
+                            </td>
                             <td th:text="${inc.fechaAsignacion != null ? #temporals.format(inc.fechaAsignacion, 'dd/MM/yyyy HH:mm') : '-'}"></td>
+                            <td>
+                                <form th:if="${inc.estado.name() == 'ASIGNADA'}"
+                                      method="post" th:action="@{/dashboard/tecnico/cambiar-estado}">
+                                    <input type="hidden" name="id" th:value="${inc.id}"/>
+                                    <input type="hidden" name="estado" value="EN_CURSO"/>
+                                    <button type="submit" class="btn-accion btn-iniciar">▶ Iniciar</button>
+                                </form>
+                                <form th:if="${inc.estado.name() == 'EN_CURSO'}"
+                                      method="post" th:action="@{/dashboard/tecnico/cambiar-estado}">
+                                    <input type="hidden" name="id" th:value="${inc.id}"/>
+                                    <input type="hidden" name="estado" value="RESUELTA"/>
+                                    <button type="submit" class="btn-accion btn-resolver">✓ Marcar resuelta</button>
+                                </form>
+                                <span th:if="${inc.estado.name() == 'RESUELTA'}" style="color:#94a3b8;font-size:.8rem;">—</span>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
