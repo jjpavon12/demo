@@ -142,46 +142,68 @@ public class DashboardController {
     public String validarYAsignar(@RequestParam Long id,
                                   @RequestParam(required = false) String tecnicoId) {
         if (incidenciaService.estaBloqueadaParaOperador(id)) {
-            return "redirect:/dashboard/operador";
+            return "redirect:/dashboard/operador?view=pendientes";
         }
         incidenciaService.cambiarEstado(id, EstadoIncidencia.VALIDADA);
         if (tecnicoId != null && !tecnicoId.isBlank()) {
             incidenciaService.asignarATecnico(id, Long.parseLong(tecnicoId));
         }
-        return "redirect:/dashboard/operador";
+        return "redirect:/dashboard/operador?view=pendientes";
     }
 
     @PostMapping("/operador/cambiar-estado")
     public String cambiarEstadoOperador(@RequestParam Long id, @RequestParam EstadoIncidencia estado) {
         if (incidenciaService.estaBloqueadaParaOperador(id)) {
-            return "redirect:/dashboard/operador";
+            return "redirect:/dashboard/operador?view=pendientes";
         }
         if (estado != EstadoIncidencia.VALIDADA && estado != EstadoIncidencia.RECHAZADA) {
-            return "redirect:/dashboard/operador";
+            return "redirect:/dashboard/operador?view=pendientes";
         }
         incidenciaService.cambiarEstado(id, estado);
-        return "redirect:/dashboard/operador";
+        return "redirect:/dashboard/operador?view=pendientes";
+    }
+
+    @PostMapping("/operador/cerrar")
+    public String cerrarIncidencia(@RequestParam Long id) {
+        incidenciaService.cerrar(id);
+        return "redirect:/dashboard/operador?view=verificadas";
+    }
+
+    @PostMapping("/operador/devolver-tecnico")
+    public String devolverATecnico(@RequestParam Long id) {
+        incidenciaService.devolverATecnico(id);
+        return "redirect:/dashboard/operador?view=verificadas";
+    }
+
+    @PostMapping("/operador/rechazar")
+    public String rechazarIncidencia(@RequestParam Long id,
+                                     @RequestParam(required = false) String motivoRechazo) {
+        if (incidenciaService.estaBloqueadaParaOperador(id)) {
+            return "redirect:/dashboard/operador?view=pendientes";
+        }
+        incidenciaService.rechazar(id, motivoRechazo);
+        return "redirect:/dashboard/operador?view=pendientes";
     }
 
     @PostMapping("/operador/cambiar-categoria")
     public String cambiarCategoriaOperador(@RequestParam Long id, @RequestParam List<CategoriaIncidencia> categorias) {
         if (incidenciaService.estaBloqueadaParaOperador(id)) {
-            return "redirect:/dashboard/operador";
+            return "redirect:/dashboard/operador?view=pendientes";
         }
         incidenciaService.cambiarCategorias(id, new HashSet<>(categorias));
-        return "redirect:/dashboard/operador";
+        return "redirect:/dashboard/operador?view=pendientes";
     }
 
     @PostMapping("/operador/cambiar-prioridad")
     public String cambiarPrioridadOperador(@RequestParam Long id, @RequestParam PrioridadIncidencia prioridad) {
         incidenciaService.cambiarPrioridad(id, prioridad);
-        return "redirect:/dashboard/operador";
+        return "redirect:/dashboard/operador?view=pendientes";
     }
 
     @PostMapping("/operador/asignar-incidencia")
     public String asignarIncidencia(@RequestParam Long incidenciaId, @RequestParam Long tecnicoId) {
         incidenciaService.asignarATecnico(incidenciaId, tecnicoId);
-        return "redirect:/dashboard/operador";
+        return "redirect:/dashboard/operador?view=verificadas";
     }
 
     @GetMapping("/tecnico")

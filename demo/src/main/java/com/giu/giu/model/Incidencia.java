@@ -63,6 +63,9 @@ public class Incidencia {
     @Column
     private LocalDateTime fechaModificacion;
 
+    @Column(length = 500)
+    private String motivoRechazo;
+
     @PrePersist
     protected void onCreate() {
         this.fechaCreacion = LocalDateTime.now();
@@ -199,5 +202,13 @@ public class Incidencia {
 
     public void setFechaModificacion(LocalDateTime fechaModificacion) {
         this.fechaModificacion = fechaModificacion;
+    }
+
+    public String getMotivoRechazo() {
+        return motivoRechazo;
+    }
+
+    public void setMotivoRechazo(String motivoRechazo) {
+        this.motivoRechazo = motivoRechazo;
     }
 }

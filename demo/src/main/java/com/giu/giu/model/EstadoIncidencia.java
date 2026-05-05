@@ -4,7 +4,7 @@ public enum EstadoIncidencia {
     PENDIENTE_VALIDACION("PendienteValidacion"),
     VALIDADA("Validada"),
     ASIGNADA("Asignada"),
-    EN_CURSO("EnCurso"),
+    EN_CURSO("En Curso"),
     RESUELTA("Resuelta"),
     CERRADA("Cerrada"),
     RECHAZADA("Rechazada");

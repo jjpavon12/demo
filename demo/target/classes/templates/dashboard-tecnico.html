@@ -545,17 +545,16 @@
                             </td>
                             <td th:text="${inc.fechaAsignacion != null ? #temporals.format(inc.fechaAsignacion, 'dd/MM/yyyy HH:mm') : '-'}"></td>
                             <td>
-                                <form th:if="${inc.estado.name() == 'ASIGNADA'}"
-                                      method="post" th:action="@{/dashboard/tecnico/cambiar-estado}">
-                                    <input type="hidden" name="id" th:value="${inc.id}"/>
-                                    <input type="hidden" name="estado" value="EN_CURSO"/>
-                                    <button type="submit" class="btn-accion btn-iniciar">▶ Iniciar</button>
-                                </form>
+                                <button th:if="${inc.estado.name() == 'ASIGNADA'}"
+                                        type="button" class="btn-accion btn-iniciar"
+                                        th:onclick="'iniciarAjax(' + ${inc.id} + ', this)'">▶ Iniciar</button>
                                 <form th:if="${inc.estado.name() == 'EN_CURSO'}"
+                                      th:id="'form-resolver-' + ${inc.id}"
                                       method="post" th:action="@{/dashboard/tecnico/cambiar-estado}">
                                     <input type="hidden" name="id" th:value="${inc.id}"/>
                                     <input type="hidden" name="estado" value="RESUELTA"/>
-                                    <button type="submit" class="btn-accion btn-resolver">✓ Marcar resuelta</button>
+                                    <button type="button" class="btn-accion btn-resolver"
+                                            th:onclick="'openResolverModal(' + ${inc.id} + ')'">✓ Marcar resuelta</button>
                                 </form>
                                 <span th:if="${inc.estado.name() == 'RESUELTA'}" style="color:#94a3b8;font-size:.8rem;">—</span>
                             </td>
@@ -756,6 +755,102 @@
                 });
                 renderMarkersTec(data);
             });
+
+        function iniciarAjax(id, btn) {
+            var body = new URLSearchParams();
+            body.append('id', id);
+            body.append('estado', 'EN_CURSO');
+            fetch('/dashboard/tecnico/cambiar-estado', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body.toString()
+            }).then(function() {
+                var row = btn.closest('tr');
+                // Actualizar badge de estado
+                var badge = row.querySelector('.badge-estado');
+                if (badge) {
+                    badge.className = 'badge-estado badge-EN_CURSO';
+                    badge.textContent = 'EnCurso';
+                }
+                // Reemplazar botón por "Marcar resuelta"
+                var td = btn.parentElement;
+                var formId = 'form-resolver-' + id;
+                td.innerHTML =
+                    '<form id="' + formId + '" method="post" action="/dashboard/tecnico/cambiar-estado">' +
+                    '<input type="hidden" name="id" value="' + id + '"/>' +
+                    '<input type="hidden" name="estado" value="RESUELTA"/>' +
+                    '<button type="button" class="btn-accion btn-resolver" onclick="openResolverModal(' + id + ')">✓ Marcar resuelta</button>' +
+                    '</form>';
+                // Actualizar datos del mapa
+                var inc = allDataTec.find(function(i) { return i.id === id; });
+                if (inc) { inc.estado = 'EN_CURSO'; }
+                applyFilterTec();
+            });
+        }
+
+        var resolverIncidenciaId = null;
+
+        function openResolverModal(id) {
+            resolverIncidenciaId = id;
+            document.getElementById('resolver-modal-title').textContent = 'Marcar resuelta — Incidencia #' + id;
+            document.getElementById('resolverModal').style.display = 'flex';
+        }
+
+        function closeResolverModal() {
+            document.getElementById('resolverModal').style.display = 'none';
+            resolverIncidenciaId = null;
+        }
+
+        function confirmarResolver() {
+            if (resolverIncidenciaId === null) return;
+            var id = resolverIncidenciaId;
+            closeResolverModal();
+            var body = new URLSearchParams();
+            body.append('id', id);
+            body.append('estado', 'RESUELTA');
+            fetch('/dashboard/tecnico/cambiar-estado', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body.toString()
+            }).then(function() {
+                var form = document.getElementById('form-resolver-' + id);
+                if (!form) return;
+                var row = form.closest('tr');
+                // Actualizar badge de estado
+                var badge = row.querySelector('.badge-estado');
+                if (badge) {
+                    badge.className = 'badge-estado badge-RESUELTA';
+                    badge.textContent = 'Resuelta';
+                }
+                // Sustituir botón por guión (ya no hay acción disponible)
+                form.parentElement.innerHTML = '<span style="color:#94a3b8;font-size:.8rem;">—</span>';
+                // Actualizar datos del mapa
+                var inc = allDataTec.find(function(i) { return i.id === id; });
+                if (inc) { inc.estado = 'RESUELTA'; }
+                applyFilterTec();
+            });
+        }
+
+        window.addEventListener('click', function(e) {
+            if (e.target === document.getElementById('resolverModal')) closeResolverModal();
+        });
     </script>
+
+    <!-- ========== MODAL: CONFIRMAR RESOLVER ========== -->
+    <div id="resolverModal" style="display:none;position:fixed;z-index:1000;inset:0;background:rgba(0,0,0,.45);align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:12px;padding:28px;width:90%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #f1f5f9;">
+                <h3 id="resolver-modal-title" style="font-size:1rem;font-weight:600;color:#0f172a;margin:0;">Marcar resuelta</h3>
+                <span onclick="closeResolverModal()" style="color:#94a3b8;font-size:1.4rem;cursor:pointer;line-height:1;">&times;</span>
+            </div>
+            <p style="color:#475569;font-size:.9rem;line-height:1.65;margin-bottom:20px;">
+                ¿Confirmas que esta incidencia ha sido <strong>resuelta</strong>? Esta acción no se puede deshacer fácilmente.
+            </p>
+            <div style="display:flex;gap:10px;">
+                <button onclick="confirmarResolver()" style="background:#15803d;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;flex:1;">✓ Sí, marcar resuelta</button>
+                <button onclick="closeResolverModal()" style="background:#f1f5f9;color:#374151;border:1.5px solid #e2e8f0;padding:8px 18px;border-radius:6px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;">Cancelar</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

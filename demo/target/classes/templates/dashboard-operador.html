@@ -140,6 +140,10 @@
         .row-highlight td { background: #fff7ed !important; transition: background 1.5s; }
         .dup-btn { background: none; border: none; cursor: pointer; font-size: 1.25rem; padding: 0; line-height: 1; transition: transform .1s; }
         .dup-btn:hover { transform: scale(1.2); }
+        .btn-cerrar { background: #f0fdf4; color: #15803d; border: 1.5px solid #86efac; padding: 6px 12px; border-radius: 7px; font-size: .78rem; font-weight: 700; font-family: inherit; cursor: pointer; transition: all .15s; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+        .btn-cerrar:hover { background: #dcfce7; border-color: #22c55e; }
+        .btn-devolver { background: #eff6ff; color: #1d4ed8; border: 1.5px solid #93c5fd; padding: 6px 12px; border-radius: 7px; font-size: .78rem; font-weight: 700; font-family: inherit; cursor: pointer; transition: all .15s; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+        .btn-devolver:hover { background: #dbeafe; border-color: #3b82f6; }
 
         /* ---- Modals ---- */
         .modal { display: none; position: fixed; z-index: 1000; inset: 0; background: rgba(0,0,0,.45); }
@@ -389,17 +393,15 @@
                             <td th:text="${#temporals.format(inc.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>
                             <td th:text="${inc.usuario == null or inc.usuario.email == 'anonimo@giu.internal' ? 'Anónimo' : inc.usuario.email}"></td>
                             <td>
-                                <form method="post" th:action="@{/dashboard/operador/cambiar-prioridad}" style="display:inline;">
-                                    <input type="hidden" name="id" th:value="${inc.id}"/>
-                                    <select name="prioridad" class="prioridad-select"
-                                            th:data-asignada="${inc.prioridadAsignada}"
-                                            th:data-current="${inc.prioridad}"
-                                            onchange="applyPriorityStyle(this); this.form.submit();">
-                                        <option value="" disabled th:selected="${!inc.prioridadAsignada}">Elegir prioridad</option>
-                                        <option th:each="p : ${prioridades}" th:value="${p}" th:text="${p.descripcion}"
-                                                th:selected="${inc.prioridadAsignada and inc.prioridad == p}"></option>
-                                    </select>
-                                </form>
+                                <select class="prioridad-select"
+                                        th:data-id="${inc.id}"
+                                        th:data-asignada="${inc.prioridadAsignada}"
+                                        th:data-current="${inc.prioridad}"
+                                        th:onchange="'cambiarPrioridadAjax(this,' + ${inc.id} + ')'">
+                                    <option value="" disabled th:selected="${!inc.prioridadAsignada}">Elegir prioridad</option>
+                                    <option th:each="p : ${prioridades}" th:value="${p}" th:text="${p.descripcion}"
+                                            th:selected="${inc.prioridadAsignada and inc.prioridad == p}"></option>
+                                </select>
                             </td>
                             <td style="min-width:160px;">
                                 <!-- Equipos disponibles para el modal (ocultos) -->
@@ -437,7 +439,7 @@
                         <tr>
                             <th>ID</th><th>Categorías</th><th>Descripción</th><th>Ubicación</th>
                             <th>Fecha creación</th><th>Fecha verificada</th><th>Email</th>
-                            <th>Prioridad</th><th>Estado</th><th>Asignación técnico</th>
+                            <th>Prioridad</th><th>Estado</th><th>Asignación técnico</th><th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -490,6 +492,17 @@
                                     <span class="campo-bloqueado" th:if="${inc.tecnicoAsignado != null}" th:text="${inc.tecnicoAsignado.email}"></span>
                                     <span class="campo-bloqueado" th:if="${inc.tecnicoAsignado == null}">—</span>
                                 </div>
+                            </td>
+                            <td>
+                                <div th:if="${inc.estado == T(com.giu.giu.model.EstadoIncidencia).RESUELTA}"
+                                     style="display:flex;flex-direction:column;gap:6px;">
+                                    <button type="button" class="btn-cerrar"
+                                            th:onclick="'openCerrarModal(' + ${inc.id} + ')'">&#10003; Cerrar</button>
+                                    <button type="button" class="btn-devolver"
+                                            th:onclick="'openDevolverModal(' + ${inc.id} + ')'">&#8617; Devolver al técnico</button>
+                                </div>
+                                <span th:if="${inc.estado != T(com.giu.giu.model.EstadoIncidencia).RESUELTA}"
+                                      style="color:#94a3b8;font-size:.8rem;">—</span>
                             </td>
                         </tr>
                     </tbody>
@@ -567,22 +580,31 @@
 
 <!-- ========== MODAL: RECHAZAR ========== -->
 <div id="rechazarModal" class="modal">
-    <div class="modal-content" style="max-width:420px;">
+    <div class="modal-content" style="max-width:460px;">
         <div class="modal-header">
             <h3 id="rechazar-modal-title">Rechazar incidencia</h3>
             <span class="close-modal" onclick="closeRechazarModal()">&times;</span>
         </div>
-        <p class="modal-body">
+        <p class="modal-body" style="margin-bottom:14px;">
             ¿Estás seguro de que quieres rechazar esta incidencia? Se moverá a la lista de <strong>rechazadas</strong>.
         </p>
-        <form id="rechazarForm" method="post" action="/dashboard/operador/cambiar-estado">
+        <form id="rechazarForm" method="post" action="/dashboard/operador/rechazar">
             <input type="hidden" id="rechazar-id" name="id"/>
-            <input type="hidden" name="estado" value="RECHAZADA"/>
+            <div style="margin-bottom:16px;">
+                <label style="display:block;font-size:.85rem;font-weight:600;color:#374151;margin-bottom:6px;">
+                    Motivo del rechazo <span style="font-weight:400;color:#94a3b8;">(opcional)</span>
+                </label>
+                <textarea name="motivoRechazo" id="rechazar-motivo"
+                          placeholder="Ej: Información insuficiente, duplicado de otra incidencia..."
+                          style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-family:inherit;font-size:.875rem;color:#334155;resize:vertical;min-height:80px;outline:none;"
+                          maxlength="500"></textarea>
+                <div style="text-align:right;font-size:.75rem;color:#94a3b8;margin-top:3px;">Máx. 500 caracteres</div>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button type="submit" style="background:#dc2626;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;flex:1;">✗ Sí, rechazar</button>
+                <button type="button" onclick="closeRechazarModal()" style="background:#f1f5f9;color:#374151;border:1.5px solid #e2e8f0;padding:8px 18px;border-radius:6px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;">Cancelar</button>
+            </div>
         </form>
-        <div class="modal-footer" style="display:flex;gap:10px;">
-            <button onclick="document.getElementById('rechazarForm').submit()" style="background:#dc2626;flex:1;">✗ Sí, rechazar</button>
-            <button onclick="closeRechazarModal()">Cancelar</button>
-        </div>
     </div>
 </div>
 
@@ -650,6 +672,31 @@ document.querySelectorAll('.prioridad-select').forEach(function(sel){
     if (asignada === 'true' && current) { sel.value = current; applyPriorityStyle(sel); }
 });
 
+function cambiarPrioridadAjax(sel, incidenciaId) {
+    applyPriorityStyle(sel);
+    var prioridad = sel.value;
+    if (!prioridad) return;
+    var body = new URLSearchParams();
+    body.append('id', incidenciaId);
+    body.append('prioridad', prioridad);
+    fetch('/dashboard/operador/cambiar-prioridad', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+    }).then(function() {
+        sel.setAttribute('data-asignada', 'true');
+        sel.setAttribute('data-current', prioridad);
+        var row = sel.closest('tr');
+        if (row) {
+            var warning = row.querySelector('.prioridad-warning');
+            if (warning) warning.style.display = 'none';
+        }
+        var id = parseInt(incidenciaId, 10);
+        var inc = allDataOp.find(function(i) { return i.id === id; });
+        if (inc) { inc.prioridad = prioridad; inc.prioridadAsignada = true; }
+    });
+}
+
 /* ===== Menú dropdown navbar ===== */
 function toggleNavMenu() {
     document.getElementById('navDropdownMenu').classList.toggle('open');
@@ -691,6 +738,34 @@ function switchView(view) {
     document.getElementById('navDropdownMenu').classList.remove('open');
     renderMapForView(view, []);
 }
+
+/* ===== Restaurar vista y scroll tras POST ===== */
+(function() {
+    var params = new URLSearchParams(window.location.search);
+    var view = params.get('view');
+    var validViews = ['pendientes', 'verificadas', 'rechazadas'];
+    if (view && validViews.indexOf(view) !== -1) {
+        currentView = view;
+        ['pendientes','verificadas','rechazadas'].forEach(function(v) {
+            document.getElementById('section-' + v).style.display = (v === view) ? '' : 'none';
+            document.getElementById('filter-' + v).style.display  = (v === view) ? '' : 'none';
+            var menuItem = document.getElementById('menu-' + v);
+            if (menuItem) menuItem.classList.toggle('active-view', v === view);
+        });
+        document.getElementById('section-title').textContent = viewLabels[view];
+        document.getElementById('section-count').textContent = viewCountLabels[view] + counts[view];
+    }
+    var savedScroll = sessionStorage.getItem('opScrollY');
+    if (savedScroll !== null) {
+        sessionStorage.removeItem('opScrollY');
+        window.scrollTo(0, parseInt(savedScroll, 10));
+    }
+    document.querySelectorAll('form').forEach(function(form) {
+        form.addEventListener('submit', function() {
+            sessionStorage.setItem('opScrollY', String(window.scrollY));
+        });
+    });
+})();
 
 /* ===== Mapa ===== */
 var mapOp = L.map('map-operador').setView([40.4168, -3.7038], 13);
@@ -861,7 +936,7 @@ fetch('/api/incidencias')
                 sel.appendChild(opt);
             });
         });
-        renderMapForView('pendientes', []);
+        renderMapForView(currentView, []);
     });
 
 /* ===== Modales ===== */
@@ -998,7 +1073,10 @@ function openRechazarModal(id) {
     document.getElementById('rechazar-modal-title').textContent = 'Rechazar incidencia #' + id;
     document.getElementById('rechazarModal').style.display = 'block';
 }
-function closeRechazarModal() { document.getElementById('rechazarModal').style.display = 'none'; }
+function closeRechazarModal() {
+    document.getElementById('rechazarModal').style.display = 'none';
+    document.getElementById('rechazar-motivo').value = '';
+}
 
 /* Cerrar dropdowns al click fuera */
 document.addEventListener('click', function(e) {
@@ -1012,7 +1090,107 @@ document.addEventListener('click', function(e) {
     if (e.target === document.getElementById('dupModal')) closeDupModal();
     if (e.target === document.getElementById('validarModal')) closeValidarModal();
     if (e.target === document.getElementById('rechazarModal')) closeRechazarModal();
+    if (e.target === document.getElementById('cerrarModal')) closeCerrarModal();
+    if (e.target === document.getElementById('devolverModal')) closeDevolverModal();
 });
+
+var _cerrarId = null;
+function openCerrarModal(id) {
+    _cerrarId = id;
+    document.getElementById('cerrar-modal-title').textContent = 'Cerrar incidencia #' + id;
+    document.getElementById('cerrarModal').style.display = 'block';
+}
+function closeCerrarModal() { document.getElementById('cerrarModal').style.display = 'none'; _cerrarId = null; }
+function confirmarCerrar() {
+    if (_cerrarId === null) return;
+    var id = _cerrarId;
+    closeCerrarModal();
+    var body = new URLSearchParams();
+    body.append('id', id);
+    fetch('/dashboard/operador/cerrar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+    }).then(function() {
+        var row = document.querySelector('#table-verificadas tr[data-id="' + id + '"]');
+        if (!row) return;
+        row.setAttribute('data-estado', 'CERRADA');
+        var badge = row.querySelector('.badge-estado');
+        if (badge) { badge.className = 'badge-estado badge-CERRADA'; badge.textContent = 'Cerrada'; }
+        var accionesTd = row.querySelector('td:last-child');
+        if (accionesTd) accionesTd.innerHTML = '<span style="color:#94a3b8;font-size:.8rem;">—</span>';
+        var inc = allDataOp.find(function(i) { return i.id === id; });
+        if (inc) { inc.estado = 'CERRADA'; }
+        renderMapForView(currentView, []);
+    });
+}
+
+var _devolverId = null;
+function openDevolverModal(id) {
+    _devolverId = id;
+    document.getElementById('devolver-modal-title').textContent = 'Devolver incidencia #' + id;
+    document.getElementById('devolverModal').style.display = 'block';
+}
+function closeDevolverModal() { document.getElementById('devolverModal').style.display = 'none'; _devolverId = null; }
+function confirmarDevolver() {
+    if (_devolverId === null) return;
+    var id = _devolverId;
+    closeDevolverModal();
+    var body = new URLSearchParams();
+    body.append('id', id);
+    fetch('/dashboard/operador/devolver-tecnico', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+    }).then(function() {
+        var row = document.querySelector('#table-verificadas tr[data-id="' + id + '"]');
+        if (!row) return;
+        row.setAttribute('data-estado', 'EN_CURSO');
+        var badge = row.querySelector('.badge-estado');
+        if (badge) { badge.className = 'badge-estado badge-EN_CURSO'; badge.textContent = 'EnCurso'; }
+        var accionesTd = row.querySelector('td:last-child');
+        if (accionesTd) accionesTd.innerHTML = '<span style="color:#94a3b8;font-size:.8rem;">—</span>';
+        var inc = allDataOp.find(function(i) { return i.id === id; });
+        if (inc) { inc.estado = 'EN_CURSO'; }
+        renderMapForView(currentView, []);
+    });
+}
 </script>
+
+<!-- ========== MODAL: CERRAR ========== -->
+<div id="cerrarModal" class="modal">
+    <div class="modal-content" style="max-width:420px;">
+        <div class="modal-header">
+            <h3 id="cerrar-modal-title">Cerrar incidencia</h3>
+            <span class="close-modal" onclick="closeCerrarModal()">&times;</span>
+        </div>
+        <p class="modal-body">
+            ¿Confirmas que la incidencia ha sido revisada y quieres <strong>cerrarla definitivamente</strong>?
+            Pasará al estado <strong>Cerrada</strong> y se archivará.
+        </p>
+        <div class="modal-footer" style="display:flex;gap:10px;">
+            <button type="button" onclick="confirmarCerrar()" style="background:#15803d;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;flex:1;">&#10003; Sí, cerrar incidencia</button>
+            <button type="button" onclick="closeCerrarModal()" style="background:#f1f5f9;color:#374151;border:1.5px solid #e2e8f0;padding:8px 18px;border-radius:6px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ========== MODAL: DEVOLVER AL TÉCNICO ========== -->
+<div id="devolverModal" class="modal">
+    <div class="modal-content" style="max-width:420px;">
+        <div class="modal-header">
+            <h3 id="devolver-modal-title">Devolver al técnico</h3>
+            <span class="close-modal" onclick="closeDevolverModal()">&times;</span>
+        </div>
+        <p class="modal-body">
+            ¿Confirmas que quieres <strong>devolver esta incidencia al técnico</strong>?
+            Volverá al estado <strong>En curso</strong> para que el equipo asignado retome el trabajo.
+        </p>
+        <div class="modal-footer" style="display:flex;gap:10px;">
+            <button type="button" onclick="confirmarDevolver()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;flex:1;">&#8617; Sí, devolver al técnico</button>
+            <button type="button" onclick="closeDevolverModal()" style="background:#f1f5f9;color:#374151;border:1.5px solid #e2e8f0;padding:8px 18px;border-radius:6px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;">Cancelar</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>

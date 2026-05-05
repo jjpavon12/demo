@@ -77,6 +77,32 @@ public class IncidenciaService {
         });
     }
 
+    public void rechazar(Long id, String motivo) {
+        incidenciaRepository.findById(id).ifPresent(inc -> {
+            inc.setEstado(EstadoIncidencia.RECHAZADA);
+            inc.setMotivoRechazo(motivo != null ? motivo.trim() : null);
+            incidenciaRepository.save(inc);
+        });
+    }
+
+    public void cerrar(Long id) {
+        incidenciaRepository.findById(id).ifPresent(inc -> {
+            if (inc.getEstado() == EstadoIncidencia.RESUELTA) {
+                inc.setEstado(EstadoIncidencia.CERRADA);
+                incidenciaRepository.save(inc);
+            }
+        });
+    }
+
+    public void devolverATecnico(Long id) {
+        incidenciaRepository.findById(id).ifPresent(inc -> {
+            if (inc.getEstado() == EstadoIncidencia.RESUELTA) {
+                inc.setEstado(EstadoIncidencia.EN_CURSO);
+                incidenciaRepository.save(inc);
+            }
+        });
+    }
+
     public void cambiarCategorias(Long id, Set<CategoriaIncidencia> nuevasCategorias) {
         incidenciaRepository.findById(id).ifPresent(inc -> {
             inc.setCategorias(nuevasCategorias);
