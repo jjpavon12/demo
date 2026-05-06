@@ -1,28 +1,33 @@
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/GIUApplication.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/config/DatabaseInitializer.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/config/SecurityConfig.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/controller/AuthController.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/controller/DashboardController.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/controller/EliminarCuentaController.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/controller/GlobalExceptionHandler.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/controller/HomeController.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/controller/IncidenciaApiController.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/controller/IncidenciaController.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/controller/PerfilController.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/controller/TestController.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/dto/LoginRequest.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/dto/LoginResponse.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/model/CategoriaIncidencia.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/model/EquipoTecnicoConfig.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/model/EstadoIncidencia.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/model/Incidencia.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/model/PrioridadIncidencia.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/model/Rol.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/model/Usuario.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/repository/EquipoTecnicoConfigRepository.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/repository/IncidenciaRepository.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/repository/UsuarioRepository.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/security/CustomUserDetails.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/security/UsuarioDetailsService.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/service/IncidenciaService.java
-/home/idb0253/Documentos/isst/demo/demo/src/main/java/com/giu/giu/service/UsuarioService.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\config\DatabaseInitializer.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\config\SecurityConfig.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\controller\AuthController.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\controller\DashboardController.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\controller\EliminarCuentaController.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\controller\GlobalExceptionHandler.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\controller\HomeController.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\controller\IncidenciaApiController.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\controller\IncidenciaController.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\controller\PerfilController.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\controller\SoporteController.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\controller\TestController.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\dto\LoginRequest.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\dto\LoginResponse.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\GIUApplication.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\model\CategoriaIncidencia.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\model\EquipoTecnicoConfig.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\model\EstadoIncidencia.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\model\EstadoSoporte.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\model\Incidencia.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\model\MensajeSoporte.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\model\PrioridadIncidencia.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\model\Rol.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\model\Usuario.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\repository\EquipoTecnicoConfigRepository.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\repository\IncidenciaRepository.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\repository\MensajeSoporteRepository.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\repository\UsuarioRepository.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\security\CustomUserDetails.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\security\UsuarioDetailsService.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\service\IncidenciaService.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\service\MensajeSoporteService.java
+C:\Users\Ana\OneDrive - FINAIPRO TECHNOLOGIES SAS\UNIVERSIDAD_ANA\ISST\demo\demo\src\main\java\com\giu\giu\service\UsuarioService.java
