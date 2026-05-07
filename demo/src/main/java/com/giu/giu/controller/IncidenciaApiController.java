@@ -1,6 +1,7 @@
 package com.giu.giu.controller;
 
 import com.giu.giu.config.DatabaseInitializer;
+import com.giu.giu.model.EstadoIncidencia;
 import com.giu.giu.model.Incidencia;
 import com.giu.giu.model.Usuario;
 import com.giu.giu.security.CustomUserDetails;
@@ -58,6 +59,24 @@ public class IncidenciaApiController {
                 .collect(Collectors.toList());
     }
 
+    /** Devuelve las incidencias asignadas al técnico autenticado (ASIGNADA, EN_CURSO, RESUELTA) */
+    @GetMapping("/mis-asignadas")
+    public List<Map<String, Object>> misAsignadas() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof CustomUserDetails) {
+            Usuario usuario = ((CustomUserDetails) auth.getPrincipal()).getUsuario();
+            EnumSet<EstadoIncidencia> estados = EnumSet.of(
+                    EstadoIncidencia.ASIGNADA,
+                    EstadoIncidencia.EN_CURSO,
+                    EstadoIncidencia.RESUELTA);
+            return incidenciaService.obtenerAsignadasATecnico(usuario).stream()
+                    .filter(inc -> estados.contains(inc.getEstado()))
+                    .map(this::toMap)
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
     /**
      * Devuelve las incidencias del ciudadano autenticado
      */
@@ -105,6 +124,7 @@ public class IncidenciaApiController {
         map.put("prioridad", inc.getPrioridad() != null ? inc.getPrioridad().name() : null);
         map.put("prioridadDesc", inc.getPrioridad() != null ? inc.getPrioridad().getDescripcion() : null);
         map.put("fechaMod", inc.getFechaModificacion() != null ? inc.getFechaModificacion().format(FMT) : null);
+        map.put("fechaAsignacion", inc.getFechaAsignacion() != null ? inc.getFechaAsignacion().format(FMT) : null);
         return map;
     }
 }

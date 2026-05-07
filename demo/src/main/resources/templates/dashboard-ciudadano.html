@@ -277,9 +277,10 @@
                     <p>Visualiza y actualiza tus datos de perfil.</p>
                     <a href="/ciudadano/perfil">Ver perfil</a>
                 </div>
-                <div class="feature-card feature-card-disabled">
+                <div class="feature-card">
                     <h3>Soporte</h3>
-                    <p>Contacta con el equipo de atención al ciudadano.</p>
+                    <p>¿Dudas o problemas? Contacta con nuestro equipo de soporte.</p>
+                    <a href="/soporte/mis-mensajes">Ir a Soporte</a>
                 </div>
             </aside>
         </div>
@@ -299,6 +300,11 @@
     function parseFecha(str) {
         var parts = str.split(' ')[0].split('/');
         return new Date(parts[2], parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+    }
+    function parseFechaISO(str) {
+        if (!str) return null;
+        var p = str.split('-');
+        return new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
     }
 
     function renderMarkers(data) {
@@ -337,8 +343,8 @@
             if (catVal && !inc.categorias.includes(catVal)) return false;
             if (desdeVal || hastaVal) {
                 var f = parseFecha(inc.fecha);
-                if (desdeVal && f < new Date(desdeVal)) return false;
-                if (hastaVal) { var h = new Date(hastaVal); h.setDate(h.getDate() + 1); if (f >= h) return false; }
+                if (desdeVal && f < parseFechaISO(desdeVal)) return false;
+                if (hastaVal) { var h = parseFechaISO(hastaVal); h.setDate(h.getDate() + 1); if (f >= h) return false; }
             }
             return true;
         });

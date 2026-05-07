@@ -152,7 +152,7 @@
             height: 300px;
             border-radius: 6px;
             border: 1.5px solid #e2e8f0;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             z-index: 0;
         }
         .map-hint { font-size: .78rem; color: #64748b; margin-bottom: 4px; }
@@ -338,7 +338,7 @@
                 </div>
                 <div class="form-group">
                     <label for="ubicacionBuscar">Ubicación</label>
-                    <p class="map-hint">Busca una dirección, haz clic en el mapa, o usa tu ubicación actual.</p>
+                    <p class="map-hint">Busca una dirección, haz clic en el mapa, o usa tu ubicación actual. Solo se permiten ubicaciones dentro de la <strong>Comunidad de Madrid</strong> (zona sin sombreado).</p>
                     <div class="ubicacion-row">
                         <div class="search-wrapper">
                             <input type="text" id="ubicacionBuscar" placeholder="Escribe una dirección… (ej: Calle Mayor, 12, Madrid)" autocomplete="off" />
@@ -353,8 +353,10 @@
                     <input type="hidden" id="latitud" name="latitud" />
                     <input type="hidden" id="longitud" name="longitud" />
                     <input type="hidden" id="ubicacion" name="ubicacion" />
-                    <p id="ubicacionDisplay" style="font-size:.85rem;color:#334155;margin-top:6px;min-height:1.2em;"></p>
+                    <p id="ubicacionDisplay" style="font-size:.85rem;color:#334155;margin-top:3px;"></p>
                     <p id="ubicacionError" style="display:none;color:#dc2626;font-size:.8rem;margin-top:4px">Selecciona una ubicación en el mapa o busca una dirección.</p>
+                    <p id="ubicacionFueraError" style="display:none;color:#dc2626;font-size:.8rem;margin-top:1px;font-weight:600;">&#9888; La ubicación seleccionada está fuera de la Comunidad de Madrid. Solo se pueden registrar incidencias dentro de la zona.</p>
+                    <p th:if="${errorUbicacion}" style="color:#dc2626;font-size:.8rem;margin-top:4px;font-weight:600;" th:text="${errorUbicacion}"></p>
                 </div>
                 <div class="form-group">
                     <label>Categorías <span style="font-weight:400;text-transform:none;font-size:.75rem;color:#94a3b8">(selecciona al menos una)</span></label>
@@ -392,7 +394,7 @@
             <a class="back-link" href="/ciudadano/incidencias/mis-incidencias">← Volver a mis incidencias</a>
         </div>
     </div>
-    <script>
+    <script th:inline="none">
     function previewImagen(input) {
         var errEl = document.getElementById('errorFoto');
         var file = input.files[0];
@@ -445,7 +447,7 @@
     }
 
     // --- Mapa Leaflet ---
-    var map = L.map('map-registrar').setView([40.4168, -3.7038], 13);
+    var map = L.map('map-registrar').setView([40.52, -3.82], 8);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 19
@@ -453,62 +455,136 @@
 
     var marker = null;
 
-    function colocarMarcador(lat, lng) {
+    // Polígono de reserva (se usa si falla la carga dinámica)
+    var camCoordsFallback = [
+        [40.090,-4.577],[40.230,-4.574],[40.370,-4.571],[40.500,-4.556],
+        [40.620,-4.490],[40.730,-4.397],[40.822,-4.261],[40.895,-4.143],
+        [40.938,-4.055],[40.975,-3.965],[41.003,-3.872],[41.017,-3.804],
+        [41.009,-3.757],[41.013,-3.723],[41.025,-3.678],[41.054,-3.636],
+        [41.099,-3.603],[41.141,-3.580],[41.151,-3.577],[41.091,-3.525],
+        [40.981,-3.408],[40.858,-3.278],[40.700,-3.138],[40.556,-3.062],
+        [40.428,-3.059],[40.282,-3.068],[40.143,-3.138],[40.043,-3.268],
+        [39.966,-3.428],[39.929,-3.533],[39.889,-3.658],[39.877,-3.818],
+        [39.892,-3.972],[39.981,-4.136],[40.047,-4.313],[40.090,-4.577]
+    ];
+
+    function dibujarLimiteCam(geom) {
+        // Borde preciso cargado desde OpenStreetMap
+        L.geoJSON({ type: 'Feature', geometry: geom }, {
+            style: { color: '#15803d', weight: 2, fillOpacity: 0, dashArray: '7, 4' },
+            interactive: false
+        }).addTo(map);
+
+        // Obtener el anillo exterior principal
+        var camRing;
+        if (geom.type === 'Polygon') {
+            camRing = geom.coordinates[0];
+        } else {
+            // MultiPolygon: usar el anillo más grande (territorio principal)
+            camRing = geom.coordinates.reduce(function(a, b) {
+                return a[0].length > b[0].length ? a : b;
+            })[0];
+        }
+
+        // Máscara: sombrea el exterior de la CAM
+        L.geoJSON({
+            type: 'Feature',
+            geometry: {
+                type: 'Polygon',
+                coordinates: [
+                    [[-180,-90],[180,-90],[180,90],[-180,90],[-180,-90]],
+                    camRing
+                ]
+            }
+        }, {
+            style: { fillColor: '#64748b', fillOpacity: 0.38, weight: 0, stroke: false },
+            interactive: false
+        }).addTo(map);
+    }
+
+    function dibujarFallback() {
+        var ring = camCoordsFallback.map(function(c) { return [c[1], c[0]]; });
+        dibujarLimiteCam({ type: 'Polygon', coordinates: [ring] });
+    }
+
+    // Carga el contorno oficial de la CAM desde Nominatim (OpenStreetMap)
+    fetch('https://nominatim.openstreetmap.org/search?q=Comunidad+de+Madrid&format=geojson&polygon_geojson=1&countrycodes=es&limit=1')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data && data.features && data.features.length > 0) {
+                dibujarLimiteCam(data.features[0].geometry);
+            } else {
+                dibujarFallback();
+            }
+        })
+        .catch(function() { dibujarFallback(); });
+
+    // Coloca el marcador visualmente pero NO establece valores del formulario
+    // (los valores se confirman solo tras validar que la ubicación es CAM)
+    function colocarMarcadorVisual(lat, lng) {
         var latlng = L.latLng(lat, lng);
-        document.getElementById('latitud').value = lat;
-        document.getElementById('longitud').value = lng;
-        document.getElementById('coordsInfo').textContent = '📍 ' + lat.toFixed(6) + ', ' + lng.toFixed(6);
+        document.getElementById('latitud').value = '';
+        document.getElementById('longitud').value = '';
+        document.getElementById('ubicacion').value = '';
+        document.getElementById('coordsInfo').textContent = '';
+        document.getElementById('ubicacionDisplay').textContent = '';
+        document.getElementById('ubicacionFueraError').style.display = 'none';
         document.getElementById('ubicacionError').style.display = 'none';
         document.getElementById('searchError').style.display = 'none';
-
         if (marker) {
             marker.setLatLng(latlng);
         } else {
             marker = L.marker(latlng, { draggable: true }).addTo(map);
             marker.on('dragend', function(ev) {
                 var pos = ev.target.getLatLng();
-                colocarMarcador(pos.lat, pos.lng);
-                reverseGeocode(pos.lat, pos.lng);
+                colocarMarcadorVisual(pos.lat, pos.lng);
+                reverseGeocodeValidado(pos.lat, pos.lng);
             });
         }
+    }
+
+    // Confirma la ubicación tras validación exitosa
+    function confirmarUbicacion(lat, lng, addressText) {
+        document.getElementById('latitud').value = lat;
+        document.getElementById('longitud').value = lng;
+        document.getElementById('coordsInfo').textContent = '📍 ' + lat.toFixed(6) + ', ' + lng.toFixed(6);
+        document.getElementById('ubicacionFueraError').style.display = 'none';
+        document.getElementById('ubicacionError').style.display = 'none';
+        if (addressText) actualizarUbicacionTexto(addressText);
+    }
+
+    // Rechaza la ubicación (fuera de la CAM o error de red)
+    function rechazarUbicacion(esFuera) {
+        if (marker) { map.removeLayer(marker); marker = null; }
+        document.getElementById('latitud').value = '';
+        document.getElementById('longitud').value = '';
+        document.getElementById('ubicacion').value = '';
+        document.getElementById('coordsInfo').textContent = '';
+        document.getElementById('ubicacionDisplay').textContent = '';
+        document.getElementById('ubicacionFueraError').style.display = esFuera ? 'block' : 'none';
     }
 
     function formatearDireccion(data, busquedaUsuario) {
         if (!data || !data.address) return data ? data.display_name : '';
         var a = data.address;
         var partes = [];
-
-        // Calle + número
         var calle = a.road || a.pedestrian || a.footway || a.street || '';
         var numero = a.house_number || '';
-
-        // Si Nominatim no devuelve house_number, intentar extraerlo:
         if (calle && !numero) {
-            // 1) Del display_name de Nominatim
             var dn = data.display_name;
             var match = dn.match(new RegExp('(?:,\\s*)(\\d+[\\w]*)(?:,\\s*' + calle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'i'))
                      || dn.match(new RegExp(calle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?:[,\\s]+)(\\d+[\\w]*)', 'i'))
                      || dn.match(/^[^,]*?,\s*(\d+[A-Za-z]?)\s*,/);
             if (match) numero = match[1];
-
-            // 2) De lo que el usuario escribió en el buscador
             if (!numero && busquedaUsuario) {
                 var qMatch = busquedaUsuario.match(/\b(\d+[A-Za-z]?)\b/);
                 if (qMatch) numero = qMatch[1];
             }
         }
-
-        if (calle) {
-            partes.push(numero ? calle + ' ' + numero : calle);
-        }
-
-        // Código postal
+        if (calle) partes.push(numero ? calle + ' ' + numero : calle);
         if (a.postcode) partes.push(a.postcode);
-
-        // Ciudad
         var ciudad = a.city || a.town || a.village || a.municipality || '';
         if (ciudad) partes.push(ciudad);
-
         return partes.length > 0 ? partes.join(', ') : data.display_name;
     }
 
@@ -518,25 +594,27 @@
         document.getElementById('ubicacionBuscar').value = texto;
     }
 
-    // Clic en el mapa → mover marcador + geocodificación inversa
+    // Clic en el mapa → marcador visual + validación async
     map.on('click', function(e) {
-        colocarMarcador(e.latlng.lat, e.latlng.lng);
-        reverseGeocode(e.latlng.lat, e.latlng.lng);
+        colocarMarcadorVisual(e.latlng.lat, e.latlng.lng);
+        reverseGeocodeValidado(e.latlng.lat, e.latlng.lng);
     });
 
-    // Geocodificación inversa (coordenadas → dirección)
-    function reverseGeocode(lat, lng) {
-        fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&zoom=18&addressdetails=1')
+    // Geocodificación inversa con validación de Comunidad de Madrid
+    function reverseGeocodeValidado(lat, lng) {
+        fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng
+              + '&zoom=18&addressdetails=1&accept-language=es')
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                if (data && data.address) {
-                    actualizarUbicacionTexto(formatearDireccion(data));
-                }
+                if (!data || !data.address) { rechazarUbicacion(false); return; }
+                var estado = (data.address.state || '').trim().toLowerCase();
+                if (estado !== 'comunidad de madrid') { rechazarUbicacion(true); return; }
+                confirmarUbicacion(lat, lng, formatearDireccion(data));
             })
-            .catch(function() {});
+            .catch(function() { rechazarUbicacion(false); });
     }
 
-    // Geocodificación directa — autocomplete con sugerencias
+    // Geocodificación directa — autocomplete restringido a la CAM
     var debounceTimer = null;
     var activeIndex = -1;
     var sugerenciasData = [];
@@ -548,43 +626,42 @@
         var query = this.value.trim();
         clearTimeout(debounceTimer);
         activeIndex = -1;
-
-        if (query.length < 3) {
-            cerrarSugerencias();
-            return;
-        }
-
+        if (query.length < 3) { cerrarSugerencias(); return; }
         spinner.style.display = 'block';
         debounceTimer = setTimeout(function() {
-            fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query) + '&limit=5&addressdetails=1')
+            fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query)
+                  + '&limit=8&addressdetails=1&countrycodes=es'
+                  + '&viewbox=-4.58,41.17,-3.05,39.88&bounded=0&accept-language=es')
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
                     spinner.style.display = 'none';
-                    sugerenciasData = data || [];
+                    sugerenciasData = (data || []).filter(function(item) {
+                        var est = ((item.address && item.address.state) || '').trim().toLowerCase();
+                        return est === 'comunidad de madrid';
+                    });
                     renderSugerencias();
                 })
-                .catch(function() {
-                    spinner.style.display = 'none';
-                    cerrarSugerencias();
-                });
+                .catch(function() { spinner.style.display = 'none'; cerrarSugerencias(); });
         }, 350);
     });
 
     function renderSugerencias() {
         sugerenciasDiv.innerHTML = '';
         if (sugerenciasData.length === 0) {
+            document.getElementById('searchError').textContent =
+                'No se encontró la dirección en la Comunidad de Madrid.';
+            document.getElementById('searchError').style.display = 'block';
             cerrarSugerencias();
             return;
         }
+        document.getElementById('searchError').style.display = 'none';
         sugerenciasData.forEach(function(item, i) {
             var div = document.createElement('div');
             div.className = 'suggestion-item';
             div.setAttribute('data-index', i);
-
             var corta = formatearDireccion(item, inputBuscar.value.trim());
             var a = item.address || {};
             var extra = a.state || a.country || '';
-
             div.innerHTML = corta + (extra ? '<small>' + extra + '</small>' : '');
             div.addEventListener('mousedown', function(e) {
                 e.preventDefault();
@@ -595,14 +672,15 @@
         sugerenciasDiv.classList.add('show');
     }
 
+    // Los resultados ya están filtrados a CAM, confirmamos directamente
     function seleccionarSugerencia(i) {
         var result = sugerenciasData[i];
         if (!result) return;
         var lat = parseFloat(result.lat);
         var lng = parseFloat(result.lon);
         var busqueda = inputBuscar.value.trim();
-        colocarMarcador(lat, lng);
-        actualizarUbicacionTexto(formatearDireccion(result, busqueda));
+        colocarMarcadorVisual(lat, lng);
+        confirmarUbicacion(lat, lng, formatearDireccion(result, busqueda));
         map.setView([lat, lng], 17);
         cerrarSugerencias();
     }
@@ -614,14 +692,9 @@
         activeIndex = -1;
     }
 
-    // Navegación con teclado
     inputBuscar.addEventListener('keydown', function(e) {
         var items = sugerenciasDiv.querySelectorAll('.suggestion-item');
-        if (!items.length) {
-            if (e.key === 'Enter') e.preventDefault();
-            return;
-        }
-
+        if (!items.length) { if (e.key === 'Enter') e.preventDefault(); return; }
         if (e.key === 'ArrowDown') {
             e.preventDefault();
             activeIndex = Math.min(activeIndex + 1, items.length - 1);
@@ -632,38 +705,25 @@
             actualizarActivo(items);
         } else if (e.key === 'Enter') {
             e.preventDefault();
-            if (activeIndex >= 0) {
-                seleccionarSugerencia(activeIndex);
-            } else if (items.length > 0) {
-                seleccionarSugerencia(0);
-            }
+            if (activeIndex >= 0) seleccionarSugerencia(activeIndex);
+            else if (items.length > 0) seleccionarSugerencia(0);
         } else if (e.key === 'Escape') {
             cerrarSugerencias();
         }
     });
 
     function actualizarActivo(items) {
-        items.forEach(function(el, i) {
-            el.classList.toggle('active', i === activeIndex);
-        });
-        if (items[activeIndex]) {
-            items[activeIndex].scrollIntoView({ block: 'nearest' });
-        }
+        items.forEach(function(el, i) { el.classList.toggle('active', i === activeIndex); });
+        if (items[activeIndex]) items[activeIndex].scrollIntoView({ block: 'nearest' });
     }
 
-    // Cerrar sugerencias al perder foco
-    inputBuscar.addEventListener('blur', function() {
-        setTimeout(cerrarSugerencias, 150);
-    });
+    inputBuscar.addEventListener('blur', function() { setTimeout(cerrarSugerencias, 150); });
 
-    // Buscar al pulsar Enter en el campo de búsqueda
     document.getElementById('ubicacionBuscar').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-        }
+        if (e.key === 'Enter') e.preventDefault();
     });
 
-    // Pre-fill desde el index (si el usuario vino por el botón REGISTRAR)
+    // Pre-fill desde el index (valida también que sea CAM)
     (function() {
         var raw = localStorage.getItem('giu_prefill');
         if (!raw) return;
@@ -671,12 +731,11 @@
             var data = JSON.parse(raw);
             localStorage.removeItem('giu_prefill');
             if (data.latitud && data.longitud) {
-                colocarMarcador(data.latitud, data.longitud);
+                colocarMarcadorVisual(data.latitud, data.longitud);
                 map.setView([data.latitud, data.longitud], 17);
+                reverseGeocodeValidado(data.latitud, data.longitud);
             }
-            if (data.ubicacion) {
-                actualizarUbicacionTexto(data.ubicacion);
-            }
+            if (data.ubicacion) actualizarUbicacionTexto(data.ubicacion);
             if (data.categorias && data.categorias.length > 0) {
                 data.categorias.forEach(function(cat) {
                     var cb = document.querySelector('input[name="categorias"][value="' + cat + '"]');
@@ -686,32 +745,25 @@
         } catch(e) {}
     })();
 
-    // Botón "Mi ubicación"
+    // Botón "Mi ubicación" — valida que el GPS esté en la CAM
     function usarMiUbicacion() {
         var btn = document.getElementById('btnMiUbicacion');
-        if (!navigator.geolocation) {
-            alert('Tu navegador no soporta geolocalización.');
-            return;
-        }
+        if (!navigator.geolocation) { alert('Tu navegador no soporta geolocalización.'); return; }
         btn.disabled = true;
         btn.textContent = '⏳ Localizando…';
-
         navigator.geolocation.getCurrentPosition(function(pos) {
             var lat = pos.coords.latitude;
             var lng = pos.coords.longitude;
-            colocarMarcador(lat, lng);
+            colocarMarcadorVisual(lat, lng);
             map.setView([lat, lng], 17);
-            reverseGeocode(lat, lng);
+            reverseGeocodeValidado(lat, lng);
             btn.disabled = false;
             btn.textContent = '📍 Mi ubicación';
         }, function(err) {
             btn.disabled = false;
             btn.textContent = '📍 Mi ubicación';
-            if (err.code === 1) {
-                alert('Has denegado el acceso a tu ubicación. Actívalo en los permisos del navegador.');
-            } else {
-                alert('No se pudo obtener tu ubicación. Intenta de nuevo.');
-            }
+            if (err.code === 1) alert('Has denegado el acceso a tu ubicación. Actívalo en los permisos del navegador.');
+            else alert('No se pudo obtener tu ubicación. Intenta de nuevo.');
         }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
     }
     </script>

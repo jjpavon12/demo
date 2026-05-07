@@ -1,12 +1,19 @@
 package com.giu.giu.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.giu.giu.dto.LoginRequest;
 import com.giu.giu.dto.LoginResponse;
 import com.giu.giu.model.Rol;
 import com.giu.giu.service.UsuarioService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -39,9 +46,10 @@ public class AuthController {
     public ResponseEntity<LoginResponse> registro(
             @RequestParam String email,
             @RequestParam String password,
+            @RequestParam String confirmPassword,
             @RequestParam(defaultValue = "CIUDADANO") Rol rol) {
 
-        LoginResponse response = usuarioService.registrar(email, password, rol);
+        LoginResponse response = usuarioService.registrar(email, password, confirmPassword, rol);
 
         if (response.getId() != null) {
             return ResponseEntity.ok(response);

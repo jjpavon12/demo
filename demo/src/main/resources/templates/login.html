@@ -128,6 +128,7 @@
             Correo o contraseña incorrectos, o tu cuenta aún no ha sido aprobada.
         </div>
         <div th:if="${registeredMessage}" class="alert-info" style="background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;padding:9px 13px;border-radius:8px;margin-bottom:14px;text-align:center;" th:text="${registeredMessage}"></div>
+        <div th:if="${pendienteMessage}" class="alert-info" style="background:#fff7ed;border:1px solid #fed7aa;color:#c2410c;padding:9px 13px;border-radius:8px;margin-bottom:14px;text-align:center;" th:text="${pendienteMessage}"></div>
 
         <form method="POST" th:action="@{/login}">
             <div class="form-group">

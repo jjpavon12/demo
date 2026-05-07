@@ -1,10 +1,12 @@
 package com.giu.giu.controller;
 
 import com.giu.giu.model.CategoriaIncidencia;
+import com.giu.giu.model.ComentarioIncidencia;
 import com.giu.giu.model.EquipoTecnicoConfig;
 import com.giu.giu.model.EstadoIncidencia;
 import com.giu.giu.model.Incidencia;
 import com.giu.giu.model.PrioridadIncidencia;
+import com.giu.giu.model.SolicitudExtension;
 import com.giu.giu.model.Usuario;
 import com.giu.giu.security.CustomUserDetails;
 import com.giu.giu.service.IncidenciaService;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -122,6 +125,17 @@ public class DashboardController {
                 }
             }
 
+            Map<Long, List<ComentarioIncidencia>> comentariosPorIncidencia = new HashMap<>();
+            for (Incidencia inc : todas) {
+                comentariosPorIncidencia.put(inc.getId(), incidenciaService.obtenerComentariosPorIncidencia(inc));
+            }
+
+            List<SolicitudExtension> solicitudesPendientes = incidenciaService.obtenerSolicitudesPendientes();
+            Map<Long, SolicitudExtension> solicitudPendientePorIncidencia = new HashMap<>();
+            for (SolicitudExtension sol : solicitudesPendientes) {
+                solicitudPendientePorIncidencia.put(sol.getIncidencia().getId(), sol);
+            }
+
             model.addAttribute("usuario", usuario);
             model.addAttribute("rol", "OPERADOR");
             model.addAttribute("incidencias", pendientes);
@@ -131,6 +145,9 @@ public class DashboardController {
             model.addAttribute("categorias", CategoriaIncidencia.values());
             model.addAttribute("prioridades", PrioridadIncidencia.values());
             model.addAttribute("equiposSugeridosPorIncidencia", equiposSugeridosPorIncidencia);
+            model.addAttribute("comentariosPorIncidencia", comentariosPorIncidencia);
+            model.addAttribute("solicitudPendientePorIncidencia", solicitudPendientePorIncidencia);
+            model.addAttribute("totalSolicitudesPendientes", solicitudesPendientes.size());
 
             return "dashboard-operador";
         }
@@ -142,46 +159,68 @@ public class DashboardController {
     public String validarYAsignar(@RequestParam Long id,
                                   @RequestParam(required = false) String tecnicoId) {
         if (incidenciaService.estaBloqueadaParaOperador(id)) {
-            return "redirect:/dashboard/operador";
+            return "redirect:/dashboard/operador?view=pendientes";
         }
         incidenciaService.cambiarEstado(id, EstadoIncidencia.VALIDADA);
         if (tecnicoId != null && !tecnicoId.isBlank()) {
             incidenciaService.asignarATecnico(id, Long.parseLong(tecnicoId));
         }
-        return "redirect:/dashboard/operador";
+        return "redirect:/dashboard/operador?view=pendientes";
     }
 
     @PostMapping("/operador/cambiar-estado")
     public String cambiarEstadoOperador(@RequestParam Long id, @RequestParam EstadoIncidencia estado) {
         if (incidenciaService.estaBloqueadaParaOperador(id)) {
-            return "redirect:/dashboard/operador";
+            return "redirect:/dashboard/operador?view=pendientes";
         }
         if (estado != EstadoIncidencia.VALIDADA && estado != EstadoIncidencia.RECHAZADA) {
-            return "redirect:/dashboard/operador";
+            return "redirect:/dashboard/operador?view=pendientes";
         }
         incidenciaService.cambiarEstado(id, estado);
-        return "redirect:/dashboard/operador";
+        return "redirect:/dashboard/operador?view=pendientes";
+    }
+
+    @PostMapping("/operador/cerrar")
+    public String cerrarIncidencia(@RequestParam Long id) {
+        incidenciaService.cerrar(id);
+        return "redirect:/dashboard/operador?view=verificadas";
+    }
+
+    @PostMapping("/operador/devolver-tecnico")
+    public String devolverATecnico(@RequestParam Long id) {
+        incidenciaService.devolverATecnico(id);
+        return "redirect:/dashboard/operador?view=verificadas";
+    }
+
+    @PostMapping("/operador/rechazar")
+    public String rechazarIncidencia(@RequestParam Long id,
+                                     @RequestParam(required = false) String motivoRechazo) {
+        if (incidenciaService.estaBloqueadaParaOperador(id)) {
+            return "redirect:/dashboard/operador?view=pendientes";
+        }
+        incidenciaService.rechazar(id, motivoRechazo);
+        return "redirect:/dashboard/operador?view=pendientes";
     }
 
     @PostMapping("/operador/cambiar-categoria")
     public String cambiarCategoriaOperador(@RequestParam Long id, @RequestParam List<CategoriaIncidencia> categorias) {
         if (incidenciaService.estaBloqueadaParaOperador(id)) {
-            return "redirect:/dashboard/operador";
+            return "redirect:/dashboard/operador?view=pendientes";
         }
         incidenciaService.cambiarCategorias(id, new HashSet<>(categorias));
-        return "redirect:/dashboard/operador";
+        return "redirect:/dashboard/operador?view=pendientes";
     }
 
     @PostMapping("/operador/cambiar-prioridad")
     public String cambiarPrioridadOperador(@RequestParam Long id, @RequestParam PrioridadIncidencia prioridad) {
         incidenciaService.cambiarPrioridad(id, prioridad);
-        return "redirect:/dashboard/operador";
+        return "redirect:/dashboard/operador?view=pendientes";
     }
 
     @PostMapping("/operador/asignar-incidencia")
     public String asignarIncidencia(@RequestParam Long incidenciaId, @RequestParam Long tecnicoId) {
         incidenciaService.asignarATecnico(incidenciaId, tecnicoId);
-        return "redirect:/dashboard/operador";
+        return "redirect:/dashboard/operador?view=verificadas";
     }
 
     @GetMapping("/tecnico")
@@ -200,11 +239,24 @@ public class DashboardController {
             Usuario usuario = usuarioOpt.get();
             Optional<EquipoTecnicoConfig> configOpt = usuarioService.obtenerConfigEquipoTecnico(usuario.getId());
 
+            List<Incidencia> incidencias = incidenciaService.obtenerAsignadasATecnico(usuario);
+
+            Map<Long, List<ComentarioIncidencia>> comentariosPorIncidencia = new HashMap<>();
+            Map<Long, SolicitudExtension> solicitudPendientePorIncidencia = new HashMap<>();
+            for (Incidencia inc : incidencias) {
+                comentariosPorIncidencia.put(inc.getId(), incidenciaService.obtenerComentariosPorIncidencia(inc));
+                if (inc.isTieneSolicitudExtensionPendiente()) {
+                    solicitudPendientePorIncidencia.put(inc.getId(), null);
+                }
+            }
+
             model.addAttribute("usuario", usuario);
             model.addAttribute("rol", "TECNICO");
             model.addAttribute("configEquipo", configOpt.orElse(null));
-            model.addAttribute("incidencias", incidenciaService.obtenerAsignadasATecnico(usuario));
+            model.addAttribute("incidencias", incidencias);
             model.addAttribute("estados", EstadoIncidencia.values());
+            model.addAttribute("comentariosPorIncidencia", comentariosPorIncidencia);
+            model.addAttribute("incidenciasConSolicitudPendiente", solicitudPendientePorIncidencia.keySet());
 
             return "dashboard-tecnico";
         }
@@ -244,6 +296,60 @@ public class DashboardController {
     public String cambiarEstadoTecnico(@RequestParam Long id, @RequestParam EstadoIncidencia estado) {
         incidenciaService.cambiarEstado(id, estado);
         return "redirect:/dashboard/tecnico";
+    }
+
+    @PostMapping("/tecnico/comentar")
+    public String comentarTecnico(@RequestParam Long incidenciaId, @RequestParam String contenido) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof CustomUserDetails userDetails) {
+            incidenciaService.agregarComentario(incidenciaId, userDetails.getUsuario().getId(), contenido);
+        }
+        return "redirect:/dashboard/tecnico";
+    }
+
+    @PostMapping("/tecnico/solicitar-extension")
+    public String solicitarExtension(@RequestParam Long incidenciaId,
+                                     @RequestParam String motivo,
+                                     @RequestParam(required = false) String comentarioAdicional,
+                                     @RequestParam String fechaSolicitada) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof CustomUserDetails)) {
+            return "redirect:/login";
+        }
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        LocalDate fecha;
+        try {
+            fecha = LocalDate.parse(fechaSolicitada);
+        } catch (Exception e) {
+            return "redirect:/dashboard/tecnico?errorExtension=1";
+        }
+        String error = incidenciaService.solicitarExtension(
+            incidenciaId, userDetails.getUsuario().getId(), motivo, comentarioAdicional, fecha
+        );
+        if (error != null) {
+            return "redirect:/dashboard/tecnico?errorExtension=1";
+        }
+        return "redirect:/dashboard/tecnico?extensionEnviada=1";
+    }
+
+    @PostMapping("/operador/comentar")
+    public String comentarOperador(@RequestParam Long incidenciaId, @RequestParam String contenido) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof CustomUserDetails userDetails) {
+            incidenciaService.agregarComentario(incidenciaId, userDetails.getUsuario().getId(), contenido);
+        }
+        return "redirect:/dashboard/operador?view=verificadas";
+    }
+
+    @PostMapping("/operador/decidir-extension")
+    public String decidirExtension(@RequestParam Long solicitudId,
+                                   @RequestParam boolean aprobada,
+                                   @RequestParam(required = false) String motivoDecision) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof CustomUserDetails userDetails) {
+            incidenciaService.decidirExtension(solicitudId, userDetails.getUsuario().getId(), aprobada, motivoDecision);
+        }
+        return "redirect:/dashboard/operador?view=verificadas";
     }
 
     @GetMapping("/admin")

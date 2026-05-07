@@ -212,6 +212,14 @@
                 <span>📍 <span th:text="${inc.ubicacion}"></span></span>
                 <span>🗓 <span th:text="${#temporals.format(inc.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span></span>
             </div>
+            <div th:if="${inc.estado.name() == 'RECHAZADA'}"
+                 style="margin-top:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;">
+                <span style="font-size:.8rem;font-weight:700;color:#991b1b;">Motivo del rechazo: </span>
+                <span th:if="${inc.motivoRechazo != null and !#strings.isEmpty(inc.motivoRechazo)}"
+                      style="font-size:.85rem;color:#7f1d1d;" th:text="${inc.motivoRechazo}"></span>
+                <span th:if="${inc.motivoRechazo == null or #strings.isEmpty(inc.motivoRechazo)}"
+                      style="font-size:.85rem;color:#94a3b8;">No se proporcionó motivo.</span>
+            </div>
             <div th:if="${inc.imagenNombre != null}" style="margin-top:12px;">
                 <img th:src="@{/api/incidencias/imagen/{n}(n=${inc.imagenNombre})}"
                      alt="Foto de la incidencia"

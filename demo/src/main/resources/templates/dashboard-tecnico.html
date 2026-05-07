@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Técnico — GIU</title>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -152,6 +154,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
         }
 
         th, td {
@@ -160,6 +163,7 @@
             text-align: left;
             vertical-align: top;
             font-size: .88rem;
+            overflow: hidden;
         }
 
         th {
@@ -167,6 +171,14 @@
             color: #334155;
             font-weight: 700;
         }
+
+        table th:nth-child(1), table td:nth-child(1) { width: 7%; }
+        table th:nth-child(2), table td:nth-child(2) { width: 4%; }
+        table th:nth-child(3), table td:nth-child(3) { width: 11%; }
+        table th:nth-child(4), table td:nth-child(4) { width: 14%; word-break: break-word; }
+        table th:nth-child(5), table td:nth-child(5) { width: 15%; word-break: break-word; }
+        table th:nth-child(6), table td:nth-child(6) { width: 8%; }
+        table th:nth-child(7), table td:nth-child(7) { width: 10%; }
 
         .status-box {
             border-radius: 12px;
@@ -297,6 +309,81 @@
         .config-form-collapsed {
             display: none;
         }
+
+        /* ---- Mapa ---- */
+        #map-tecnico { height: 460px; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.07); z-index: 0; }
+        .map-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; font-size: .78rem; }
+        .map-legend-item { display: flex; align-items: center; gap: 5px; }
+        .map-legend-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 2px rgba(0,0,0,.2); }
+        .map-counter { font-size: .82rem; color: #64748b; }
+
+        /* ---- Filtros ---- */
+        .filter-bar { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+        .filter-group { display: flex; flex-direction: column; gap: 3px; }
+        .filter-label { font-size: .7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .4px; }
+        .filter-input { padding: 6px 10px; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: .82rem; font-family: inherit; color: #334155; outline: none; background: #fff; width: 90px; }
+        .filter-select { padding: 6px 10px; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: .82rem; font-family: inherit; color: #334155; outline: none; background: #fff; min-width: 150px; }
+        .filter-date { width: 140px; }
+        .filter-input:focus, .filter-select:focus { border-color: var(--accent); }
+        .filter-actions { display: flex; gap: 8px; align-items: flex-end; }
+        .btn-apply { background: var(--accent); color: #fff; border: none; padding: 7px 18px; border-radius: 6px; font-size: .82rem; font-weight: 600; font-family: inherit; cursor: pointer; }
+        .btn-apply:hover { background: var(--accent-dark); }
+        .btn-clear { background: #fff; color: #64748b; border: 1.5px solid #e2e8f0; padding: 6px 14px; border-radius: 6px; font-size: .82rem; font-weight: 500; font-family: inherit; cursor: pointer; }
+        .btn-clear:hover { border-color: #94a3b8; color: #334155; }
+
+        /* ---- Botones de acción en tabla ---- */
+        .btn-accion {
+            display: inline-flex; align-items: center; gap: 5px;
+            border: none; border-radius: 7px; padding: 7px 13px;
+            font-size: .78rem; font-weight: 700; font-family: inherit;
+            cursor: pointer; transition: all .15s; white-space: nowrap;
+        }
+        .btn-iniciar {
+            background: #dbeafe; color: #1e40af; border: 1.5px solid #93c5fd;
+        }
+        .btn-iniciar:hover { background: #bfdbfe; border-color: #3b82f6; }
+        .btn-resolver {
+            background: #dcfce7; color: #166534; border: 1.5px solid #86efac;
+        }
+        .btn-resolver:hover { background: #bbf7d0; border-color: #22c55e; }
+
+        /* ---- Badges de estado en tabla ---- */
+        .badge-estado { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: .75rem; font-weight: 700; }
+        .badge-ASIGNADA   { background: #e0e7ff; color: #3730a3; }
+        .badge-EN_CURSO   { background: #dbeafe; color: #1e40af; }
+        .badge-RESUELTA   { background: #dcfce7; color: #166534; }
+
+        /* ---- Comentarios y extensión ---- */
+        .btn-comentar { background: #f0f9ff; color: #0369a1; border: 1.5px solid #7dd3fc; }
+        .btn-comentar:hover { background: #e0f2fe; }
+        .btn-extension { background: #fefce8; color: #854d0e; border: 1.5px solid #fde047; }
+        .btn-extension:hover { background: #fef9c3; }
+        .btn-ext-pendiente { display:inline-flex;align-items:center;gap:5px;border-radius:7px;padding:6px 10px;font-size:.75rem;font-weight:700;font-family:inherit;background:#fef2f2;color:#991b1b;border:1.5px solid #fca5a5;cursor:default;white-space:nowrap; }
+
+        .comentario-bubble { padding:10px 14px;border-radius:8px;margin-bottom:10px;border:1px solid; }
+        .comentario-COMENTARIO { background:#f8fafc;border-color:#e2e8f0; }
+        .comentario-SOLICITUD_EXTENSION { background:#fefce8;border-color:#fde047; }
+        .comentario-DECISION_EXTENSION { background:#f0fdf4;border-color:#86efac; }
+
+        .comentario-meta { font-size:.75rem;color:#64748b;margin-bottom:5px; }
+        .comentario-tipo-badge { display:inline-block;padding:1px 7px;border-radius:10px;font-size:.7rem;font-weight:700;margin-left:5px; }
+        .tipo-COMENTARIO { background:#e2e8f0;color:#475569; }
+        .tipo-SOLICITUD_EXTENSION { background:#fef9c3;color:#854d0e; }
+        .tipo-DECISION_EXTENSION { background:#dcfce7;color:#166534; }
+        .comentario-contenido { font-size:.87rem;color:#1e293b;white-space:pre-wrap;word-break:break-word; }
+
+        table th:nth-child(8), table td:nth-child(8) { width: 10%; }
+        table th:nth-child(9), table td:nth-child(9) { width: 21%; }
+
+        .prio-badge { display:inline-block;padding:3px 7px;border-radius:10px;font-size:.73rem;font-weight:700;text-align:center;white-space:nowrap; }
+        .prio-BAJA    { background:#dcfce7;color:#166534;border:1px solid #86efac; }
+        .prio-MEDIA   { background:#fef9c3;color:#854d0e;border:1px solid #fde047; }
+        .prio-ALTA    { background:#ffedd5;color:#9a3412;border:1px solid #fed7aa; }
+        .prio-CRITICA { background:#fee2e2;color:#991b1b;border:1px solid #fca5a5; }
+
+        .limite-ok      { display:inline-block;padding:2px 8px;border-radius:6px;font-size:.78rem;font-weight:700;background:#dcfce7;color:#166534; }
+        .limite-urgente { display:inline-block;padding:2px 8px;border-radius:6px;font-size:.78rem;font-weight:700;background:#fef9c3;color:#854d0e; }
+        .limite-vencido { display:inline-block;padding:2px 8px;border-radius:6px;font-size:.78rem;font-weight:700;background:#fee2e2;color:#991b1b; }
     </style>
 </head>
 <body>
@@ -308,12 +395,21 @@
         <div class="nav-right">
             <span class="nav-email" th:text="${usuario.email}"></span>
             <span class="nav-role" th:text="${rol}"></span>
+            <a href="/soporte/mis-mensajes" class="nav-logout" style="background:rgba(21,128,61,.25);">Soporte</a>
             <a href="/mi-cuenta/eliminar" class="nav-logout" style="background:rgba(220,38,38,.25);">Eliminar cuenta</a>
             <a href="/logout" class="nav-logout">Cerrar sesión</a>
         </div>
     </nav>
 
     <div class="container">
+
+        <div th:if="${param.extensionEnviada}" class="status-box status-success" style="margin-bottom:16px;">
+            Solicitud de extensión de tiempo enviada correctamente. El operador revisará tu solicitud.
+        </div>
+        <div th:if="${param.errorExtension}" class="status-box status-error" style="margin-bottom:16px;">
+            No se pudo enviar la solicitud de extensión. Comprueba los datos e inténtalo de nuevo.
+        </div>
+
         <div class="section-card">
             <div class="section-header">
                 <h3>Configuración del equipo técnico</h3>
@@ -397,6 +493,61 @@
             </div>
         </div>
 
+        <!-- ========== MAPA ========== -->
+        <div class="section-card" style="overflow:visible;">
+            <div class="section-header">
+                <h3>&#128506; Mapa de tus incidencias</h3>
+                <span id="map-counter-tec" class="map-counter"></span>
+            </div>
+            <div style="padding:20px 22px 22px;">
+                <div class="map-legend">
+                    <span class="map-legend-item"><span class="map-legend-dot" style="background:#818cf8"></span> Asignada</span>
+                    <span class="map-legend-item"><span class="map-legend-dot" style="background:#60a5fa"></span> En curso</span>
+                    <span class="map-legend-item"><span class="map-legend-dot" style="background:#86efac"></span> Resuelta</span>
+                </div>
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <span class="filter-label">ID</span>
+                        <input type="text" id="ftec-id" class="filter-input" placeholder="Ej. 12">
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">Categoría</span>
+                        <select id="ftec-cat" class="filter-select"><option value="">Todas</option></select>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">Estado</span>
+                        <select id="ftec-estado" class="filter-select">
+                            <option value="">Todos</option>
+                            <option value="ASIGNADA">Asignada</option>
+                            <option value="EN_CURSO">En curso</option>
+                            <option value="RESUELTA">Resuelta</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">Creación desde</span>
+                        <input type="date" id="ftec-crdesde" class="filter-input filter-date">
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">Creación hasta</span>
+                        <input type="date" id="ftec-crhasta" class="filter-input filter-date">
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">Asignación desde</span>
+                        <input type="date" id="ftec-asdesde" class="filter-input filter-date">
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">Asignación hasta</span>
+                        <input type="date" id="ftec-ashasta" class="filter-input filter-date">
+                    </div>
+                    <div class="filter-actions">
+                        <button class="btn-apply" onclick="applyFilterTec()">Filtrar</button>
+                        <button class="btn-clear" onclick="clearFilterTec()">Limpiar</button>
+                    </div>
+                </div>
+                <div id="map-tecnico"></div>
+            </div>
+        </div>
+
         <div class="section-card">
             <div class="section-header">
                 <h3>Incidencias asignadas a tu equipo</h3>
@@ -406,16 +557,27 @@
                 <table>
                     <thead>
                         <tr>
+                            <th>Prioridad</th>
                             <th>ID</th>
                             <th>Categorías</th>
                             <th>Descripción</th>
                             <th>Ubicación</th>
                             <th>Estado</th>
                             <th>Fecha asignación</th>
+                            <th>Fecha límite</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="inc : ${incidencias}">
+                            <td>
+                                <span th:if="${inc.prioridad != null}"
+                                      class="prio-badge"
+                                      th:classappend="${'prio-' + inc.prioridad.name()}"
+                                      th:text="${inc.prioridad.descripcion}">
+                                </span>
+                                <span th:if="${inc.prioridad == null}" style="color:#94a3b8;font-size:.8rem;">—</span>
+                            </td>
                             <td th:text="${inc.id}"></td>
                             <td>
                                 <div class="badge-list">
@@ -427,8 +589,52 @@
                             </td>
                             <td th:text="${inc.descripcion}"></td>
                             <td th:text="${inc.ubicacion}"></td>
-                            <td th:text="${inc.estado.descripcion}"></td>
+                            <td>
+                                <span class="badge-estado"
+                                      th:classappend="${'badge-' + inc.estado.name()}"
+                                      th:text="${inc.estado.descripcion}"></span>
+                            </td>
                             <td th:text="${inc.fechaAsignacion != null ? #temporals.format(inc.fechaAsignacion, 'dd/MM/yyyy HH:mm') : '-'}"></td>
+                            <td>
+                                <th:block th:if="${inc.fechaLimiteResolucion != null}">
+                                    <span th:with="hoy=${T(java.time.LocalDate).now()},
+                                                   limite=${inc.fechaLimiteResolucion}"
+                                          th:class="${limite.isBefore(hoy) ? 'limite-vencido' :
+                                                     (limite.isBefore(hoy.plusDays(3)) ? 'limite-urgente' : 'limite-ok')}"
+                                          th:text="${#temporals.format(limite, 'dd/MM/yyyy')}">
+                                    </span>
+                                </th:block>
+                                <span th:if="${inc.fechaLimiteResolucion == null}" style="color:#94a3b8;">—</span>
+                            </td>
+                            <td>
+                                <div style="display:flex;flex-direction:column;gap:5px;">
+                                    <button th:if="${inc.estado.name() == 'ASIGNADA'}"
+                                            type="button" class="btn-accion btn-iniciar"
+                                            th:onclick="'iniciarAjax(' + ${inc.id} + ', this)'">▶ Iniciar</button>
+                                    <form th:if="${inc.estado.name() == 'EN_CURSO'}"
+                                          th:id="'form-resolver-' + ${inc.id}"
+                                          method="post" th:action="@{/dashboard/tecnico/cambiar-estado}">
+                                        <input type="hidden" name="id" th:value="${inc.id}"/>
+                                        <input type="hidden" name="estado" value="RESUELTA"/>
+                                        <button type="button" class="btn-accion btn-resolver"
+                                                th:onclick="'openResolverModal(' + ${inc.id} + ')'">✓ Marcar resuelta</button>
+                                    </form>
+                                    <button type="button" class="btn-accion btn-comentar"
+                                            th:onclick="'openComentariosModalTec(' + ${inc.id} + ')'">
+                                        &#128172; Comentarios
+                                        (<span th:text="${#lists.size(comentariosPorIncidencia[inc.id])}">0</span>)
+                                    </button>
+                                    <button th:if="${!incidenciasConSolicitudPendiente.contains(inc.id)
+                                                    and inc.estado.name() != 'RESUELTA'
+                                                    and inc.estado.name() != 'CERRADA'}"
+                                            type="button" class="btn-accion btn-extension"
+                                            th:onclick="'openExtensionModal(' + ${inc.id} + ')'">
+                                        &#128197; Solicitar extensión
+                                    </button>
+                                    <span th:if="${incidenciasConSolicitudPendiente.contains(inc.id)}"
+                                          class="btn-ext-pendiente">&#9203; Extensión pendiente</span>
+                                </div>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -436,6 +642,20 @@
 
             <div class="empty-msg" th:if="${#lists.isEmpty(incidencias)}">
                 No tienes incidencias asignadas actualmente.
+            </div>
+
+            <!-- Datos de comentarios por incidencia (ocultos, para los modales) -->
+            <div style="display:none" id="all-comments-tec">
+                <div th:each="inc : ${incidencias}" th:id="'cdata-tec-' + ${inc.id}">
+                    <div th:each="c : ${comentariosPorIncidencia[inc.id]}"
+                         class="c-item"
+                         th:data-autor="${c.autor.email}"
+                         th:data-fecha="${#temporals.format(c.fechaCreacion, 'dd/MM/yyyy HH:mm')}"
+                         th:data-tipo="${c.tipo.name()}"
+                         th:data-tipo-desc="${c.tipo.descripcion}"
+                         th:data-contenido="${c.contenido}">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -518,6 +738,355 @@
 
         syncGeneralCheckbox();
         inicializarVisibilidadFormulario();
+
+        /* ===== Mapa técnico ===== */
+        var mapTec = L.map('map-tecnico').setView([40.4168, -3.7038], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors', maxZoom: 19
+        }).addTo(mapTec);
+        var markersLayerTec = L.layerGroup().addTo(mapTec);
+        var allDataTec = [];
+
+        var estadoColorsTec = {
+            'ASIGNADA': '#818cf8',
+            'EN_CURSO': '#60a5fa',
+            'RESUELTA': '#86efac'
+        };
+
+        function parseDateTec(str) {
+            if (!str) return null;
+            var p = str.split(' ')[0].split('/');
+            return new Date(parseInt(p[2], 10), parseInt(p[1], 10) - 1, parseInt(p[0], 10));
+        }
+
+        function parseDateISOTec(str) {
+            if (!str) return null;
+            var p = str.split('-');
+            return new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+        }
+
+        function renderMarkersTec(data) {
+            markersLayerTec.clearLayers();
+            var bounds = [];
+            data.forEach(function(inc) {
+                if (inc.latitud && inc.longitud) {
+                    var color = estadoColorsTec[inc.estado] || '#64748b';
+                    var circle = L.circleMarker([inc.latitud, inc.longitud], {
+                        radius: 9, fillColor: color, color: '#fff', weight: 2, opacity: 1, fillOpacity: 0.85
+                    });
+                    circle.bindPopup(
+                        '<strong>ID ' + inc.id + '</strong><br/>' +
+                        '<span style="font-size:.82rem;color:#475569">' + inc.categorias.join(', ') + '</span><br/>' +
+                        inc.descripcion.substring(0, 120) + (inc.descripcion.length > 120 ? '...' : '') + '<br/>' +
+                        '<small>&#128205; ' + inc.ubicacion + '</small><br/>' +
+                        '<small>&#128197; Creación: ' + inc.fecha + '</small>' +
+                        (inc.fechaAsignacion ? '<br/><small>&#128203; Asignación: ' + inc.fechaAsignacion + '</small>' : '')
+                    );
+                    markersLayerTec.addLayer(circle);
+                    bounds.push([inc.latitud, inc.longitud]);
+                }
+            });
+            var n = markersLayerTec.getLayers().length;
+            document.getElementById('map-counter-tec').textContent =
+                'Mostrando ' + n + ' incidencia' + (n !== 1 ? 's' : '') + ' en el mapa';
+            if (bounds.length > 0) mapTec.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+        }
+
+        function applyFilterTec() {
+            var idVal   = document.getElementById('ftec-id').value.trim();
+            var catVal  = document.getElementById('ftec-cat').value;
+            var estVal  = document.getElementById('ftec-estado').value;
+            var crDesde = document.getElementById('ftec-crdesde').value;
+            var crHasta = document.getElementById('ftec-crhasta').value;
+            var asDesde = document.getElementById('ftec-asdesde').value;
+            var asHasta = document.getElementById('ftec-ashasta').value;
+            var filtered = allDataTec.filter(function(inc) {
+                if (idVal && String(inc.id) !== idVal) return false;
+                if (catVal && !inc.categorias.includes(catVal)) return false;
+                if (estVal && inc.estado !== estVal) return false;
+                if (crDesde || crHasta) {
+                    var f = parseDateTec(inc.fecha);
+                    if (crDesde && f < parseDateISOTec(crDesde)) return false;
+                    if (crHasta) { var h = parseDateISOTec(crHasta); h.setDate(h.getDate() + 1); if (f >= h) return false; }
+                }
+                if (asDesde || asHasta) {
+                    var fa = parseDateTec(inc.fechaAsignacion);
+                    if (!fa) return false;
+                    if (asDesde && fa < parseDateISOTec(asDesde)) return false;
+                    if (asHasta) { var ha = parseDateISOTec(asHasta); ha.setDate(ha.getDate() + 1); if (fa >= ha) return false; }
+                }
+                return true;
+            });
+            renderMarkersTec(filtered);
+        }
+
+        function clearFilterTec() {
+            document.getElementById('ftec-id').value = '';
+            document.getElementById('ftec-cat').value = '';
+            document.getElementById('ftec-estado').value = '';
+            document.getElementById('ftec-crdesde').value = '';
+            document.getElementById('ftec-crhasta').value = '';
+            document.getElementById('ftec-asdesde').value = '';
+            document.getElementById('ftec-ashasta').value = '';
+            renderMarkersTec(allDataTec);
+        }
+
+        fetch('/api/incidencias/mis-asignadas')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                allDataTec = data;
+                var cats = new Set();
+                data.forEach(function(inc) { inc.categorias.forEach(function(c) { cats.add(c); }); });
+                var catSel = document.getElementById('ftec-cat');
+                Array.from(cats).sort().forEach(function(c) {
+                    var opt = document.createElement('option');
+                    opt.value = c;
+                    opt.textContent = c;
+                    catSel.appendChild(opt);
+                });
+                renderMarkersTec(data);
+            });
+
+        function iniciarAjax(id, btn) {
+            var body = new URLSearchParams();
+            body.append('id', id);
+            body.append('estado', 'EN_CURSO');
+            fetch('/dashboard/tecnico/cambiar-estado', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body.toString()
+            }).then(function() {
+                var row = btn.closest('tr');
+                // Actualizar badge de estado
+                var badge = row.querySelector('.badge-estado');
+                if (badge) {
+                    badge.className = 'badge-estado badge-EN_CURSO';
+                    badge.textContent = 'EnCurso';
+                }
+                // Reemplazar botón por "Marcar resuelta"
+                var td = btn.parentElement;
+                var formId = 'form-resolver-' + id;
+                td.innerHTML =
+                    '<form id="' + formId + '" method="post" action="/dashboard/tecnico/cambiar-estado">' +
+                    '<input type="hidden" name="id" value="' + id + '"/>' +
+                    '<input type="hidden" name="estado" value="RESUELTA"/>' +
+                    '<button type="button" class="btn-accion btn-resolver" onclick="openResolverModal(' + id + ')">✓ Marcar resuelta</button>' +
+                    '</form>';
+                // Actualizar datos del mapa
+                var inc = allDataTec.find(function(i) { return i.id === id; });
+                if (inc) { inc.estado = 'EN_CURSO'; }
+                applyFilterTec();
+            });
+        }
+
+        var resolverIncidenciaId = null;
+
+        function openResolverModal(id) {
+            resolverIncidenciaId = id;
+            document.getElementById('resolver-modal-title').textContent = 'Marcar resuelta — Incidencia #' + id;
+            document.getElementById('resolverModal').style.display = 'flex';
+        }
+
+        function closeResolverModal() {
+            document.getElementById('resolverModal').style.display = 'none';
+            resolverIncidenciaId = null;
+        }
+
+        function confirmarResolver() {
+            if (resolverIncidenciaId === null) return;
+            var id = resolverIncidenciaId;
+            closeResolverModal();
+            var body = new URLSearchParams();
+            body.append('id', id);
+            body.append('estado', 'RESUELTA');
+            fetch('/dashboard/tecnico/cambiar-estado', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body.toString()
+            }).then(function() {
+                var form = document.getElementById('form-resolver-' + id);
+                if (!form) return;
+                var row = form.closest('tr');
+                // Actualizar badge de estado
+                var badge = row.querySelector('.badge-estado');
+                if (badge) {
+                    badge.className = 'badge-estado badge-RESUELTA';
+                    badge.textContent = 'Resuelta';
+                }
+                // Sustituir botón por guión (ya no hay acción disponible)
+                form.parentElement.innerHTML = '<span style="color:#94a3b8;font-size:.8rem;">—</span>';
+                // Actualizar datos del mapa
+                var inc = allDataTec.find(function(i) { return i.id === id; });
+                if (inc) { inc.estado = 'RESUELTA'; }
+                applyFilterTec();
+            });
+        }
+
+        window.addEventListener('click', function(e) {
+            if (e.target === document.getElementById('resolverModal')) closeResolverModal();
+            if (e.target === document.getElementById('comentariosModalTec')) closeComentariosModalTec();
+            if (e.target === document.getElementById('extensionModal')) closeExtensionModal();
+        });
+
+        /* ===== Helper: escapar HTML ===== */
+        function escHtml(str) {
+            var d = document.createElement('div');
+            d.appendChild(document.createTextNode(str || ''));
+            return d.innerHTML;
+        }
+
+        /* ===== Modal: Comentarios (técnico) ===== */
+        function openComentariosModalTec(id) {
+            var dataDiv = document.getElementById('cdata-tec-' + id);
+            var items = dataDiv ? dataDiv.querySelectorAll('.c-item') : [];
+            var html = '';
+            if (items.length === 0) {
+                html = '<p style="color:#94a3b8;text-align:center;padding:24px 0;font-size:.9rem;">Sin comentarios todavía.</p>';
+            } else {
+                items.forEach(function(item) {
+                    var tipo = item.dataset.tipo;
+                    var tipoDesc = item.dataset.tipoDesc;
+                    html += '<div class="comentario-bubble comentario-' + tipo + '">' +
+                        '<div class="comentario-meta">' +
+                        '<strong>' + escHtml(item.dataset.autor) + '</strong>' +
+                        '<span class="comentario-tipo-badge tipo-' + tipo + '">' + escHtml(tipoDesc) + '</span>' +
+                        ' · ' + escHtml(item.dataset.fecha) +
+                        '</div>' +
+                        '<div class="comentario-contenido">' + escHtml(item.dataset.contenido) + '</div>' +
+                        '</div>';
+                });
+            }
+            document.getElementById('coments-tec-list').innerHTML = html;
+            document.getElementById('coments-tec-inc-id').value = id;
+            document.getElementById('coments-tec-title').textContent = 'Comentarios — Incidencia #' + id;
+            var modal = document.getElementById('comentariosModalTec');
+            modal.style.display = 'flex';
+        }
+
+        function closeComentariosModalTec() {
+            document.getElementById('comentariosModalTec').style.display = 'none';
+        }
+
+        /* ===== Modal: Solicitar extensión ===== */
+        function openExtensionModal(id) {
+            document.getElementById('ext-inc-id').value = id;
+            document.getElementById('ext-modal-title').textContent = 'Solicitar extensión de tiempo — Incidencia #' + id;
+            document.getElementById('ext-motivo').value = '';
+            document.getElementById('ext-comentario').value = '';
+            document.getElementById('ext-fecha').value = '';
+            document.getElementById('ext-error').style.display = 'none';
+            var today = new Date().toISOString().split('T')[0];
+            document.getElementById('ext-fecha').min = today;
+            document.getElementById('extensionModal').style.display = 'flex';
+        }
+
+        function closeExtensionModal() {
+            document.getElementById('extensionModal').style.display = 'none';
+        }
+
+        function validarExtension() {
+            var motivo = document.getElementById('ext-motivo').value.trim();
+            var fecha = document.getElementById('ext-fecha').value;
+            var errorDiv = document.getElementById('ext-error');
+            var today = new Date().toISOString().split('T')[0];
+
+            if (!motivo) {
+                errorDiv.textContent = 'El motivo es obligatorio.';
+                errorDiv.style.display = 'block';
+                return false;
+            }
+            if (!fecha) {
+                errorDiv.textContent = 'Debes indicar la nueva fecha límite solicitada.';
+                errorDiv.style.display = 'block';
+                return false;
+            }
+            if (fecha < today) {
+                errorDiv.textContent = 'La fecha no puede ser anterior a la fecha actual.';
+                errorDiv.style.display = 'block';
+                return false;
+            }
+            return true;
+        }
     </script>
+
+    <!-- ========== MODAL: COMENTARIOS (TÉCNICO) ========== -->
+    <div id="comentariosModalTec" style="display:none;position:fixed;z-index:1000;inset:0;background:rgba(0,0,0,.45);align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:12px;width:90%;max-width:580px;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #f1f5f9;flex-shrink:0;">
+                <h3 id="coments-tec-title" style="font-size:1rem;font-weight:600;color:#0f172a;margin:0;">Comentarios</h3>
+                <span onclick="closeComentariosModalTec()" style="color:#94a3b8;font-size:1.4rem;cursor:pointer;line-height:1;">&times;</span>
+            </div>
+            <div id="coments-tec-list" style="padding:16px;overflow-y:auto;flex:1;min-height:80px;"></div>
+            <div style="padding:16px;border-top:1px solid #f1f5f9;flex-shrink:0;">
+                <form method="post" action="/dashboard/tecnico/comentar">
+                    <input type="hidden" id="coments-tec-inc-id" name="incidenciaId"/>
+                    <textarea name="contenido" placeholder="Escribe un comentario sobre el proceso de resolución..."
+                              style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-family:inherit;font-size:.87rem;resize:vertical;min-height:70px;box-sizing:border-box;" required></textarea>
+                    <div style="display:flex;gap:8px;margin-top:8px;">
+                        <button type="submit" style="background:#15803d;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:.84rem;font-weight:600;font-family:inherit;cursor:pointer;">Enviar comentario</button>
+                        <button type="button" onclick="closeComentariosModalTec()" style="background:#f1f5f9;color:#374151;border:1.5px solid #e2e8f0;padding:8px 16px;border-radius:6px;font-size:.84rem;font-weight:600;font-family:inherit;cursor:pointer;">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MODAL: SOLICITAR EXTENSIÓN ========== -->
+    <div id="extensionModal" style="display:none;position:fixed;z-index:1000;inset:0;background:rgba(0,0,0,.45);align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:12px;width:90%;max-width:480px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #f1f5f9;">
+                <h3 id="ext-modal-title" style="font-size:1rem;font-weight:600;color:#0f172a;margin:0;">Solicitar extensión de tiempo</h3>
+                <span onclick="closeExtensionModal()" style="color:#94a3b8;font-size:1.4rem;cursor:pointer;line-height:1;">&times;</span>
+            </div>
+            <form method="post" action="/dashboard/tecnico/solicitar-extension" onsubmit="return validarExtension()">
+                <div style="padding:18px;display:flex;flex-direction:column;gap:14px;">
+                    <input type="hidden" id="ext-inc-id" name="incidenciaId"/>
+
+                    <div>
+                        <label style="display:block;font-weight:600;font-size:.87rem;margin-bottom:6px;color:#374151;">Tiempo adicional solicitado (nueva fecha límite) *</label>
+                        <input type="date" id="ext-fecha" name="fechaSolicitada"
+                               style="width:100%;padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-family:inherit;font-size:.88rem;box-sizing:border-box;" required/>
+                        <div style="font-size:.77rem;color:#64748b;margin-top:4px;">La fecha no puede ser anterior a hoy.</div>
+                    </div>
+
+                    <div>
+                        <label style="display:block;font-weight:600;font-size:.87rem;margin-bottom:6px;color:#374151;">Motivo *</label>
+                        <textarea id="ext-motivo" name="motivo" placeholder="Explica por qué necesitas más tiempo..."
+                                  style="width:100%;padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-family:inherit;font-size:.87rem;resize:vertical;min-height:80px;box-sizing:border-box;" required></textarea>
+                    </div>
+
+                    <div>
+                        <label style="display:block;font-weight:600;font-size:.87rem;margin-bottom:6px;color:#374151;">Comentario adicional (opcional)</label>
+                        <textarea id="ext-comentario" name="comentarioAdicional" placeholder="Información adicional que el operador deba conocer..."
+                                  style="width:100%;padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-family:inherit;font-size:.87rem;resize:vertical;min-height:60px;box-sizing:border-box;"></textarea>
+                    </div>
+
+                    <div id="ext-error" style="display:none;color:#dc2626;font-size:.84rem;font-weight:500;padding:8px 12px;background:#fef2f2;border-radius:6px;border:1px solid #fecaca;"></div>
+
+                    <div style="display:flex;gap:8px;">
+                        <button type="submit" style="background:#b45309;color:#fff;border:none;padding:9px 16px;border-radius:6px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;flex:1;">Enviar solicitud</button>
+                        <button type="button" onclick="closeExtensionModal()" style="background:#f1f5f9;color:#374151;border:1.5px solid #e2e8f0;padding:9px 16px;border-radius:6px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;">Cancelar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========== MODAL: CONFIRMAR RESOLVER ========== -->
+    <div id="resolverModal" style="display:none;position:fixed;z-index:1000;inset:0;background:rgba(0,0,0,.45);align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:12px;padding:28px;width:90%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #f1f5f9;">
+                <h3 id="resolver-modal-title" style="font-size:1rem;font-weight:600;color:#0f172a;margin:0;">Marcar resuelta</h3>
+                <span onclick="closeResolverModal()" style="color:#94a3b8;font-size:1.4rem;cursor:pointer;line-height:1;">&times;</span>
+            </div>
+            <p style="color:#475569;font-size:.9rem;line-height:1.65;margin-bottom:20px;">
+                ¿Confirmas que esta incidencia ha sido <strong>resuelta</strong>? Esta acción no se puede deshacer fácilmente.
+            </p>
+            <div style="display:flex;gap:10px;">
+                <button onclick="confirmarResolver()" style="background:#15803d;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;flex:1;">✓ Sí, marcar resuelta</button>
+                <button onclick="closeResolverModal()" style="background:#f1f5f9;color:#374151;border:1.5px solid #e2e8f0;padding:8px 18px;border-radius:6px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;">Cancelar</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

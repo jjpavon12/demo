@@ -31,6 +31,7 @@ public class DatabaseInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         ensureActivoColumn();
+        ensureExtensionPendienteColumn();
         ensureAdminUser();
         ensureAnonimoUser();
     }
@@ -41,6 +42,18 @@ public class DatabaseInitializer implements ApplicationRunner {
 
         if (!columns.contains("activo")) {
             jdbcTemplate.execute("ALTER TABLE usuarios ADD COLUMN activo INTEGER NOT NULL DEFAULT 1");
+        }
+    }
+
+    private void ensureExtensionPendienteColumn() {
+        List<String> columns = jdbcTemplate.query("PRAGMA table_info('incidencias')",
+            (rs, rowNum) -> rs.getString("name"));
+
+        if (!columns.contains("tiene_solicitud_extension_pendiente")) {
+            jdbcTemplate.execute("ALTER TABLE incidencias ADD COLUMN tiene_solicitud_extension_pendiente INTEGER NOT NULL DEFAULT 0");
+        }
+        if (!columns.contains("fecha_limite_resolucion")) {
+            jdbcTemplate.execute("ALTER TABLE incidencias ADD COLUMN fecha_limite_resolucion TEXT");
         }
     }
 
