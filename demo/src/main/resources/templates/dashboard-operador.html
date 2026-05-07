@@ -170,6 +170,25 @@
         .badge-CERRADA        { background: #e2e8f0; color: #334155; }
         .badge-RECHAZADA      { background: #fee2e2; color: #991b1b; }
         .badge-PENDIENTE_VALIDACION { background: #fef3c7; color: #92400e; }
+
+        /* ---- Comentarios y extensión (operador) ---- */
+        .btn-comentar-op { background: #f0f9ff; color: #0369a1; border: 1.5px solid #7dd3fc; padding: 5px 10px; border-radius: 6px; font-size: .78rem; font-weight: 700; font-family: inherit; cursor: pointer; white-space: nowrap; }
+        .btn-comentar-op:hover { background: #e0f2fe; }
+        .notif-extension { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; font-size: .88rem; }
+        .notif-extension strong { color: #92400e; }
+        .comentario-bubble { padding:10px 14px;border-radius:8px;margin-bottom:10px;border:1px solid; }
+        .comentario-COMENTARIO { background:#f8fafc;border-color:#e2e8f0; }
+        .comentario-SOLICITUD_EXTENSION { background:#fefce8;border-color:#fde047; }
+        .comentario-DECISION_EXTENSION { background:#f0fdf4;border-color:#86efac; }
+        .comentario-meta { font-size:.75rem;color:#64748b;margin-bottom:5px; }
+        .comentario-tipo-badge { display:inline-block;padding:1px 7px;border-radius:10px;font-size:.7rem;font-weight:700;margin-left:5px; }
+        .tipo-COMENTARIO { background:#e2e8f0;color:#475569; }
+        .tipo-SOLICITUD_EXTENSION { background:#fef9c3;color:#854d0e; }
+        .tipo-DECISION_EXTENSION { background:#dcfce7;color:#166534; }
+        .comentario-contenido { font-size:.87rem;color:#1e293b;white-space:pre-wrap;word-break:break-word; }
+        .ext-decision-box { background:#fffbeb;border:1.5px solid #fcd34d;border-radius:10px;padding:14px;margin-bottom:14px; }
+        .ext-decision-box h4 { font-size:.9rem;font-weight:700;color:#92400e;margin-bottom:10px; }
+        .ext-field { font-size:.84rem;color:#374151;margin-bottom:6px; }
     </style>
 </head>
 <body>
@@ -429,6 +448,10 @@
 
     <!-- ========== SECCIÓN: VERIFICADAS ========== -->
     <div id="section-verificadas" style="display:none">
+        <div th:if="${totalSolicitudesPendientes > 0}" class="notif-extension" style="margin-bottom:16px;">
+            &#9203; <strong th:text="${totalSolicitudesPendientes + ' solicitud' + (totalSolicitudesPendientes > 1 ? 'es' : '') + ' de extensión de tiempo pendiente' + (totalSolicitudesPendientes > 1 ? 's' : '')}"></strong>
+            — Revisa las incidencias marcadas a continuación y aprueba o rechaza cada solicitud.
+        </div>
         <div class="section-card">
             <div class="section-header">
                 <h3>Incidencias verificadas</h3>
@@ -497,20 +520,52 @@
                                 </div>
                             </td>
                             <td>
-                                <div th:if="${inc.estado == T(com.giu.giu.model.EstadoIncidencia).RESUELTA}"
-                                     style="display:flex;flex-direction:column;gap:6px;">
-                                    <button type="button" class="btn-cerrar"
-                                            th:onclick="'openCerrarModal(' + ${inc.id} + ')'">&#10003; Cerrar</button>
-                                    <button type="button" class="btn-devolver"
-                                            th:onclick="'openDevolverModal(' + ${inc.id} + ')'">&#8617; Devolver al técnico</button>
+                                <div style="display:flex;flex-direction:column;gap:5px;">
+                                    <div th:if="${inc.estado == T(com.giu.giu.model.EstadoIncidencia).RESUELTA}"
+                                         style="display:flex;flex-direction:column;gap:5px;">
+                                        <button type="button" class="btn-cerrar"
+                                                th:onclick="'openCerrarModal(' + ${inc.id} + ')'">&#10003; Cerrar</button>
+                                        <button type="button" class="btn-devolver"
+                                                th:onclick="'openDevolverModal(' + ${inc.id} + ')'">&#8617; Devolver al técnico</button>
+                                    </div>
+                                    <button type="button" class="btn-comentar-op"
+                                            th:onclick="'openComentariosModalOp(' + ${inc.id} + ')'">
+                                        &#128172; Comentarios
+                                        (<span th:text="${#lists.size(comentariosPorIncidencia[inc.id])}">0</span>)
+                                        <span th:if="${solicitudPendientePorIncidencia[inc.id] != null}"
+                                              style="background:#fef9c3;color:#854d0e;border-radius:8px;padding:1px 6px;font-size:.72rem;margin-left:4px;">&#9203; extensión</span>
+                                    </button>
                                 </div>
-                                <span th:if="${inc.estado != T(com.giu.giu.model.EstadoIncidencia).RESUELTA}"
-                                      style="color:#94a3b8;font-size:.8rem;">—</span>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <!-- Datos ocultos de comentarios y solicitudes de extensión (operador) -->
+    <div style="display:none" id="all-comments-op">
+        <div th:each="inc : ${incidenciasVerificadas}" th:id="'cdata-op-' + ${inc.id}">
+            <div th:each="c : ${comentariosPorIncidencia[inc.id]}"
+                 class="c-item"
+                 th:data-autor="${c.autor.email}"
+                 th:data-fecha="${#temporals.format(c.fechaCreacion, 'dd/MM/yyyy HH:mm')}"
+                 th:data-tipo="${c.tipo.name()}"
+                 th:data-tipo-desc="${c.tipo.descripcion}"
+                 th:data-contenido="${c.contenido}">
+            </div>
+        </div>
+    </div>
+    <div style="display:none" id="all-solicitudes-op">
+        <div th:each="inc : ${incidenciasVerificadas}"
+             th:if="${solicitudPendientePorIncidencia[inc.id] != null}"
+             th:id="'soldata-op-' + ${inc.id}"
+             th:data-sol-id="${solicitudPendientePorIncidencia[inc.id].id}"
+             th:data-motivo="${solicitudPendientePorIncidencia[inc.id].motivo}"
+             th:data-fecha-sol="${solicitudPendientePorIncidencia[inc.id].fechaSolicitada}"
+             th:data-solicitante="${solicitudPendientePorIncidencia[inc.id].solicitante.email}"
+             th:data-comentario-adicional="${solicitudPendientePorIncidencia[inc.id].comentarioAdicional != null ? solicitudPendientePorIncidencia[inc.id].comentarioAdicional : ''}">
         </div>
     </div>
 
@@ -552,6 +607,58 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== MODAL: COMENTARIOS + EXTENSIÓN (OPERADOR) ========== -->
+<div id="comentariosModalOp" style="display:none;position:fixed;z-index:1000;inset:0;background:rgba(0,0,0,.45);align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;width:90%;max-width:620px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #f1f5f9;flex-shrink:0;">
+            <h3 id="coments-op-title" style="font-size:1rem;font-weight:600;color:#0f172a;margin:0;">Comentarios</h3>
+            <span onclick="closeComentariosModalOp()" style="color:#94a3b8;font-size:1.4rem;cursor:pointer;line-height:1;">&times;</span>
+        </div>
+        <!-- Solicitud de extensión pendiente -->
+        <div id="ext-decision-panel" style="display:none;padding:16px;border-bottom:1px solid #f1f5f9;flex-shrink:0;">
+            <div class="ext-decision-box">
+                <h4>&#9203; Solicitud de extensión pendiente</h4>
+                <div class="ext-field"><strong>Técnico:</strong> <span id="ext-solicitante"></span></div>
+                <div class="ext-field"><strong>Fecha solicitada:</strong> <span id="ext-fecha-sol"></span></div>
+                <div class="ext-field"><strong>Motivo:</strong> <span id="ext-motivo-sol"></span></div>
+                <div id="ext-comentario-sol-row" class="ext-field"><strong>Comentario adicional:</strong> <span id="ext-comentario-sol"></span></div>
+                <form method="post" action="/dashboard/operador/decidir-extension" style="margin-top:12px;">
+                    <input type="hidden" id="ext-sol-id" name="solicitudId"/>
+                    <div style="margin-bottom:10px;">
+                        <label style="display:block;font-weight:600;font-size:.84rem;margin-bottom:5px;color:#374151;">Motivo de la decisión (opcional)</label>
+                        <input type="text" name="motivoDecision" placeholder="Justificación..."
+                               style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:7px;font-family:inherit;font-size:.85rem;box-sizing:border-box;"/>
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        <button type="submit" name="aprobada" value="true"
+                                style="background:#15803d;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-size:.83rem;font-weight:600;font-family:inherit;cursor:pointer;flex:1;">
+                            &#10003; Aprobar extensión
+                        </button>
+                        <button type="submit" name="aprobada" value="false"
+                                style="background:#dc2626;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-size:.83rem;font-weight:600;font-family:inherit;cursor:pointer;flex:1;">
+                            &#10007; Rechazar extensión
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Lista de comentarios -->
+        <div id="coments-op-list" style="padding:16px;overflow-y:auto;flex:1;min-height:80px;"></div>
+        <!-- Añadir comentario -->
+        <div style="padding:16px;border-top:1px solid #f1f5f9;flex-shrink:0;">
+            <form method="post" action="/dashboard/operador/comentar">
+                <input type="hidden" id="coments-op-inc-id" name="incidenciaId"/>
+                <textarea name="contenido" placeholder="Añade un comentario sobre esta incidencia..."
+                          style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-family:inherit;font-size:.87rem;resize:vertical;min-height:65px;box-sizing:border-box;" required></textarea>
+                <div style="display:flex;gap:8px;margin-top:8px;">
+                    <button type="submit" style="background:#15803d;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:.84rem;font-weight:600;font-family:inherit;cursor:pointer;">Enviar comentario</button>
+                    <button type="button" onclick="closeComentariosModalOp()" style="background:#f1f5f9;color:#374151;border:1.5px solid #e2e8f0;padding:8px 16px;border-radius:6px;font-size:.84rem;font-weight:600;font-family:inherit;cursor:pointer;">Cerrar</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -1095,7 +1202,67 @@ document.addEventListener('click', function(e) {
     if (e.target === document.getElementById('rechazarModal')) closeRechazarModal();
     if (e.target === document.getElementById('cerrarModal')) closeCerrarModal();
     if (e.target === document.getElementById('devolverModal')) closeDevolverModal();
+    if (e.target === document.getElementById('comentariosModalOp')) closeComentariosModalOp();
 });
+
+/* ===== Helper HTML escape ===== */
+function escHtmlOp(str) {
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(str || ''));
+    return d.innerHTML;
+}
+
+/* ===== Modal: Comentarios + Extensión (operador) ===== */
+function openComentariosModalOp(id) {
+    var dataDiv = document.getElementById('cdata-op-' + id);
+    var items = dataDiv ? dataDiv.querySelectorAll('.c-item') : [];
+    var html = '';
+    if (items.length === 0) {
+        html = '<p style="color:#94a3b8;text-align:center;padding:24px 0;font-size:.9rem;">Sin comentarios todavía.</p>';
+    } else {
+        items.forEach(function(item) {
+            var tipo = item.dataset.tipo;
+            var tipoDesc = item.dataset.tipoDesc;
+            html += '<div class="comentario-bubble comentario-' + tipo + '">' +
+                '<div class="comentario-meta">' +
+                '<strong>' + escHtmlOp(item.dataset.autor) + '</strong>' +
+                '<span class="comentario-tipo-badge tipo-' + tipo + '">' + escHtmlOp(tipoDesc) + '</span>' +
+                ' · ' + escHtmlOp(item.dataset.fecha) +
+                '</div>' +
+                '<div class="comentario-contenido">' + escHtmlOp(item.dataset.contenido) + '</div>' +
+                '</div>';
+        });
+    }
+    document.getElementById('coments-op-list').innerHTML = html;
+    document.getElementById('coments-op-inc-id').value = id;
+    document.getElementById('coments-op-title').textContent = 'Comentarios — Incidencia #' + id;
+
+    // Solicitud de extensión pendiente
+    var solDiv = document.getElementById('soldata-op-' + id);
+    var panel = document.getElementById('ext-decision-panel');
+    if (solDiv) {
+        document.getElementById('ext-sol-id').value = solDiv.dataset.solId;
+        document.getElementById('ext-solicitante').textContent = solDiv.dataset.solicitante;
+        document.getElementById('ext-fecha-sol').textContent = solDiv.dataset.fechaSol;
+        document.getElementById('ext-motivo-sol').textContent = solDiv.dataset.motivo;
+        var comentAdicRow = document.getElementById('ext-comentario-sol-row');
+        if (solDiv.dataset.comentarioAdicional) {
+            document.getElementById('ext-comentario-sol').textContent = solDiv.dataset.comentarioAdicional;
+            comentAdicRow.style.display = '';
+        } else {
+            comentAdicRow.style.display = 'none';
+        }
+        panel.style.display = '';
+    } else {
+        panel.style.display = 'none';
+    }
+
+    document.getElementById('comentariosModalOp').style.display = 'flex';
+}
+
+function closeComentariosModalOp() {
+    document.getElementById('comentariosModalOp').style.display = 'none';
+}
 
 var _cerrarId = null;
 function openCerrarModal(id) {
