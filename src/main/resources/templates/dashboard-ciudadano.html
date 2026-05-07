@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Ciudadano — GIU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Sora', system-ui, sans-serif; background: linear-gradient(rgba(241,245,249,.85), rgba(241,245,249,.85)), url('/images/giu.jpg') center/cover fixed; }
+        nav.navbar {
+            background: #15803d;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.15);
+        }
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-logo {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #052e16, #14532d);
+            box-shadow: 0 4px 14px rgba(5,46,22,.55);
+            border: 1px solid rgba(255,255,255,.18);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .nav-logo::before {
+            content: "";
+            position: absolute;
+            inset: 5px;
+            border: 1.5px solid rgba(255,255,255,.32);
+            border-radius: 6px;
+        }
+        .nav-logo::after {
+            content: "";
+            position: absolute;
+            right: -4px; top: -4px;
+            width: 14px; height: 14px;
+            border-radius: 5px;
+            background: rgba(255,255,255,.22);
+        }
+        .nav-title { color: #fff; font-weight: 600; font-size: .95rem; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-email { color: rgba(255,255,255,.8); font-size: .8rem; }
+        .nav-logout {
+            color: #fff;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: rgba(255,255,255,.15);
+            font-size: .825rem;
+            font-weight: 500;
+            transition: background .14s;
+        }
+        .nav-logout:hover { background: rgba(255,255,255,.28); }
+        .container { max-width: 1400px; margin: 36px auto; padding: 0 24px; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
+        @media (max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr; } }
+        .page-header {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px 28px;
+            margin-bottom: 28px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .page-header h2 { font-family: 'Plus Jakarta Sans', 'Sora', sans-serif; font-size: 1.65rem; font-weight: 700; color: #0f172a; margin-bottom: 4px; letter-spacing: -.01em; }
+        .page-header p { color: #64748b; font-size: .88rem; }
+        .feature-card h3 { font-family: 'Plus Jakarta Sans', 'Sora', sans-serif; }
+        .role-badge {
+            background: #f0fdf4;
+            color: #15803d;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: .78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+        }
+        .features { display: flex; flex-direction: column; gap: 18px; }
+        .feature-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 22px 20px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            border-top: 3px solid #15803d;
+        }
+        .feature-card h3 { font-size: .9rem; font-weight: 600; color: #0f172a; margin-bottom: 8px; }
+        .feature-card p { color: #64748b; font-size: .82rem; margin-bottom: 16px; line-height: 1.5; }
+        .feature-card a {
+            display: inline-block;
+            background: #15803d;
+            color: #fff;
+            text-decoration: none;
+            padding: 7px 16px;
+            border-radius: 6px;
+            font-size: .82rem;
+            font-weight: 600;
+            transition: background .14s;
+        }
+        .feature-card a:hover { background: #14532d; }
+        .feature-card-disabled { border-top-color: #e2e8f0; }
+        .feature-card-disabled h3 { color: #94a3b8; }
+        .feature-card-disabled p { color: #cbd5e1; }
+        /* --- Filter bar --- */
+        .filter-bar {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 3px; }
+        .filter-label { font-size: .7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .4px; }
+        .filter-input {
+            padding: 6px 10px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: .82rem;
+            font-family: inherit;
+            color: #334155;
+            outline: none;
+            transition: border-color .14s;
+            background: #fff;
+            width: 90px;
+        }
+        .filter-select {
+            padding: 6px 10px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: .82rem;
+            font-family: inherit;
+            color: #334155;
+            outline: none;
+            transition: border-color .14s;
+            background: #fff;
+            min-width: 170px;
+        }
+        .filter-date { width: 140px; }
+        .filter-input:focus, .filter-select:focus { border-color: #15803d; }
+        .filter-actions { display: flex; gap: 8px; align-items: flex-end; }
+        .btn-apply {
+            background: #15803d;
+            color: #fff;
+            border: none;
+            padding: 7px 18px;
+            border-radius: 6px;
+            font-size: .82rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background .14s;
+        }
+        .btn-apply:hover { background: #14532d; }
+        .btn-clear {
+            background: #fff;
+            color: #64748b;
+            border: 1.5px solid #e2e8f0;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: .82rem;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all .14s;
+        }
+        .btn-clear:hover { border-color: #94a3b8; color: #334155; }
+        .map-counter { font-size: .82rem; color: #64748b; margin-bottom: 10px; }
+        /* --- Mapa ciudadano --- */
+        .map-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 22px 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+        }
+        .map-section-title {
+            font-size: .95rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+        .map-section-subtitle {
+            font-size: .8rem;
+            color: #64748b;
+            margin-bottom: 14px;
+        }
+        #map-ciudadano {
+            height: 420px;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.08);
+            z-index: 0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="nav-logo"><span style="position:relative;z-index:1;color:#fff;font-size:.62rem;font-weight:800;letter-spacing:.06em;">GIU</span></div>
+            <span class="nav-title">Portal Ciudadano</span>
+        </div>
+        <div class="nav-right">
+            <span class="nav-email" th:text="${usuario.email}"></span>
+            <a href="/logout" class="nav-logout">Cerrar sesión</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <div>
+                <h2>Bienvenido al portal</h2>
+                <p>Gestiona tus incidencias urbanas desde aquí.</p>
+            </div>
+            <span class="role-badge" th:text="${rol}"></span>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Mapa de incidencias del municipio -->
+            <div class="map-section">
+            <p class="map-section-title">🗺️ Mapa de incidencias del municipio</p>
+            <p class="map-section-subtitle">Visualiza las incidencias urbanas reportadas en tu municipio.</p>
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <span class="filter-label">ID de Incidencia</span>
+                    <input type="text" id="filt-id" class="filter-input" placeholder="Ej. 12">
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Categoría</span>
+                    <select id="filt-cat" class="filter-select">
+                        <option value="">Todas las categorías</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Fecha desde</span>
+                    <input type="date" id="filt-desde" class="filter-input filter-date">
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Fecha hasta</span>
+                    <input type="date" id="filt-hasta" class="filter-input filter-date">
+                </div>
+                <div class="filter-actions">
+                    <button class="btn-apply" onclick="applyFilters()">Aplicar</button>
+                    <button class="btn-clear" onclick="clearFilters()">Limpiar</button>
+                </div>
+            </div>
+            <p id="map-counter" class="map-counter"></p>
+            <div id="map-ciudadano"></div>
+            </div>
+
+            <aside class="features">
+                <div class="feature-card">
+                    <h3>Registrar incidencia</h3>
+                    <p>Notifica una nueva incidencia en la vía pública de tu municipio.</p>
+                    <a href="/ciudadano/incidencias/registrar">Registrar</a>
+                </div>
+                <div class="feature-card">
+                    <h3>Mis incidencias</h3>
+                    <p>Consulta el estado de las incidencias que has enviado.</p>
+                    <a href="/ciudadano/incidencias/mis-incidencias">Ver incidencias</a>
+                </div>
+                <div class="feature-card">
+                    <h3>Mi información</h3>
+                    <p>Visualiza y actualiza tus datos de perfil.</p>
+                    <a href="/ciudadano/perfil">Ver perfil</a>
+                </div>
+                <div class="feature-card">
+                    <h3>Soporte</h3>
+                    <p>¿Dudas o problemas? Contacta con nuestro equipo de soporte.</p>
+                    <a href="/soporte/mis-mensajes">Ir a Soporte</a>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script>
+    var mapCiu = L.map('map-ciudadano').setView([40.4168, -3.7038], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(mapCiu);
+
+    var estadosVisibles = ['PENDIENTE_VALIDACION', 'VALIDADA', 'ASIGNADA', 'EN_CURSO'];
+    var allDataCiu = [];
+    var markersLayerCiu = L.layerGroup().addTo(mapCiu);
+
+    function parseFecha(str) {
+        var parts = str.split(' ')[0].split('/');
+        return new Date(parts[2], parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+    }
+    function parseFechaISO(str) {
+        if (!str) return null;
+        var p = str.split('-');
+        return new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+    }
+
+    function renderMarkers(data) {
+        markersLayerCiu.clearLayers();
+        var bounds = [];
+        data.forEach(function(inc) {
+            if (!estadosVisibles.includes(inc.estado)) return;
+            if (inc.latitud && inc.longitud) {
+                var circle = L.circleMarker([inc.latitud, inc.longitud], {
+                    radius: 9, fillColor: '#15803d', color: '#fff',
+                    weight: 2, opacity: 1, fillOpacity: 0.8
+                });
+                circle.bindPopup(
+                    '<strong>ID de Incidencia: ' + inc.id + '</strong><br/>' +
+                    '<span style="font-size:.82rem;color:#475569">' + inc.categorias.join(', ') + '</span><br/>' +
+                    '<span style="font-size:.82rem">' + inc.descripcion.substring(0, 120) + (inc.descripcion.length > 120 ? '...' : '') + '</span><br/>' +
+                    '<small>📍 ' + inc.ubicacion + '</small><br/>' +
+                    '<small>🗓 ' + inc.fecha + '</small>'
+                );
+                markersLayerCiu.addLayer(circle);
+                bounds.push([inc.latitud, inc.longitud]);
+            }
+        });
+        var n = markersLayerCiu.getLayers().length;
+        document.getElementById('map-counter').textContent = 'Mostrando ' + n + ' incidencia' + (n !== 1 ? 's' : '') + ' en el mapa';
+        if (bounds.length > 0) mapCiu.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+    }
+
+    function applyFilters() {
+        var idVal = document.getElementById('filt-id').value.trim();
+        var catVal = document.getElementById('filt-cat').value;
+        var desdeVal = document.getElementById('filt-desde').value;
+        var hastaVal = document.getElementById('filt-hasta').value;
+        var filtered = allDataCiu.filter(function(inc) {
+            if (idVal && String(inc.id) !== idVal) return false;
+            if (catVal && !inc.categorias.includes(catVal)) return false;
+            if (desdeVal || hastaVal) {
+                var f = parseFecha(inc.fecha);
+                if (desdeVal && f < parseFechaISO(desdeVal)) return false;
+                if (hastaVal) { var h = parseFechaISO(hastaVal); h.setDate(h.getDate() + 1); if (f >= h) return false; }
+            }
+            return true;
+        });
+        renderMarkers(filtered);
+    }
+
+    function clearFilters() {
+        document.getElementById('filt-id').value = '';
+        document.getElementById('filt-cat').value = '';
+        document.getElementById('filt-desde').value = '';
+        document.getElementById('filt-hasta').value = '';
+        renderMarkers(allDataCiu);
+    }
+
+    fetch('/api/incidencias')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            allDataCiu = data;
+            var cats = new Set();
+            data.forEach(function(inc) {
+                if (estadosVisibles.includes(inc.estado)) {
+                    inc.categorias.forEach(function(c) { cats.add(c); });
+                }
+            });
+            var sel = document.getElementById('filt-cat');
+            Array.from(cats).sort().forEach(function(c) {
+                var opt = document.createElement('option');
+                opt.value = c; opt.textContent = c;
+                sel.appendChild(opt);
+            });
+            renderMarkers(data);
+        });
+    </script>
+</body>
+</html>

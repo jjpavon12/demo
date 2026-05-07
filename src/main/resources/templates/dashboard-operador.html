@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Operador — GIU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --accent: #15803d; --accent-dark: #14532d; --accent-bg: #f0fdf4; }
+        body { font-family: 'Sora', system-ui, sans-serif; background: linear-gradient(rgba(241,245,249,.85), rgba(241,245,249,.85)), url('/images/giu.jpg') center/cover fixed; }
+
+        /* ---- Navbar ---- */
+        nav.navbar { background: var(--accent); height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; box-shadow: 0 1px 4px rgba(0,0,0,.15); }
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-logo { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #052e16, #14532d); box-shadow: 0 4px 14px rgba(5,46,22,.55); border: 1px solid rgba(255,255,255,.18); overflow: hidden; flex-shrink: 0; }
+        .nav-logo::before { content: ""; position: absolute; inset: 5px; border: 1.5px solid rgba(255,255,255,.32); border-radius: 6px; }
+        .nav-logo::after { content: ""; position: absolute; right: -4px; top: -4px; width: 14px; height: 14px; border-radius: 5px; background: rgba(255,255,255,.22); }
+        .nav-title { color: #fff; font-weight: 600; font-size: .95rem; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-email { color: rgba(255,255,255,.8); font-size: .8rem; }
+        .nav-role { background: rgba(255,255,255,.2); color: #fff; padding: 3px 10px; border-radius: 20px; font-size: .73rem; font-weight: 600; }
+        .nav-logout { color: #fff; text-decoration: none; padding: 6px 14px; border-radius: 6px; background: rgba(255,255,255,.15); font-size: .82rem; font-weight: 500; transition: background .14s; }
+        .nav-logout:hover { background: rgba(255,255,255,.28); }
+
+        /* ---- Dropdown menu ---- */
+        .nav-dropdown { position: relative; }
+        .nav-dropdown-btn { color: #fff; background: rgba(255,255,255,.15); border: none; padding: 6px 14px; border-radius: 6px; font-size: .82rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: background .14s; display: flex; align-items: center; gap: 6px; }
+        .nav-dropdown-btn:hover { background: rgba(255,255,255,.28); }
+        .nav-dropdown-menu { display: none; position: absolute; right: 0; top: calc(100% + 8px); background: #fff; border-radius: 10px; box-shadow: 0 6px 24px rgba(0,0,0,.18); min-width: 220px; z-index: 200; overflow: hidden; border: 1px solid #e2e8f0; }
+        .nav-dropdown-menu.open { display: block; }
+        .nav-dropdown-item { display: flex; align-items: center; gap: 10px; padding: 11px 16px; font-size: .84rem; color: #334155; cursor: pointer; transition: background .12s; border: none; background: none; width: 100%; text-align: left; font-family: inherit; font-weight: 500; }
+        .nav-dropdown-item:hover { background: #f8fafc; color: #0f172a; }
+        .nav-dropdown-item.active-view { background: var(--accent-bg); color: var(--accent-dark); font-weight: 700; }
+        .nav-dropdown-divider { border: none; border-top: 1px solid #f1f5f9; margin: 4px 0; }
+        .nav-dropdown-item.danger { color: #dc2626; }
+        .nav-dropdown-item.danger:hover { background: #fef2f2; }
+
+        /* ---- Layout ---- */
+        .container { max-width: 1400px; margin: 32px auto; padding: 0 24px; }
+        .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+        .page-header h2 { font-size: 1.1rem; font-weight: 700; color: #0f172a; }
+        .stat-chip { background: var(--accent-bg); color: var(--accent-dark); border: 1px solid #fed7aa; padding: 5px 14px; border-radius: 20px; font-size: .8rem; font-weight: 600; }
+
+        /* ---- Map ---- */
+        #map-operador { height: 480px; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.07); margin-bottom: 10px; z-index: 0; }
+        .map-section-title { font-size: .95rem; font-weight: 600; color: #0f172a; margin-bottom: 12px; }
+        .map-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; font-size: .78rem; }
+        .map-legend-item { display: flex; align-items: center; gap: 5px; }
+        .map-legend-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 2px rgba(0,0,0,.2); }
+        .map-counter { font-size: .82rem; color: #64748b; margin-bottom: 10px; }
+
+        /* ---- Filter bar ---- */
+        .filter-bar { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+        .filter-bar.verde { background: #f0fdf4; border-color: #bbf7d0; }
+        .filter-bar.rojo { background: #fef2f2; border-color: #fecaca; }
+        .filter-group { display: flex; flex-direction: column; gap: 3px; }
+        .filter-label { font-size: .7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .4px; }
+        .filter-input { padding: 6px 10px; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: .82rem; font-family: inherit; color: #334155; outline: none; transition: border-color .14s; background: #fff; width: 90px; }
+        .filter-select { padding: 6px 10px; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: .82rem; font-family: inherit; color: #334155; outline: none; transition: border-color .14s; background: #fff; min-width: 150px; }
+        .filter-date { width: 140px; }
+        .filter-input:focus, .filter-select:focus { border-color: var(--accent); }
+        .filter-actions { display: flex; gap: 8px; align-items: flex-end; }
+        .btn-apply { background: var(--accent); color: #fff; border: none; padding: 7px 18px; border-radius: 6px; font-size: .82rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: background .14s; }
+        .btn-apply:hover { background: var(--accent-dark); }
+        .btn-clear { background: #fff; color: #64748b; border: 1.5px solid #e2e8f0; padding: 6px 14px; border-radius: 6px; font-size: .82rem; font-weight: 500; font-family: inherit; cursor: pointer; transition: all .14s; }
+        .btn-clear:hover { border-color: #94a3b8; color: #334155; }
+
+        /* ---- Section card / table ---- */
+        .section-card { background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.07); overflow: hidden; margin-bottom: 24px; }
+        .section-header { padding: 16px 22px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; }
+        .section-header h3 { font-size: .95rem; font-weight: 600; color: #0f172a; }
+        .empty-msg { padding: 48px 24px; text-align: center; color: #94a3b8; font-size: .9rem; }
+        .table-wrapper { width: 100%; overflow-x: auto; }
+        table { width: 100%; min-width: 1200px; border-collapse: collapse; }
+        th { background: #f8fafc; padding: 11px 16px; text-align: left; font-size: .75rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid #e2e8f0; }
+        td { padding: 13px 16px; border-bottom: 1px solid #f1f5f9; font-size: .875rem; color: #334155; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fafafa; }
+        .td-id { color: #94a3b8; font-size: .8rem; }
+
+        /* ---- Chips, selects, badges ---- */
+        .cat-picker { position: relative; min-width: 200px; }
+        .cat-chips-area { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 8px; border: 1.5px solid #e2e8f0; border-radius: 8px; background: #fff; min-height: 36px; cursor: pointer; transition: border-color .14s; }
+        .cat-chips-area:hover { border-color: #cbd5e1; }
+        .cat-chips-area.open { border-color: var(--accent); border-radius: 8px 8px 0 0; }
+        .cat-chip { display: inline-flex; align-items: center; gap: 4px; background: #fff7ed; color: var(--accent-dark); border: 1px solid #fed7aa; padding: 2px 8px; border-radius: 12px; font-size: .72rem; font-weight: 600; white-space: nowrap; }
+        .cat-chip-remove { cursor: pointer; font-size: .8rem; line-height: 1; opacity: .6; transition: opacity .12s; }
+        .cat-chip-remove:hover { opacity: 1; }
+        .cat-placeholder { color: #94a3b8; font-size: .8rem; padding: 2px 0; }
+        .cat-dropdown { display: none; position: fixed; z-index: 9999; background: #fff; border: 1.5px solid var(--accent); border-top: none; border-radius: 0 0 8px 8px; max-height: 240px; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,.15); }
+        .cat-dropdown.show { display: block; }
+        .cat-dropdown label { display: flex; align-items: center; gap: 8px; padding: 7px 10px; font-size: .8rem; color: #334155; cursor: pointer; transition: background .1s; }
+        .cat-dropdown label:hover { background: #fff7ed; }
+        .cat-dropdown input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+        .btn-cat-save { display: block; width: 100%; margin-top: 5px; padding: 6px 12px; background: var(--accent); color: #fff; border: none; border-radius: 6px; font-size: .78rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: background .14s; }
+        .btn-cat-save:hover { background: var(--accent-dark); }
+        .btn-validar {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            color: #fff; border: none; padding: 9px 14px; border-radius: 9px;
+            font-size: .79rem; font-weight: 700; font-family: inherit; cursor: pointer;
+            transition: all .16s; width: 100%;
+            box-shadow: 0 2px 8px rgba(21,128,61,.35);
+            letter-spacing: .015em;
+        }
+        .btn-validar:hover { background: linear-gradient(135deg, #15803d, #14532d); box-shadow: 0 4px 14px rgba(21,128,61,.45); transform: translateY(-1px); }
+        .btn-validar:active { transform: translateY(0); box-shadow: 0 1px 4px rgba(21,128,61,.3); }
+        .btn-rechazar {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            background: #fff; color: #dc2626;
+            border: 1.5px solid #fca5a5; padding: 8px 14px; border-radius: 9px;
+            font-size: .79rem; font-weight: 700; font-family: inherit; cursor: pointer;
+            transition: all .16s; width: 100%;
+            letter-spacing: .015em;
+        }
+        .btn-rechazar:hover { background: #fef2f2; border-color: #dc2626; box-shadow: 0 2px 8px rgba(220,38,38,.18); transform: translateY(-1px); }
+        .btn-rechazar:active { transform: translateY(0); }
+        .prioridad-warning {
+            display: none; margin-top: 6px; padding: 6px 10px;
+            background: #fef3c7; border: 1px solid #f59e0b; border-radius: 7px;
+            font-size: .72rem; font-weight: 600; color: #92400e; line-height: 1.4;
+        }
+        .estado-select { padding: 5px 10px; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: .8rem; font-family: inherit; font-weight: 600; cursor: pointer; transition: border-color .14s; outline: none; min-width: 150px; }
+        .estado-select:focus { border-color: var(--accent); }
+        .prioridad-select { padding: 5px 10px; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: .8rem; font-family: inherit; font-weight: 600; cursor: pointer; transition: border-color .14s; outline: none; min-width: 120px; }
+        .prioridad-select:focus { border-color: var(--accent); background: #ffffff !important; color: #334155 !important; }
+        .campo-bloqueado { display: inline-flex; align-items: center; min-height: 34px; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; color: #334155; font-size: .8rem; font-weight: 600; }
+        .campo-bloqueado.prioridad-BAJA { background: #dbeafe; color: #0c4a6e; border-color: #0284c7; }
+        .campo-bloqueado.prioridad-MEDIA { background: #fef08a; color: #713f12; border-color: #eab308; }
+        .campo-bloqueado.prioridad-ALTA { background: #fed7aa; color: #7c2d12; border-color: #fb923c; }
+        .campo-bloqueado.prioridad-CRITICA { background: #fecaca; color: #7f1d1d; border-color: #ef4444; }
+        .estado-stack { display: flex; flex-direction: column; gap: 8px; min-width: 170px; }
+        .acciones-stack { display: flex; flex-direction: column; gap: 10px; min-width: 240px; }
+        .acciones-stack form { display: flex; flex-direction: column; gap: 8px; }
+        .desc-link { color: var(--accent); cursor: pointer; text-decoration: none; font-size: .82rem; font-weight: 500; border-bottom: 1px dashed var(--accent); }
+        .desc-link:hover { color: var(--accent-dark); }
+        .row-highlight td { background: #fff7ed !important; transition: background 1.5s; }
+        .dup-btn { background: none; border: none; cursor: pointer; font-size: 1.25rem; padding: 0; line-height: 1; transition: transform .1s; }
+        .dup-btn:hover { transform: scale(1.2); }
+        .btn-cerrar { background: #f0fdf4; color: #15803d; border: 1.5px solid #86efac; padding: 6px 12px; border-radius: 7px; font-size: .78rem; font-weight: 700; font-family: inherit; cursor: pointer; transition: all .15s; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+        .btn-cerrar:hover { background: #dcfce7; border-color: #22c55e; }
+        .btn-devolver { background: #eff6ff; color: #1d4ed8; border: 1.5px solid #93c5fd; padding: 6px 12px; border-radius: 7px; font-size: .78rem; font-weight: 700; font-family: inherit; cursor: pointer; transition: all .15s; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+        .btn-devolver:hover { background: #dbeafe; border-color: #3b82f6; }
+
+        /* ---- Modals ---- */
+        .modal { display: none; position: fixed; z-index: 1000; inset: 0; background: rgba(0,0,0,.45); }
+        .modal-content { background: #fff; margin: 6% auto; padding: 28px; border-radius: 12px; width: 90%; max-width: 580px; box-shadow: 0 8px 32px rgba(0,0,0,.18); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
+        .modal-header h3 { font-size: 1rem; font-weight: 600; color: #0f172a; margin: 0; }
+        .close-modal { color: #94a3b8; font-size: 1.4rem; cursor: pointer; line-height: 1; }
+        .close-modal:hover { color: #374151; }
+        .modal-body { color: #475569; font-size: .9rem; line-height: 1.65; margin-bottom: 20px; }
+        .modal-footer button { padding: 8px 18px; background: var(--accent); color: #fff; border: none; border-radius: 6px; font-size: .85rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: background .14s; }
+        .modal-footer button:hover { background: var(--accent-dark); }
+        .dup-list { list-style: none; padding: 0; margin: 0; }
+        .dup-item { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; cursor: pointer; border-radius: 6px; transition: background .12s; font-size: .88rem; color: #334155; }
+        .dup-item:last-child { border-bottom: none; }
+        .dup-item:hover { background: #fff7ed; }
+        .dup-item strong { color: var(--accent-dark); }
+
+        /* ---- Estado/prioridad badge (read-only) ---- */
+        .badge-estado { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: .75rem; font-weight: 700; }
+        .badge-VALIDADA       { background: #dcfce7; color: #166534; }
+        .badge-ASIGNADA       { background: #e0e7ff; color: #3730a3; }
+        .badge-EN_CURSO       { background: #dbeafe; color: #1e40af; }
+        .badge-RESUELTA       { background: #d1fae5; color: #065f46; }
+        .badge-CERRADA        { background: #e2e8f0; color: #334155; }
+        .badge-RECHAZADA      { background: #fee2e2; color: #991b1b; }
+        .badge-PENDIENTE_VALIDACION { background: #fef3c7; color: #92400e; }
+
+        /* ---- Comentarios y extensión (operador) ---- */
+        .btn-comentar-op { background: #f0f9ff; color: #0369a1; border: 1.5px solid #7dd3fc; padding: 5px 10px; border-radius: 6px; font-size: .78rem; font-weight: 700; font-family: inherit; cursor: pointer; white-space: nowrap; }
+        .btn-comentar-op:hover { background: #e0f2fe; }
+        .notif-extension { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; font-size: .88rem; }
+        .notif-extension strong { color: #92400e; }
+        .comentario-bubble { padding:10px 14px;border-radius:8px;margin-bottom:10px;border:1px solid; }
+        .comentario-COMENTARIO { background:#f8fafc;border-color:#e2e8f0; }
+        .comentario-SOLICITUD_EXTENSION { background:#fefce8;border-color:#fde047; }
+        .comentario-DECISION_EXTENSION { background:#f0fdf4;border-color:#86efac; }
+        .comentario-meta { font-size:.75rem;color:#64748b;margin-bottom:5px; }
+        .comentario-tipo-badge { display:inline-block;padding:1px 7px;border-radius:10px;font-size:.7rem;font-weight:700;margin-left:5px; }
+        .tipo-COMENTARIO { background:#e2e8f0;color:#475569; }
+        .tipo-SOLICITUD_EXTENSION { background:#fef9c3;color:#854d0e; }
+        .tipo-DECISION_EXTENSION { background:#dcfce7;color:#166534; }
+        .comentario-contenido { font-size:.87rem;color:#1e293b;white-space:pre-wrap;word-break:break-word; }
+        .ext-decision-box { background:#fffbeb;border:1.5px solid #fcd34d;border-radius:10px;padding:14px;margin-bottom:14px; }
+        .ext-decision-box h4 { font-size:.9rem;font-weight:700;color:#92400e;margin-bottom:10px; }
+        .ext-field { font-size:.84rem;color:#374151;margin-bottom:6px; }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-brand">
+        <div class="nav-logo"><span style="position:relative;z-index:1;color:#fff;font-size:.62rem;font-weight:800;letter-spacing:.06em;">GIU</span></div>
+        <span class="nav-title">Panel Operador</span>
+    </div>
+    <div class="nav-right">
+        <span class="nav-email" th:text="${usuario.email}"></span>
+        <span class="nav-role" th:text="${rol}"></span>
+        <a href="/logout" class="nav-logout">Cerrar sesión</a>
+        <div class="nav-dropdown" id="navDropdown">
+            <button class="nav-dropdown-btn" onclick="toggleNavMenu()">&#9776; Menú</button>
+            <div class="nav-dropdown-menu" id="navDropdownMenu">
+                <button class="nav-dropdown-item active-view" id="menu-pendientes" onclick="switchView('pendientes')">
+                    &#9650; Incidencias pendientes
+                </button>
+                <button class="nav-dropdown-item" id="menu-verificadas" onclick="switchView('verificadas')">
+                    &#10003; Incidencias verificadas
+                </button>
+                <button class="nav-dropdown-item" id="menu-rechazadas" onclick="switchView('rechazadas')">
+                    &#10007; Incidencias rechazadas
+                </button>
+                <div class="nav-dropdown-divider"></div>
+                <a href="/soporte/mis-mensajes" class="nav-dropdown-item">
+                    &#128172; Soporte
+                </a>
+                <a href="/mi-cuenta/eliminar" class="nav-dropdown-item danger">
+                    &#128465; Eliminar cuenta
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="page-header">
+        <h2 id="section-title">Incidencias pendientes</h2>
+        <span class="stat-chip" id="section-count"
+              th:text="'Pendientes: ' + ${#lists.size(incidencias)}"></span>
+    </div>
+
+    <!-- ========== MAPA (compartido, se actualiza al cambiar vista) ========== -->
+    <div class="map-section" style="margin-bottom:24px;">
+        <p class="map-section-title">&#128506; Mapa de incidencias</p>
+        <div class="map-legend">
+            <span class="map-legend-item"><span class="map-legend-dot" style="background:#f59e0b"></span> Pendiente</span>
+            <span class="map-legend-item"><span class="map-legend-dot" style="background:#14532d"></span> Validada</span>
+            <span class="map-legend-item"><span class="map-legend-dot" style="background:#818cf8"></span> Asignada</span>
+            <span class="map-legend-item"><span class="map-legend-dot" style="background:#60a5fa"></span> En curso</span>
+            <span class="map-legend-item"><span class="map-legend-dot" style="background:#86efac"></span> Resuelta</span>
+            <span class="map-legend-item"><span class="map-legend-dot" style="background:#94a3b8"></span> Cerrada</span>
+            <span class="map-legend-item"><span class="map-legend-dot" style="background:#f87171"></span> Rechazada</span>
+        </div>
+
+        <!-- Filtros pendientes -->
+        <div id="filter-pendientes" class="filter-bar">
+            <div class="filter-group">
+                <span class="filter-label">ID</span>
+                <input type="text" id="fp-id" class="filter-input" placeholder="Ej. 12">
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Categoría</span>
+                <select id="fp-cat" class="filter-select"><option value="">Todas</option></select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Prioridad</span>
+                <select id="fp-prioridad" class="filter-select">
+                    <option value="">Todas</option>
+                    <option value="BAJA">Baja</option>
+                    <option value="MEDIA">Media</option>
+                    <option value="ALTA">Alta</option>
+                    <option value="CRITICA">Crítica</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Fecha creación desde</span>
+                <input type="date" id="fp-desde" class="filter-input filter-date">
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Fecha creación hasta</span>
+                <input type="date" id="fp-hasta" class="filter-input filter-date">
+            </div>
+            <div class="filter-actions">
+                <button class="btn-apply" onclick="applyFilter('pendientes')">Aplicar</button>
+                <button class="btn-clear" onclick="clearFilter('pendientes')">Limpiar</button>
+            </div>
+        </div>
+
+        <!-- Filtros verificadas -->
+        <div id="filter-verificadas" class="filter-bar verde" style="display:none">
+            <div class="filter-group">
+                <span class="filter-label">Categoría</span>
+                <select id="fv-cat" class="filter-select"><option value="">Todas</option></select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Prioridad</span>
+                <select id="fv-prioridad" class="filter-select">
+                    <option value="">Todas</option>
+                    <option value="BAJA">Baja</option>
+                    <option value="MEDIA">Media</option>
+                    <option value="ALTA">Alta</option>
+                    <option value="CRITICA">Crítica</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Estado</span>
+                <select id="fv-estado" class="filter-select">
+                    <option value="">Todos</option>
+                    <option value="VALIDADA">Validada</option>
+                    <option value="ASIGNADA">Asignada</option>
+                    <option value="EN_CURSO">En curso</option>
+                    <option value="RESUELTA">Resuelta</option>
+                    <option value="CERRADA">Cerrada</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Creación desde</span>
+                <input type="date" id="fv-crdesde" class="filter-input filter-date">
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Creación hasta</span>
+                <input type="date" id="fv-crhasta" class="filter-input filter-date">
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Verificada desde</span>
+                <input type="date" id="fv-moddesde" class="filter-input filter-date">
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Verificada hasta</span>
+                <input type="date" id="fv-modhasta" class="filter-input filter-date">
+            </div>
+            <div class="filter-actions">
+                <button class="btn-apply" onclick="applyFilter('verificadas')">Aplicar</button>
+                <button class="btn-clear" onclick="clearFilter('verificadas')">Limpiar</button>
+            </div>
+        </div>
+
+        <!-- Filtros rechazadas -->
+        <div id="filter-rechazadas" class="filter-bar rojo" style="display:none">
+            <div class="filter-group">
+                <span class="filter-label">Categoría</span>
+                <select id="fr-cat" class="filter-select"><option value="">Todas</option></select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Creación desde</span>
+                <input type="date" id="fr-crdesde" class="filter-input filter-date">
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Creación hasta</span>
+                <input type="date" id="fr-crhasta" class="filter-input filter-date">
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Rechazada desde</span>
+                <input type="date" id="fr-moddesde" class="filter-input filter-date">
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Rechazada hasta</span>
+                <input type="date" id="fr-modhasta" class="filter-input filter-date">
+            </div>
+            <div class="filter-actions">
+                <button class="btn-apply" onclick="applyFilter('rechazadas')">Aplicar</button>
+                <button class="btn-clear" onclick="clearFilter('rechazadas')">Limpiar</button>
+            </div>
+        </div>
+
+        <p id="map-counter-op" class="map-counter"></p>
+        <div id="map-operador"></div>
+    </div>
+
+    <!-- ========== SECCIÓN: PENDIENTES ========== -->
+    <div id="section-pendientes">
+        <div class="section-card">
+            <div class="section-header">
+                <h3>Incidencias pendientes de validación</h3>
+            </div>
+            <div th:if="${#lists.isEmpty(incidencias)}" class="empty-msg">
+                No hay incidencias pendientes de validación.
+            </div>
+            <div class="table-wrapper" th:if="${!#lists.isEmpty(incidencias)}">
+                <table id="table-pendientes">
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Categoría</th><th>Descripción</th><th>Ubicación</th>
+                            <th>Dup.</th><th>Fecha creación</th><th>Email</th>
+                            <th>Prioridad</th><th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="inc : ${incidencias}" th:id="'row-' + ${inc.id}"
+                            th:data-id="${inc.id}"
+                            th:data-ubi="${inc.ubicacion}"
+                            th:data-prioridad="${inc.prioridad != null ? inc.prioridad.name() : ''}"
+                            th:data-prioridad-asignada="${inc.prioridadAsignada}"
+                            th:data-fecha="${#temporals.format(inc.fechaCreacion, 'yyyy-MM-dd')}"
+                            th:attr="data-categorias=${#strings.listJoin(inc.categorias.![descripcion], ',')}">
+                            <td class="td-id" th:text="${inc.id}"></td>
+                            <td>
+                                <form method="post" th:action="@{/dashboard/operador/cambiar-categoria}">
+                                    <input type="hidden" name="id" th:value="${inc.id}"/>
+                                    <div class="cat-picker">
+                                        <div class="cat-chips-area" onclick="toggleDropdown(this)">
+                                            <span th:each="cat : ${inc.categorias}" class="cat-chip" th:data-val="${cat.name()}">
+                                                <span th:text="${cat.descripcion}"></span>
+                                                <span class="cat-chip-remove" onclick="event.stopPropagation(); removeChip(this)">&times;</span>
+                                            </span>
+                                            <span class="cat-placeholder" th:if="${#sets.isEmpty(inc.categorias)}">Seleccionar…</span>
+                                        </div>
+                                        <div class="cat-dropdown">
+                                            <label th:each="cat : ${categorias}">
+                                                <input type="checkbox" name="categorias" th:value="${cat.name()}"
+                                                       th:checked="${inc.categorias.contains(cat)}" onchange="syncChips(this)"/>
+                                                <span th:text="${cat.descripcion}"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn-cat-save">Guardar categorías</button>
+                                </form>
+                            </td>
+                            <td><span class="desc-link" th:onclick="'openModal(this)'" th:data-desc="${inc.descripcion}" th:attr="data-imagen=${inc.imagenNombre}">Ver descripción</span></td>
+                            <td th:text="${inc.ubicacion}"></td>
+                            <td class="td-dup" style="text-align:center;"></td>
+                            <td th:text="${#temporals.format(inc.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>
+                            <td th:text="${inc.usuario == null or inc.usuario.email == 'anonimo@giu.internal' ? 'Anónimo' : inc.usuario.email}"></td>
+                            <td>
+                                <select class="prioridad-select"
+                                        th:data-id="${inc.id}"
+                                        th:data-asignada="${inc.prioridadAsignada}"
+                                        th:data-current="${inc.prioridad}"
+                                        th:onchange="'cambiarPrioridadAjax(this,' + ${inc.id} + ')'">
+                                    <option value="" disabled th:selected="${!inc.prioridadAsignada}">Elegir prioridad</option>
+                                    <option th:each="p : ${prioridades}" th:value="${p}" th:text="${p.descripcion}"
+                                            th:selected="${inc.prioridadAsignada and inc.prioridad == p}"></option>
+                                </select>
+                            </td>
+                            <td style="min-width:160px;">
+                                <!-- Equipos disponibles para el modal (ocultos) -->
+                                <select class="equipos-hidden" style="display:none">
+                                    <option value="">Sin asignar (asignar después)</option>
+                                    <option th:each="equipo : ${equiposSugeridosPorIncidencia[inc.id]}"
+                                            th:value="${equipo.usuario.id}"
+                                            th:text="${equipo.nombreEquipo + ' — ' + equipo.usuario.email}"></option>
+                                </select>
+                                <div style="display:flex;flex-direction:column;gap:6px;">
+                                    <button type="button" class="btn-validar" onclick="openValidarModal(this)">✓ Validar</button>
+                                    <button type="button" class="btn-rechazar" th:onclick="'openRechazarModal(' + ${inc.id} + ')'">✗ Rechazar</button>
+                                    <div class="prioridad-warning">⚠ Asigna una prioridad antes de validar</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== SECCIÓN: VERIFICADAS ========== -->
+    <div id="section-verificadas" style="display:none">
+        <div th:if="${totalSolicitudesPendientes > 0}" class="notif-extension" style="margin-bottom:16px;">
+            &#9203; <strong th:text="${totalSolicitudesPendientes + ' solicitud' + (totalSolicitudesPendientes > 1 ? 'es' : '') + ' de extensión de tiempo pendiente' + (totalSolicitudesPendientes > 1 ? 's' : '')}"></strong>
+            — Revisa las incidencias marcadas a continuación y aprueba o rechaza cada solicitud.
+        </div>
+        <div class="section-card">
+            <div class="section-header">
+                <h3>Incidencias verificadas</h3>
+            </div>
+            <div th:if="${#lists.isEmpty(incidenciasVerificadas)}" class="empty-msg">
+                No hay incidencias verificadas.
+            </div>
+            <div class="table-wrapper" th:if="${!#lists.isEmpty(incidenciasVerificadas)}">
+                <table id="table-verificadas">
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Categorías</th><th>Descripción</th><th>Ubicación</th>
+                            <th>Fecha creación</th><th>Fecha verificada</th><th>Email</th>
+                            <th>Prioridad</th><th>Estado</th><th>Asignación técnico</th><th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="inc : ${incidenciasVerificadas}"
+                            th:data-id="${inc.id}"
+                            th:data-estado="${inc.estado.name()}"
+                            th:data-prioridad="${inc.prioridad != null ? inc.prioridad.name() : ''}"
+                            th:data-fecha="${#temporals.format(inc.fechaCreacion, 'yyyy-MM-dd')}"
+                            th:data-fechamod="${inc.fechaModificacion != null ? #temporals.format(inc.fechaModificacion, 'yyyy-MM-dd') : ''}"
+                            th:attr="data-categorias=${#strings.listJoin(inc.categorias.![descripcion], ',')}">
+                            <td class="td-id" th:text="${inc.id}"></td>
+                            <td>
+                                <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                                    <span class="cat-chip" th:each="cat : ${inc.categorias}" th:text="${cat.descripcion}"></span>
+                                </div>
+                            </td>
+                            <td><span class="desc-link" th:onclick="'openModal(this)'" th:data-desc="${inc.descripcion}" th:attr="data-imagen=${inc.imagenNombre}">Ver descripción</span></td>
+                            <td th:text="${inc.ubicacion}"></td>
+                            <td th:text="${#temporals.format(inc.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>
+                            <td th:text="${inc.fechaModificacion != null ? #temporals.format(inc.fechaModificacion, 'dd/MM/yyyy HH:mm') : '—'}"></td>
+                            <td th:text="${inc.usuario == null or inc.usuario.email == 'anonimo@giu.internal' ? 'Anónimo' : inc.usuario.email}"></td>
+                            <td>
+                                <span class="campo-bloqueado" th:classappend="${'prioridad-' + inc.prioridad}"
+                                      th:text="${inc.prioridad.descripcion}"></span>
+                            </td>
+                            <td>
+                                <span class="badge-estado" th:classappend="${'badge-' + inc.estado.name()}"
+                                      th:text="${inc.estado.descripcion}"></span>
+                            </td>
+                            <td>
+                                <div th:if="${inc.estado == T(com.giu.giu.model.EstadoIncidencia).VALIDADA or inc.estado == T(com.giu.giu.model.EstadoIncidencia).ASIGNADA}"
+                                     class="acciones-stack">
+                                    <form method="post" th:action="@{/dashboard/operador/asignar-incidencia}">
+                                        <input type="hidden" name="incidenciaId" th:value="${inc.id}"/>
+                                        <select name="tecnicoId" class="estado-select" required>
+                                            <option value="">Selecciona un equipo técnico…</option>
+                                            <option th:each="equipo : ${equiposSugeridosPorIncidencia[inc.id]}"
+                                                    th:value="${equipo.usuario.id}"
+                                                    th:selected="${inc.tecnicoAsignado != null and inc.tecnicoAsignado.id == equipo.usuario.id}"
+                                                    th:text="${equipo.nombreEquipo + ' — ' + equipo.usuario.email}"></option>
+                                        </select>
+                                        <button type="submit" class="btn-cat-save"
+                                                th:text="${inc.estado == T(com.giu.giu.model.EstadoIncidencia).ASIGNADA ? 'Reasignar' : 'Asignar incidencia'}"></button>
+                                    </form>
+                                    <div th:if="${inc.tecnicoAsignado != null}" class="campo-bloqueado" style="line-height:1.4;display:block;">
+                                        <strong>Actual:</strong> <span th:text="${inc.tecnicoAsignado.email}"></span>
+                                    </div>
+                                </div>
+                                <div th:if="${inc.estado != T(com.giu.giu.model.EstadoIncidencia).VALIDADA and inc.estado != T(com.giu.giu.model.EstadoIncidencia).ASIGNADA}">
+                                    <span class="campo-bloqueado" th:if="${inc.tecnicoAsignado != null}" th:text="${inc.tecnicoAsignado.email}"></span>
+                                    <span class="campo-bloqueado" th:if="${inc.tecnicoAsignado == null}">—</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div style="display:flex;flex-direction:column;gap:5px;">
+                                    <div th:if="${inc.estado == T(com.giu.giu.model.EstadoIncidencia).RESUELTA}"
+                                         style="display:flex;flex-direction:column;gap:5px;">
+                                        <button type="button" class="btn-cerrar"
+                                                th:onclick="'openCerrarModal(' + ${inc.id} + ')'">&#10003; Cerrar</button>
+                                        <button type="button" class="btn-devolver"
+                                                th:onclick="'openDevolverModal(' + ${inc.id} + ')'">&#8617; Devolver al técnico</button>
+                                    </div>
+                                    <button type="button" class="btn-comentar-op"
+                                            th:onclick="'openComentariosModalOp(' + ${inc.id} + ')'">
+                                        &#128172; Comentarios
+                                        (<span th:text="${#lists.size(comentariosPorIncidencia[inc.id])}">0</span>)
+                                        <span th:if="${solicitudPendientePorIncidencia[inc.id] != null}"
+                                              style="background:#fef9c3;color:#854d0e;border-radius:8px;padding:1px 6px;font-size:.72rem;margin-left:4px;">&#9203; extensión</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Datos ocultos de comentarios y solicitudes de extensión (operador) -->
+    <div style="display:none" id="all-comments-op">
+        <div th:each="inc : ${incidenciasVerificadas}" th:id="'cdata-op-' + ${inc.id}">
+            <div th:each="c : ${comentariosPorIncidencia[inc.id]}"
+                 class="c-item"
+                 th:data-autor="${c.autor.email}"
+                 th:data-fecha="${#temporals.format(c.fechaCreacion, 'dd/MM/yyyy HH:mm')}"
+                 th:data-tipo="${c.tipo.name()}"
+                 th:data-tipo-desc="${c.tipo.descripcion}"
+                 th:data-contenido="${c.contenido}">
+            </div>
+        </div>
+    </div>
+    <div style="display:none" id="all-solicitudes-op">
+        <div th:each="inc : ${incidenciasVerificadas}"
+             th:if="${solicitudPendientePorIncidencia[inc.id] != null}"
+             th:id="'soldata-op-' + ${inc.id}"
+             th:data-sol-id="${solicitudPendientePorIncidencia[inc.id].id}"
+             th:data-motivo="${solicitudPendientePorIncidencia[inc.id].motivo}"
+             th:data-fecha-sol="${solicitudPendientePorIncidencia[inc.id].fechaSolicitada}"
+             th:data-solicitante="${solicitudPendientePorIncidencia[inc.id].solicitante.email}"
+             th:data-comentario-adicional="${solicitudPendientePorIncidencia[inc.id].comentarioAdicional != null ? solicitudPendientePorIncidencia[inc.id].comentarioAdicional : ''}">
+        </div>
+    </div>
+
+    <!-- ========== SECCIÓN: RECHAZADAS ========== -->
+    <div id="section-rechazadas" style="display:none">
+        <div class="section-card">
+            <div class="section-header">
+                <h3>Incidencias rechazadas</h3>
+            </div>
+            <div th:if="${#lists.isEmpty(incidenciasRechazadas)}" class="empty-msg">
+                No hay incidencias rechazadas.
+            </div>
+            <div class="table-wrapper" th:if="${!#lists.isEmpty(incidenciasRechazadas)}">
+                <table id="table-rechazadas">
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Categorías</th><th>Descripción</th><th>Ubicación</th>
+                            <th>Fecha creación</th><th>Fecha rechazada</th><th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="inc : ${incidenciasRechazadas}"
+                            th:data-id="${inc.id}"
+                            th:data-fecha="${#temporals.format(inc.fechaCreacion, 'yyyy-MM-dd')}"
+                            th:data-fechamod="${inc.fechaModificacion != null ? #temporals.format(inc.fechaModificacion, 'yyyy-MM-dd') : ''}"
+                            th:attr="data-categorias=${#strings.listJoin(inc.categorias.![descripcion], ',')}">
+                            <td class="td-id" th:text="${inc.id}"></td>
+                            <td>
+                                <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                                    <span class="cat-chip" th:each="cat : ${inc.categorias}" th:text="${cat.descripcion}"></span>
+                                </div>
+                            </td>
+                            <td><span class="desc-link" th:onclick="'openModal(this)'" th:data-desc="${inc.descripcion}" th:attr="data-imagen=${inc.imagenNombre}">Ver descripción</span></td>
+                            <td th:text="${inc.ubicacion}"></td>
+                            <td th:text="${#temporals.format(inc.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>
+                            <td th:text="${inc.fechaModificacion != null ? #temporals.format(inc.fechaModificacion, 'dd/MM/yyyy HH:mm') : '—'}"></td>
+                            <td th:text="${inc.usuario == null or inc.usuario.email == 'anonimo@giu.internal' ? 'Anónimo' : inc.usuario.email}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== MODAL: COMENTARIOS + EXTENSIÓN (OPERADOR) ========== -->
+<div id="comentariosModalOp" style="display:none;position:fixed;z-index:1000;inset:0;background:rgba(0,0,0,.45);align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;width:90%;max-width:620px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #f1f5f9;flex-shrink:0;">
+            <h3 id="coments-op-title" style="font-size:1rem;font-weight:600;color:#0f172a;margin:0;">Comentarios</h3>
+            <span onclick="closeComentariosModalOp()" style="color:#94a3b8;font-size:1.4rem;cursor:pointer;line-height:1;">&times;</span>
+        </div>
+        <!-- Solicitud de extensión pendiente -->
+        <div id="ext-decision-panel" style="display:none;padding:16px;border-bottom:1px solid #f1f5f9;flex-shrink:0;">
+            <div class="ext-decision-box">
+                <h4>&#9203; Solicitud de extensión pendiente</h4>
+                <div class="ext-field"><strong>Técnico:</strong> <span id="ext-solicitante"></span></div>
+                <div class="ext-field"><strong>Fecha solicitada:</strong> <span id="ext-fecha-sol"></span></div>
+                <div class="ext-field"><strong>Motivo:</strong> <span id="ext-motivo-sol"></span></div>
+                <div id="ext-comentario-sol-row" class="ext-field"><strong>Comentario adicional:</strong> <span id="ext-comentario-sol"></span></div>
+                <form method="post" action="/dashboard/operador/decidir-extension" style="margin-top:12px;">
+                    <input type="hidden" id="ext-sol-id" name="solicitudId"/>
+                    <div style="margin-bottom:10px;">
+                        <label style="display:block;font-weight:600;font-size:.84rem;margin-bottom:5px;color:#374151;">Motivo de la decisión (opcional)</label>
+                        <input type="text" name="motivoDecision" placeholder="Justificación..."
+                               style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:7px;font-family:inherit;font-size:.85rem;box-sizing:border-box;"/>
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        <button type="submit" name="aprobada" value="true"
+                                style="background:#15803d;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-size:.83rem;font-weight:600;font-family:inherit;cursor:pointer;flex:1;">
+                            &#10003; Aprobar extensión
+                        </button>
+                        <button type="submit" name="aprobada" value="false"
+                                style="background:#dc2626;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-size:.83rem;font-weight:600;font-family:inherit;cursor:pointer;flex:1;">
+                            &#10007; Rechazar extensión
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Lista de comentarios -->
+        <div id="coments-op-list" style="padding:16px;overflow-y:auto;flex:1;min-height:80px;"></div>
+        <!-- Añadir comentario -->
+        <div style="padding:16px;border-top:1px solid #f1f5f9;flex-shrink:0;">
+            <form method="post" action="/dashboard/operador/comentar">
+                <input type="hidden" id="coments-op-inc-id" name="incidenciaId"/>
+                <textarea name="contenido" placeholder="Añade un comentario sobre esta incidencia..."
+                          style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-family:inherit;font-size:.87rem;resize:vertical;min-height:65px;box-sizing:border-box;" required></textarea>
+                <div style="display:flex;gap:8px;margin-top:8px;">
+                    <button type="submit" style="background:#15803d;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:.84rem;font-weight:600;font-family:inherit;cursor:pointer;">Enviar comentario</button>
+                    <button type="button" onclick="closeComentariosModalOp()" style="background:#f1f5f9;color:#374151;border:1.5px solid #e2e8f0;padding:8px 16px;border-radius:6px;font-size:.84rem;font-weight:600;font-family:inherit;cursor:pointer;">Cerrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ========== MODALES ========== -->
+<!-- ========== MODAL: VALIDAR ========== -->
+<div id="validarModal" class="modal">
+    <div class="modal-content" style="max-width:500px;">
+        <div class="modal-header">
+            <h3 id="validar-modal-title">Validar incidencia</h3>
+            <span class="close-modal" onclick="closeValidarModal()">&times;</span>
+        </div>
+        <form id="validarForm" method="post" action="/dashboard/operador/validar-y-asignar">
+            <input type="hidden" id="validar-id" name="id"/>
+            <div class="modal-body" style="margin-bottom:12px;">
+                <p style="margin-bottom:14px;font-size:.88rem;color:#475569;line-height:1.55;">
+                    La incidencia pasará a la lista de <strong>verificadas</strong>. Puedes asignarla a un equipo técnico ahora o hacerlo más tarde desde esa lista.
+                </p>
+                <label style="display:block;font-size:.82rem;font-weight:600;color:#374151;margin-bottom:6px;">Equipo técnico (opcional)</label>
+                <select id="validar-tecnico" name="tecnicoId" class="filter-select" style="width:100%;font-size:.88rem;padding:9px 12px;"></select>
+            </div>
+            <div class="modal-footer" style="display:flex;gap:10px;">
+                <button type="submit" style="background:#15803d;flex:1;">✓ Confirmar validación</button>
+                <button type="button" onclick="closeValidarModal()" style="background:#64748b;">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========== MODAL: RECHAZAR ========== -->
+<div id="rechazarModal" class="modal">
+    <div class="modal-content" style="max-width:460px;">
+        <div class="modal-header">
+            <h3 id="rechazar-modal-title">Rechazar incidencia</h3>
+            <span class="close-modal" onclick="closeRechazarModal()">&times;</span>
+        </div>
+        <p class="modal-body" style="margin-bottom:14px;">
+            ¿Estás seguro de que quieres rechazar esta incidencia? Se moverá a la lista de <strong>rechazadas</strong>.
+        </p>
+        <form id="rechazarForm" method="post" action="/dashboard/operador/rechazar">
+            <input type="hidden" id="rechazar-id" name="id"/>
+            <div style="margin-bottom:16px;">
+                <label style="display:block;font-size:.85rem;font-weight:600;color:#374151;margin-bottom:6px;">
+                    Motivo del rechazo <span style="font-weight:400;color:#94a3b8;">(opcional)</span>
+                </label>
+                <textarea name="motivoRechazo" id="rechazar-motivo"
+                          placeholder="Ej: Información insuficiente, duplicado de otra incidencia..."
+                          style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-family:inherit;font-size:.875rem;color:#334155;resize:vertical;min-height:80px;outline:none;"
+                          maxlength="500"></textarea>
+                <div style="text-align:right;font-size:.75rem;color:#94a3b8;margin-top:3px;">Máx. 500 caracteres</div>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button type="submit" style="background:#dc2626;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;flex:1;">✗ Sí, rechazar</button>
+                <button type="button" onclick="closeRechazarModal()" style="background:#f1f5f9;color:#374151;border:1.5px solid #e2e8f0;padding:8px 18px;border-radius:6px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="dupModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Posibles incidencias duplicadas</h3>
+            <span class="close-modal" onclick="closeDupModal()">&times;</span>
+        </div>
+        <p style="font-size:.82rem;color:#64748b;margin-bottom:12px;">Misma ubicación: <strong id="dupUbi"></strong></p>
+        <ul id="dupList" class="dup-list modal-body" style="margin-bottom:0;padding:0;"></ul>
+        <div class="modal-footer" style="margin-top:16px;"><button onclick="closeDupModal()">Cerrar</button></div>
+    </div>
+</div>
+
+<div id="descModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Descripción de la incidencia</h3>
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+        </div>
+        <p id="descContent" class="modal-body"></p>
+        <img id="descImagen" src="" alt="Foto" style="display:none;max-width:100%;max-height:260px;border-radius:8px;object-fit:contain;margin-top:12px;border:1px solid #e2e8f0;"/>
+        <div class="modal-footer"><button onclick="closeModal()">Cerrar</button></div>
+    </div>
+</div>
+
+<script>
+/* ===== Colores estado/prioridad ===== */
+var statusColors = {
+    PENDIENTE_VALIDACION: { bg:'#fef3c7', color:'#92400e', border:'#f59e0b' },
+    VALIDADA:             { bg:'#14532d', color:'#dcfce7', border:'#166534' },
+    ASIGNADA:             { bg:'#e0e7ff', color:'#3730a3', border:'#818cf8' },
+    EN_CURSO:             { bg:'#dbeafe', color:'#1e40af', border:'#60a5fa' },
+    RESUELTA:             { bg:'#d1fae5', color:'#065f46', border:'#86efac' },
+    CERRADA:              { bg:'#e2e8f0', color:'#334155', border:'#94a3b8' },
+    RECHAZADA:            { bg:'#fee2e2', color:'#991b1b', border:'#f87171' }
+};
+var priorityColors = {
+    BAJA:    { bg:'#dbeafe', color:'#0c4a6e', border:'#0284c7' },
+    MEDIA:   { bg:'#fef08a', color:'#713f12', border:'#eab308' },
+    ALTA:    { bg:'#fed7aa', color:'#7c2d12', border:'#fb923c' },
+    CRITICA: { bg:'#fecaca', color:'#7f1d1d', border:'#ef4444' }
+};
+var estadoColorsMap = {
+    PENDIENTE_VALIDACION:'#f59e0b', VALIDADA:'#14532d', ASIGNADA:'#818cf8',
+    EN_CURSO:'#60a5fa', RESUELTA:'#86efac', CERRADA:'#94a3b8', RECHAZADA:'#f87171'
+};
+
+function applySelectStyle(sel) {
+    var s = statusColors[sel.value];
+    if (s) { sel.style.background=s.bg; sel.style.color=s.color; sel.style.borderColor=s.border; return; }
+    sel.style.background='#fff'; sel.style.color='#334155'; sel.style.borderColor='#e2e8f0';
+}
+function applyPriorityStyle(sel) {
+    if (!sel.value) { sel.style.background='#fff'; sel.style.color='#94a3b8'; sel.style.borderColor='#e2e8f0'; return; }
+    var s = priorityColors[sel.value];
+    if (s) { sel.style.background=s.bg; sel.style.color=s.color; sel.style.borderColor=s.border; return; }
+    sel.style.background='#fff'; sel.style.color='#94a3b8'; sel.style.borderColor='#e2e8f0';
+}
+document.querySelectorAll('.estado-select').forEach(function(sel){ applySelectStyle(sel); });
+document.querySelectorAll('.prioridad-select').forEach(function(sel){
+    var asignada = sel.getAttribute('data-asignada');
+    var current = sel.getAttribute('data-current');
+    if (asignada === 'true' && current) { sel.value = current; applyPriorityStyle(sel); }
+});
+
+function cambiarPrioridadAjax(sel, incidenciaId) {
+    applyPriorityStyle(sel);
+    var prioridad = sel.value;
+    if (!prioridad) return;
+    var body = new URLSearchParams();
+    body.append('id', incidenciaId);
+    body.append('prioridad', prioridad);
+    fetch('/dashboard/operador/cambiar-prioridad', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+    }).then(function() {
+        sel.setAttribute('data-asignada', 'true');
+        sel.setAttribute('data-current', prioridad);
+        var row = sel.closest('tr');
+        if (row) {
+            var warning = row.querySelector('.prioridad-warning');
+            if (warning) warning.style.display = 'none';
+        }
+        var id = parseInt(incidenciaId, 10);
+        var inc = allDataOp.find(function(i) { return i.id === id; });
+        if (inc) { inc.prioridad = prioridad; inc.prioridadAsignada = true; }
+    });
+}
+
+/* ===== Menú dropdown navbar ===== */
+function toggleNavMenu() {
+    document.getElementById('navDropdownMenu').classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#navDropdown')) {
+        document.getElementById('navDropdownMenu').classList.remove('open');
+    }
+});
+
+/* ===== Cambio de vista ===== */
+var currentView = 'pendientes';
+var counts = {
+    pendientes: [[${#lists.size(incidencias)}]],
+    verificadas: [[${#lists.size(incidenciasVerificadas)}]],
+    rechazadas: [[${#lists.size(incidenciasRechazadas)}]]
+};
+var viewLabels = {
+    pendientes: 'Incidencias pendientes',
+    verificadas: 'Incidencias verificadas',
+    rechazadas: 'Incidencias rechazadas'
+};
+var viewCountLabels = {
+    pendientes: 'Pendientes: ',
+    verificadas: 'Verificadas: ',
+    rechazadas: 'Rechazadas: '
+};
+
+function switchView(view) {
+    currentView = view;
+    ['pendientes','verificadas','rechazadas'].forEach(function(v) {
+        document.getElementById('section-' + v).style.display = (v === view) ? '' : 'none';
+        document.getElementById('filter-' + v).style.display  = (v === view) ? '' : 'none';
+        var menuItem = document.getElementById('menu-' + v);
+        if (menuItem) menuItem.classList.toggle('active-view', v === view);
+    });
+    document.getElementById('section-title').textContent = viewLabels[view];
+    document.getElementById('section-count').textContent = viewCountLabels[view] + counts[view];
+    document.getElementById('navDropdownMenu').classList.remove('open');
+    renderMapForView(view, []);
+}
+
+/* ===== Restaurar vista y scroll tras POST ===== */
+(function() {
+    var params = new URLSearchParams(window.location.search);
+    var view = params.get('view');
+    var validViews = ['pendientes', 'verificadas', 'rechazadas'];
+    if (view && validViews.indexOf(view) !== -1) {
+        currentView = view;
+        ['pendientes','verificadas','rechazadas'].forEach(function(v) {
+            document.getElementById('section-' + v).style.display = (v === view) ? '' : 'none';
+            document.getElementById('filter-' + v).style.display  = (v === view) ? '' : 'none';
+            var menuItem = document.getElementById('menu-' + v);
+            if (menuItem) menuItem.classList.toggle('active-view', v === view);
+        });
+        document.getElementById('section-title').textContent = viewLabels[view];
+        document.getElementById('section-count').textContent = viewCountLabels[view] + counts[view];
+    }
+    var savedScroll = sessionStorage.getItem('opScrollY');
+    if (savedScroll !== null) {
+        sessionStorage.removeItem('opScrollY');
+        window.scrollTo(0, parseInt(savedScroll, 10));
+    }
+    document.querySelectorAll('form').forEach(function(form) {
+        form.addEventListener('submit', function() {
+            sessionStorage.setItem('opScrollY', String(window.scrollY));
+        });
+    });
+})();
+
+/* ===== Mapa ===== */
+var mapOp = L.map('map-operador').setView([40.4168, -3.7038], 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors', maxZoom: 19
+}).addTo(mapOp);
+var markersLayerOp = L.layerGroup().addTo(mapOp);
+var allDataOp = [];
+
+function parseDate(str) {
+    if (!str) return null;
+    var p = str.split(' ')[0].split('/');
+    return new Date(p[2], parseInt(p[1],10)-1, parseInt(p[0],10));
+}
+function parseDateISO(str) {
+    if (!str) return null;
+    var p = str.split('-');
+    return new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+}
+
+function renderMarkersOp(data) {
+    markersLayerOp.clearLayers();
+    var bounds = [];
+    data.forEach(function(inc) {
+        if (inc.latitud && inc.longitud) {
+            var color = estadoColorsMap[inc.estado] || '#64748b';
+            var circle = L.circleMarker([inc.latitud, inc.longitud], {
+                radius:9, fillColor:color, color:'#fff', weight:2, opacity:1, fillOpacity:0.85
+            });
+            circle.bindPopup(
+                '<strong>ID ' + inc.id + '</strong><br/>' +
+                '<span style="font-size:.82rem;color:#475569">' + inc.categorias.join(', ') + '</span><br/>' +
+                inc.descripcion.substring(0,120) + (inc.descripcion.length>120?'...':'') + '<br/>' +
+                '<small>&#128205; ' + inc.ubicacion + '</small><br/>' +
+                '<small>&#128197; ' + inc.fecha + '</small>' +
+                (inc.fechaMod ? '<br/><small>&#10003; ' + inc.fechaMod + '</small>' : '')
+            );
+            markersLayerOp.addLayer(circle);
+            bounds.push([inc.latitud, inc.longitud]);
+        }
+    });
+    var n = markersLayerOp.getLayers().length;
+    document.getElementById('map-counter-op').textContent =
+        'Mostrando ' + n + ' incidencia' + (n!==1?'s':'') + ' en el mapa';
+    if (bounds.length > 0) mapOp.fitBounds(bounds, { padding:[40,40], maxZoom:15 });
+}
+
+function getDataForView(view) {
+    if (view === 'pendientes') return allDataOp.filter(function(i){ return i.estado === 'PENDIENTE_VALIDACION'; });
+    if (view === 'rechazadas') return allDataOp.filter(function(i){ return i.estado === 'RECHAZADA'; });
+    return allDataOp.filter(function(i){
+        return ['VALIDADA','ASIGNADA','EN_CURSO','RESUELTA','CERRADA'].indexOf(i.estado) !== -1;
+    });
+}
+
+function renderMapForView(view, overrideData) {
+    var data = overrideData.length > 0 ? overrideData : getDataForView(view);
+    renderMarkersOp(data);
+}
+
+/* ===== Filtros ===== */
+function applyFilter(view) {
+    var rows, data;
+    if (view === 'pendientes') {
+        var idVal      = document.getElementById('fp-id').value.trim();
+        var catVal     = document.getElementById('fp-cat').value;
+        var priorVal   = document.getElementById('fp-prioridad').value;
+        var desdeVal   = document.getElementById('fp-desde').value;
+        var hastaVal   = document.getElementById('fp-hasta').value;
+        data = getDataForView('pendientes').filter(function(inc) {
+            if (idVal && String(inc.id) !== idVal) return false;
+            if (catVal && inc.categorias.indexOf(catVal) === -1) return false;
+            if (priorVal && inc.prioridad !== priorVal) return false;
+            if (desdeVal || hastaVal) {
+                var f = parseDate(inc.fecha);
+                if (desdeVal && f < parseDateISO(desdeVal)) return false;
+                if (hastaVal) { var h = parseDateISO(hastaVal); h.setDate(h.getDate()+1); if (f >= h) return false; }
+            }
+            return true;
+        });
+        filterTableRows('table-pendientes', new Set(data.map(function(i){ return String(i.id); })));
+    } else if (view === 'verificadas') {
+        var catV    = document.getElementById('fv-cat').value;
+        var priorV  = document.getElementById('fv-prioridad').value;
+        var estV    = document.getElementById('fv-estado').value;
+        var crDesde = document.getElementById('fv-crdesde').value;
+        var crHasta = document.getElementById('fv-crhasta').value;
+        var modDesde= document.getElementById('fv-moddesde').value;
+        var modHasta= document.getElementById('fv-modhasta').value;
+        data = getDataForView('verificadas').filter(function(inc) {
+            if (catV && inc.categorias.indexOf(catV) === -1) return false;
+            if (priorV && inc.prioridad !== priorV) return false;
+            if (estV && inc.estado !== estV) return false;
+            if (crDesde || crHasta) {
+                var f = parseDate(inc.fecha);
+                if (crDesde && f < parseDateISO(crDesde)) return false;
+                if (crHasta) { var h = parseDateISO(crHasta); h.setDate(h.getDate()+1); if (f >= h) return false; }
+            }
+            if (modDesde || modHasta) {
+                var fm = parseDate(inc.fechaMod);
+                if (!fm) return false;
+                if (modDesde && fm < parseDateISO(modDesde)) return false;
+                if (modHasta) { var hm = parseDateISO(modHasta); hm.setDate(hm.getDate()+1); if (fm >= hm) return false; }
+            }
+            return true;
+        });
+        filterTableRows('table-verificadas', new Set(data.map(function(i){ return String(i.id); })));
+    } else {
+        var catR    = document.getElementById('fr-cat').value;
+        var crDesdeR= document.getElementById('fr-crdesde').value;
+        var crHastaR= document.getElementById('fr-crhasta').value;
+        var modDesdeR=document.getElementById('fr-moddesde').value;
+        var modHastaR=document.getElementById('fr-modhasta').value;
+        data = getDataForView('rechazadas').filter(function(inc) {
+            if (catR && inc.categorias.indexOf(catR) === -1) return false;
+            if (crDesdeR || crHastaR) {
+                var f = parseDate(inc.fecha);
+                if (crDesdeR && f < parseDateISO(crDesdeR)) return false;
+                if (crHastaR) { var h = parseDateISO(crHastaR); h.setDate(h.getDate()+1); if (f >= h) return false; }
+            }
+            if (modDesdeR || modHastaR) {
+                var fm = parseDate(inc.fechaMod);
+                if (!fm) return false;
+                if (modDesdeR && fm < parseDateISO(modDesdeR)) return false;
+                if (modHastaR) { var hm = parseDateISO(modHastaR); hm.setDate(hm.getDate()+1); if (fm >= hm) return false; }
+            }
+            return true;
+        });
+        filterTableRows('table-rechazadas', new Set(data.map(function(i){ return String(i.id); })));
+    }
+    renderMarkersOp(data);
+}
+
+function filterTableRows(tableId, idSet) {
+    var tbl = document.getElementById(tableId);
+    if (!tbl) return;
+    tbl.querySelectorAll('tbody tr[data-id]').forEach(function(row) {
+        row.style.display = idSet.has(row.getAttribute('data-id')) ? '' : 'none';
+    });
+}
+
+function clearFilter(view) {
+    if (view === 'pendientes') {
+        ['fp-id','fp-cat','fp-prioridad','fp-desde','fp-hasta'].forEach(function(id){ document.getElementById(id).value=''; });
+    } else if (view === 'verificadas') {
+        ['fv-cat','fv-prioridad','fv-estado','fv-crdesde','fv-crhasta','fv-moddesde','fv-modhasta'].forEach(function(id){ document.getElementById(id).value=''; });
+    } else {
+        ['fr-cat','fr-crdesde','fr-crhasta','fr-moddesde','fr-modhasta'].forEach(function(id){ document.getElementById(id).value=''; });
+    }
+    var tblId = view === 'pendientes' ? 'table-pendientes' : view === 'verificadas' ? 'table-verificadas' : 'table-rechazadas';
+    var tbl = document.getElementById(tblId);
+    if (tbl) tbl.querySelectorAll('tbody tr').forEach(function(r){ r.style.display=''; });
+    renderMapForView(view, []);
+}
+
+/* ===== Carga API y relleno de selects de categoría ===== */
+fetch('/api/incidencias')
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+        allDataOp = data;
+        var cats = new Set();
+        data.forEach(function(inc){ inc.categorias.forEach(function(c){ cats.add(c); }); });
+        ['fp-cat','fv-cat','fr-cat'].forEach(function(selId){
+            var sel = document.getElementById(selId);
+            Array.from(cats).sort().forEach(function(c){
+                var opt = document.createElement('option');
+                opt.value = c; opt.textContent = c;
+                sel.appendChild(opt);
+            });
+        });
+        renderMapForView(currentView, []);
+    });
+
+/* ===== Modales ===== */
+function openModal(el) {
+    document.getElementById('descContent').textContent = el.getAttribute('data-desc');
+    var img = el.getAttribute('data-imagen');
+    var modalImg = document.getElementById('descImagen');
+    if (img && img !== '' && img !== 'null') {
+        modalImg.src = '/api/incidencias/imagen/' + img;
+        modalImg.style.display = 'block';
+    } else { modalImg.style.display = 'none'; }
+    document.getElementById('descModal').style.display = 'block';
+}
+function closeModal() { document.getElementById('descModal').style.display = 'none'; }
+
+/* ===== Categoría chip picker ===== */
+function toggleDropdown(chipsArea) {
+    var dd = chipsArea.nextElementSibling;
+    var isOpen = dd.classList.toggle('show');
+    chipsArea.classList.toggle('open', isOpen);
+    if (isOpen) {
+        var rect = chipsArea.getBoundingClientRect();
+        dd.style.left = rect.left + 'px';
+        dd.style.top = rect.bottom + 'px';
+        dd.style.width = rect.width + 'px';
+    }
+}
+function syncChips(checkbox) {
+    var picker = checkbox.closest('.cat-picker');
+    var area = picker.querySelector('.cat-chips-area');
+    var val = checkbox.value;
+    var label = checkbox.parentElement.querySelector('span').textContent;
+    if (checkbox.checked) {
+        var chip = document.createElement('span');
+        chip.className = 'cat-chip';
+        chip.setAttribute('data-val', val);
+        chip.innerHTML = '<span>' + label + '</span><span class="cat-chip-remove" onclick="event.stopPropagation(); removeChip(this)">&times;</span>';
+        var ph = area.querySelector('.cat-placeholder');
+        if (ph) ph.remove();
+        area.appendChild(chip);
+    } else {
+        var existing = area.querySelector('.cat-chip[data-val="' + val + '"]');
+        if (existing) existing.remove();
+        if (!area.querySelector('.cat-chip')) {
+            var ph2 = document.createElement('span');
+            ph2.className = 'cat-placeholder';
+            ph2.textContent = 'Seleccionar…';
+            area.appendChild(ph2);
+        }
+    }
+}
+function removeChip(x) {
+    var chip = x.closest('.cat-chip');
+    var picker = chip.closest('.cat-picker');
+    var val = chip.getAttribute('data-val');
+    var cb = picker.querySelector('input[value="' + val + '"]');
+    if (cb) cb.checked = false;
+    chip.remove();
+    var area = picker.querySelector('.cat-chips-area');
+    if (!area.querySelector('.cat-chip')) {
+        var ph = document.createElement('span'); ph.className='cat-placeholder'; ph.textContent='Seleccionar…';
+        area.appendChild(ph);
+    }
+}
+
+/* ===== Duplicados (solo sección pendientes) ===== */
+document.addEventListener('DOMContentLoaded', function() {
+    var rows = Array.from(document.querySelectorAll('#table-pendientes tr[data-ubi]'));
+    var ubiMap = {};
+    rows.forEach(function(row) {
+        var ubi = row.getAttribute('data-ubi');
+        if (!ubiMap[ubi]) ubiMap[ubi] = [];
+        ubiMap[ubi].push(row);
+    });
+    rows.forEach(function(row) {
+        var ubi = row.getAttribute('data-ubi');
+        var group = ubiMap[ubi];
+        if (group.length > 1) {
+            var td = row.querySelector('.td-dup');
+            if (!td) return;
+            var btn = document.createElement('button');
+            btn.className = 'dup-btn';
+            btn.textContent = '⚠️';
+            btn.title = (group.length - 1) + ' posible(s) duplicada(s) en esta ubicación';
+            var currentId = row.getAttribute('data-id');
+            btn.addEventListener('click', function() { openDupModal(currentId, ubi, group); });
+            td.appendChild(btn);
+        }
+    });
+});
+function openDupModal(currentId, ubi, group) {
+    document.getElementById('dupUbi').textContent = ubi;
+    var list = document.getElementById('dupList');
+    list.innerHTML = '';
+    group.forEach(function(row) {
+        var id = row.getAttribute('data-id');
+        if (id === currentId) return;
+        var descEl = row.querySelector('[data-desc]');
+        var desc = descEl ? descEl.getAttribute('data-desc') : '';
+        var li = document.createElement('li');
+        li.className = 'dup-item';
+        li.innerHTML = '<strong>#' + id + '</strong>' +
+            (desc ? ' — ' + desc.substring(0,100) + (desc.length>100?'...':'') : '');
+        li.addEventListener('click', function() { closeDupModal(); });
+        list.appendChild(li);
+    });
+    document.getElementById('dupModal').style.display = 'block';
+}
+function closeDupModal() { document.getElementById('dupModal').style.display = 'none'; }
+
+/* ===== Modal validar ===== */
+function openValidarModal(btn) {
+    var row = btn.closest('tr');
+    var prioridadAsignada = row.getAttribute('data-prioridad-asignada');
+    var warning = btn.closest('div').querySelector('.prioridad-warning');
+    if (prioridadAsignada !== 'true') {
+        if (warning) warning.style.display = 'block';
+        return;
+    }
+    if (warning) warning.style.display = 'none';
+    var id = row.getAttribute('data-id');
+    var hiddenSelect = row.querySelector('.equipos-hidden');
+    document.getElementById('validar-id').value = id;
+    document.getElementById('validar-modal-title').textContent = 'Validar incidencia #' + id;
+    var modalSelect = document.getElementById('validar-tecnico');
+    modalSelect.innerHTML = hiddenSelect.innerHTML;
+    document.getElementById('validarModal').style.display = 'block';
+}
+function closeValidarModal() { document.getElementById('validarModal').style.display = 'none'; }
+
+/* ===== Modal rechazar ===== */
+function openRechazarModal(id) {
+    document.getElementById('rechazar-id').value = id;
+    document.getElementById('rechazar-modal-title').textContent = 'Rechazar incidencia #' + id;
+    document.getElementById('rechazarModal').style.display = 'block';
+}
+function closeRechazarModal() {
+    document.getElementById('rechazarModal').style.display = 'none';
+    document.getElementById('rechazar-motivo').value = '';
+}
+
+/* Cerrar dropdowns al click fuera */
+document.addEventListener('click', function(e) {
+    if (e.target.closest && !e.target.closest('.cat-picker')) {
+        document.querySelectorAll('.cat-dropdown.show').forEach(function(dd) {
+            dd.classList.remove('show');
+            dd.previousElementSibling.classList.remove('open');
+        });
+    }
+    if (e.target === document.getElementById('descModal')) closeModal();
+    if (e.target === document.getElementById('dupModal')) closeDupModal();
+    if (e.target === document.getElementById('validarModal')) closeValidarModal();
+    if (e.target === document.getElementById('rechazarModal')) closeRechazarModal();
+    if (e.target === document.getElementById('cerrarModal')) closeCerrarModal();
+    if (e.target === document.getElementById('devolverModal')) closeDevolverModal();
+    if (e.target === document.getElementById('comentariosModalOp')) closeComentariosModalOp();
+});
+
+/* ===== Helper HTML escape ===== */
+function escHtmlOp(str) {
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(str || ''));
+    return d.innerHTML;
+}
+
+/* ===== Modal: Comentarios + Extensión (operador) ===== */
+function openComentariosModalOp(id) {
+    var dataDiv = document.getElementById('cdata-op-' + id);
+    var items = dataDiv ? dataDiv.querySelectorAll('.c-item') : [];
+    var html = '';
+    if (items.length === 0) {
+        html = '<p style="color:#94a3b8;text-align:center;padding:24px 0;font-size:.9rem;">Sin comentarios todavía.</p>';
+    } else {
+        items.forEach(function(item) {
+            var tipo = item.dataset.tipo;
+            var tipoDesc = item.dataset.tipoDesc;
+            html += '<div class="comentario-bubble comentario-' + tipo + '">' +
+                '<div class="comentario-meta">' +
+                '<strong>' + escHtmlOp(item.dataset.autor) + '</strong>' +
+                '<span class="comentario-tipo-badge tipo-' + tipo + '">' + escHtmlOp(tipoDesc) + '</span>' +
+                ' · ' + escHtmlOp(item.dataset.fecha) +
+                '</div>' +
+                '<div class="comentario-contenido">' + escHtmlOp(item.dataset.contenido) + '</div>' +
+                '</div>';
+        });
+    }
+    document.getElementById('coments-op-list').innerHTML = html;
+    document.getElementById('coments-op-inc-id').value = id;
+    document.getElementById('coments-op-title').textContent = 'Comentarios — Incidencia #' + id;
+
+    // Solicitud de extensión pendiente
+    var solDiv = document.getElementById('soldata-op-' + id);
+    var panel = document.getElementById('ext-decision-panel');
+    if (solDiv) {
+        document.getElementById('ext-sol-id').value = solDiv.dataset.solId;
+        document.getElementById('ext-solicitante').textContent = solDiv.dataset.solicitante;
+        document.getElementById('ext-fecha-sol').textContent = solDiv.dataset.fechaSol;
+        document.getElementById('ext-motivo-sol').textContent = solDiv.dataset.motivo;
+        var comentAdicRow = document.getElementById('ext-comentario-sol-row');
+        if (solDiv.dataset.comentarioAdicional) {
+            document.getElementById('ext-comentario-sol').textContent = solDiv.dataset.comentarioAdicional;
+            comentAdicRow.style.display = '';
+        } else {
+            comentAdicRow.style.display = 'none';
+        }
+        panel.style.display = '';
+    } else {
+        panel.style.display = 'none';
+    }
+
+    document.getElementById('comentariosModalOp').style.display = 'flex';
+}
+
+function closeComentariosModalOp() {
+    document.getElementById('comentariosModalOp').style.display = 'none';
+}
+
+var _cerrarId = null;
+function openCerrarModal(id) {
+    _cerrarId = id;
+    document.getElementById('cerrar-modal-title').textContent = 'Cerrar incidencia #' + id;
+    document.getElementById('cerrarModal').style.display = 'block';
+}
+function closeCerrarModal() { document.getElementById('cerrarModal').style.display = 'none'; _cerrarId = null; }
+function confirmarCerrar() {
+    if (_cerrarId === null) return;
+    var id = _cerrarId;
+    closeCerrarModal();
+    var body = new URLSearchParams();
+    body.append('id', id);
+    fetch('/dashboard/operador/cerrar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+    }).then(function() {
+        var row = document.querySelector('#table-verificadas tr[data-id="' + id + '"]');
+        if (!row) return;
+        row.setAttribute('data-estado', 'CERRADA');
+        var badge = row.querySelector('.badge-estado');
+        if (badge) { badge.className = 'badge-estado badge-CERRADA'; badge.textContent = 'Cerrada'; }
+        var accionesTd = row.querySelector('td:last-child');
+        if (accionesTd) accionesTd.innerHTML = '<span style="color:#94a3b8;font-size:.8rem;">—</span>';
+        var inc = allDataOp.find(function(i) { return i.id === id; });
+        if (inc) { inc.estado = 'CERRADA'; }
+        renderMapForView(currentView, []);
+    });
+}
+
+var _devolverId = null;
+function openDevolverModal(id) {
+    _devolverId = id;
+    document.getElementById('devolver-modal-title').textContent = 'Devolver incidencia #' + id;
+    document.getElementById('devolverModal').style.display = 'block';
+}
+function closeDevolverModal() { document.getElementById('devolverModal').style.display = 'none'; _devolverId = null; }
+function confirmarDevolver() {
+    if (_devolverId === null) return;
+    var id = _devolverId;
+    closeDevolverModal();
+    var body = new URLSearchParams();
+    body.append('id', id);
+    fetch('/dashboard/operador/devolver-tecnico', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+    }).then(function() {
+        var row = document.querySelector('#table-verificadas tr[data-id="' + id + '"]');
+        if (!row) return;
+        row.setAttribute('data-estado', 'EN_CURSO');
+        var badge = row.querySelector('.badge-estado');
+        if (badge) { badge.className = 'badge-estado badge-EN_CURSO'; badge.textContent = 'EnCurso'; }
+        var accionesTd = row.querySelector('td:last-child');
+        if (accionesTd) accionesTd.innerHTML = '<span style="color:#94a3b8;font-size:.8rem;">—</span>';
+        var inc = allDataOp.find(function(i) { return i.id === id; });
+        if (inc) { inc.estado = 'EN_CURSO'; }
+        renderMapForView(currentView, []);
+    });
+}
+</script>
+
+<!-- ========== MODAL: CERRAR ========== -->
+<div id="cerrarModal" class="modal">
+    <div class="modal-content" style="max-width:420px;">
+        <div class="modal-header">
+            <h3 id="cerrar-modal-title">Cerrar incidencia</h3>
+            <span class="close-modal" onclick="closeCerrarModal()">&times;</span>
+        </div>
+        <p class="modal-body">
+            ¿Confirmas que la incidencia ha sido revisada y quieres <strong>cerrarla definitivamente</strong>?
+            Pasará al estado <strong>Cerrada</strong> y se archivará.
+        </p>
+        <div class="modal-footer" style="display:flex;gap:10px;">
+            <button type="button" onclick="confirmarCerrar()" style="background:#15803d;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;flex:1;">&#10003; Sí, cerrar incidencia</button>
+            <button type="button" onclick="closeCerrarModal()" style="background:#f1f5f9;color:#374151;border:1.5px solid #e2e8f0;padding:8px 18px;border-radius:6px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ========== MODAL: DEVOLVER AL TÉCNICO ========== -->
+<div id="devolverModal" class="modal">
+    <div class="modal-content" style="max-width:420px;">
+        <div class="modal-header">
+            <h3 id="devolver-modal-title">Devolver al técnico</h3>
+            <span class="close-modal" onclick="closeDevolverModal()">&times;</span>
+        </div>
+        <p class="modal-body">
+            ¿Confirmas que quieres <strong>devolver esta incidencia al técnico</strong>?
+            Volverá al estado <strong>En curso</strong> para que el equipo asignado retome el trabajo.
+        </p>
+        <div class="modal-footer" style="display:flex;gap:10px;">
+            <button type="button" onclick="confirmarDevolver()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;flex:1;">&#8617; Sí, devolver al técnico</button>
+            <button type="button" onclick="closeDevolverModal()" style="background:#f1f5f9;color:#374151;border:1.5px solid #e2e8f0;padding:8px 18px;border-radius:6px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;">Cancelar</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
