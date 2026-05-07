@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Técnico — GIU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --accent: #15803d;
+            --accent-dark: #14532d;
+            --accent-bg: #f0fdf4;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --success-bg: #ecfdf5;
+            --success-text: #166534;
+            --success-border: #bbf7d0;
+            --error-bg: #fef2f2;
+            --error-text: #b91c1c;
+            --error-border: #fecaca;
+        }
+
+        body {
+            font-family: 'Sora', system-ui, sans-serif;
+            background: linear-gradient(rgba(241,245,249,.85), rgba(241,245,249,.85)), url('/images/giu.jpg') center/cover fixed;
+            color: var(--text);
+        }
+
+        nav.navbar {
+            background: var(--accent);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.15);
+        }
+
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-logo {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #052e16, #14532d);
+            box-shadow: 0 4px 14px rgba(5,46,22,.55);
+            border: 1px solid rgba(255,255,255,.18);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .nav-logo::before {
+            content: "";
+            position: absolute;
+            inset: 5px;
+            border: 1.5px solid rgba(255,255,255,.32);
+            border-radius: 6px;
+        }
+        .nav-logo::after {
+            content: "";
+            position: absolute;
+            right: -4px; top: -4px;
+            width: 14px; height: 14px;
+            border-radius: 5px;
+            background: rgba(255,255,255,.22);
+        }
+        .nav-title { color: #fff; font-weight: 600; font-size: .95rem; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-email { color: rgba(255,255,255,.8); font-size: .8rem; }
+
+        .nav-role {
+            background: rgba(255,255,255,.2);
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: .73rem;
+            font-weight: 600;
+        }
+
+        .nav-logout {
+            color: #fff;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: rgba(255,255,255,.15);
+            font-size: .82rem;
+            font-weight: 500;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 32px auto;
+            padding: 0 24px 48px;
+        }
+
+        .section-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .section-header {
+            padding: 16px 22px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-header h3 {
+            font-size: .95rem;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .section-body {
+            padding: 24px;
+        }
+
+        .empty-msg {
+            padding: 36px 24px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: .92rem;
+        }
+
+        .badge-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .badge {
+            background: var(--accent-bg);
+            color: var(--accent-dark);
+            border: 1px solid #bae6fd;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: .82rem;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        th, td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            text-align: left;
+            vertical-align: top;
+            font-size: .88rem;
+            overflow: hidden;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #334155;
+            font-weight: 700;
+        }
+
+        table th:nth-child(1), table td:nth-child(1) { width: 4%; }
+        table th:nth-child(2), table td:nth-child(2) { width: 17%; }
+        table th:nth-child(3), table td:nth-child(3) { width: 19%; word-break: break-word; }
+        table th:nth-child(4), table td:nth-child(4) { width: 22%; word-break: break-word; }
+        table th:nth-child(5), table td:nth-child(5) { width: 9%; }
+        table th:nth-child(6), table td:nth-child(6) { width: 14%; }
+        table th:nth-child(7), table td:nth-child(7) { width: 15%; }
+
+        .status-box {
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin-bottom: 18px;
+            border: 1px solid;
+            font-size: .92rem;
+        }
+
+        .status-success {
+            background: var(--success-bg);
+            color: var(--success-text);
+            border-color: var(--success-border);
+        }
+
+        .status-error {
+            background: var(--error-bg);
+            color: var(--error-text);
+            border-color: var(--error-border);
+        }
+
+        .config-button {
+            display: inline-block;
+            text-decoration: none;
+            background: var(--accent);
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+
+        .config-summary {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 22px;
+        }
+
+        .summary-row {
+            margin-bottom: 10px;
+            color: #334155;
+            font-size: .92rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: .92rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: .95rem;
+        }
+
+        .helper-text {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: .84rem;
+        }
+
+        .general-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            padding: 12px 14px;
+            border: 1px solid #bae6fd;
+            background: #f0f9ff;
+            border-radius: 10px;
+            font-weight: 600;
+            color: var(--accent-dark);
+        }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 10px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            background: #fff;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 12px;
+            min-height: 52px;
+        }
+
+        .error-inline {
+            display: none;
+            color: #dc2626;
+            margin-top: 10px;
+            font-size: .88rem;
+            font-weight: 500;
+        }
+
+        .submit-btn {
+            border: none;
+            background: var(--accent);
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: .92rem;
+            cursor: pointer;
+        }
+
+        .config-form-collapsed {
+            display: none;
+        }
+
+        /* ---- Mapa ---- */
+        #map-tecnico { height: 460px; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.07); z-index: 0; }
+        .map-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; font-size: .78rem; }
+        .map-legend-item { display: flex; align-items: center; gap: 5px; }
+        .map-legend-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 2px rgba(0,0,0,.2); }
+        .map-counter { font-size: .82rem; color: #64748b; }
+
+        /* ---- Filtros ---- */
+        .filter-bar { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+        .filter-group { display: flex; flex-direction: column; gap: 3px; }
+        .filter-label { font-size: .7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .4px; }
+        .filter-input { padding: 6px 10px; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: .82rem; font-family: inherit; color: #334155; outline: none; background: #fff; width: 90px; }
+        .filter-select { padding: 6px 10px; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: .82rem; font-family: inherit; color: #334155; outline: none; background: #fff; min-width: 150px; }
+        .filter-date { width: 140px; }
+        .filter-input:focus, .filter-select:focus { border-color: var(--accent); }
+        .filter-actions { display: flex; gap: 8px; align-items: flex-end; }
+        .btn-apply { background: var(--accent); color: #fff; border: none; padding: 7px 18px; border-radius: 6px; font-size: .82rem; font-weight: 600; font-family: inherit; cursor: pointer; }
+        .btn-apply:hover { background: var(--accent-dark); }
+        .btn-clear { background: #fff; color: #64748b; border: 1.5px solid #e2e8f0; padding: 6px 14px; border-radius: 6px; font-size: .82rem; font-weight: 500; font-family: inherit; cursor: pointer; }
+        .btn-clear:hover { border-color: #94a3b8; color: #334155; }
+
+        /* ---- Botones de acción en tabla ---- */
+        .btn-accion {
+            display: inline-flex; align-items: center; gap: 5px;
+            border: none; border-radius: 7px; padding: 7px 13px;
+            font-size: .78rem; font-weight: 700; font-family: inherit;
+            cursor: pointer; transition: all .15s; white-space: nowrap;
+        }
+        .btn-iniciar {
+            background: #dbeafe; color: #1e40af; border: 1.5px solid #93c5fd;
+        }
+        .btn-iniciar:hover { background: #bfdbfe; border-color: #3b82f6; }
+        .btn-resolver {
+            background: #dcfce7; color: #166534; border: 1.5px solid #86efac;
+        }
+        .btn-resolver:hover { background: #bbf7d0; border-color: #22c55e; }
+
+        /* ---- Badges de estado en tabla ---- */
+        .badge-estado { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: .75rem; font-weight: 700; }
+        .badge-ASIGNADA   { background: #e0e7ff; color: #3730a3; }
+        .badge-EN_CURSO   { background: #dbeafe; color: #1e40af; }
+        .badge-RESUELTA   { background: #dcfce7; color: #166534; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="nav-logo"><span style="position:relative;z-index:1;color:#fff;font-size:.62rem;font-weight:800;letter-spacing:.06em;">GIU</span></div>
+            <span class="nav-title">Panel Técnico</span>
+        </div>
+        <div class="nav-right">
+            <span class="nav-email" th:text="${usuario.email}"></span>
+            <span class="nav-role" th:text="${rol}"></span>
+            <a href="/soporte/mis-mensajes" class="nav-logout" style="background:rgba(21,128,61,.25);">Soporte</a>
+            <a href="/mi-cuenta/eliminar" class="nav-logout" style="background:rgba(220,38,38,.25);">Eliminar cuenta</a>
+            <a href="/logout" class="nav-logout">Cerrar sesión</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="section-card">
+            <div class="section-header">
+                <h3>Configuración del equipo técnico</h3>
+                <button type="button" class="config-button" id="toggleConfigBtn">Configurar equipo técnico</button>
+            </div>
+
+            <div class="section-body">
+                <div th:if="${param.ok}" class="status-box status-success">
+                    La configuración del equipo técnico se ha guardado correctamente.
+                </div>
+
+                <div th:if="${param.error}" class="status-box status-error">
+                    No se pudo guardar la configuración.
+                </div>
+
+                <div th:if="${configEquipo != null}" class="config-summary">
+                    <div class="summary-row">
+                        <strong>Nombre del equipo:</strong>
+                        <span th:text="${configEquipo.nombreEquipo}"></span>
+                    </div>
+
+                    <div class="summary-row">
+                        <strong>Especialidades:</strong>
+                        <div class="badge-list">
+                            <span class="badge"
+                                  th:each="cat : ${configEquipo.especialidades}"
+                                  th:text="${cat.descripcion}">
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${configEquipo == null}" class="config-summary">
+                    <div class="summary-row">Todavía no has configurado tu equipo técnico.</div>
+                </div>
+
+                <div id="configFormWrapper" th:attr="data-has-config=${configEquipo != null}">
+                    <form th:action="@{/dashboard/tecnico/configurar-equipo}" method="post" onsubmit="return validarFormulario()">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="nombreEquipo">Nombre del equipo</label>
+                                <input id="nombreEquipo"
+                                       class="form-input"
+                                       type="text"
+                                       name="nombreEquipo"
+                                       th:value="${configEquipo != null ? configEquipo.nombreEquipo : ''}"
+                                       required>
+                                <div class="helper-text">Este nombre quedará asociado a tu usuario técnico.</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Especialidades</label>
+
+                                <label class="general-option">
+                                    <input type="checkbox" id="propositoGeneral">
+                                    <span>Propósito general (seleccionar todas)</span>
+                                </label>
+
+                                <div class="checkbox-grid">
+                                    <label class="checkbox-item" th:each="cat : ${T(com.giu.giu.model.CategoriaIncidencia).values()}">
+                                        <input type="checkbox"
+                                               name="especialidades"
+                                               th:value="${cat.name()}"
+                                               class="especialidad-checkbox"
+                                               th:checked="${configEquipo != null and configEquipo.especialidades.contains(cat)}">
+                                        <span th:text="${cat.descripcion}"></span>
+                                    </label>
+                                </div>
+
+                                <div id="especialidadesError" class="error-inline">
+                                    Debes seleccionar al menos una categoría.
+                                </div>
+                            </div>
+
+                            <div>
+                                <button type="submit" class="submit-btn">Guardar configuración</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== MAPA ========== -->
+        <div class="section-card" style="overflow:visible;">
+            <div class="section-header">
+                <h3>&#128506; Mapa de tus incidencias</h3>
+                <span id="map-counter-tec" class="map-counter"></span>
+            </div>
+            <div style="padding:20px 22px 22px;">
+                <div class="map-legend">
+                    <span class="map-legend-item"><span class="map-legend-dot" style="background:#818cf8"></span> Asignada</span>
+                    <span class="map-legend-item"><span class="map-legend-dot" style="background:#60a5fa"></span> En curso</span>
+                    <span class="map-legend-item"><span class="map-legend-dot" style="background:#86efac"></span> Resuelta</span>
+                </div>
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <span class="filter-label">ID</span>
+                        <input type="text" id="ftec-id" class="filter-input" placeholder="Ej. 12">
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">Categoría</span>
+                        <select id="ftec-cat" class="filter-select"><option value="">Todas</option></select>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">Estado</span>
+                        <select id="ftec-estado" class="filter-select">
+                            <option value="">Todos</option>
+                            <option value="ASIGNADA">Asignada</option>
+                            <option value="EN_CURSO">En curso</option>
+                            <option value="RESUELTA">Resuelta</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">Creación desde</span>
+                        <input type="date" id="ftec-crdesde" class="filter-input filter-date">
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">Creación hasta</span>
+                        <input type="date" id="ftec-crhasta" class="filter-input filter-date">
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">Asignación desde</span>
+                        <input type="date" id="ftec-asdesde" class="filter-input filter-date">
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">Asignación hasta</span>
+                        <input type="date" id="ftec-ashasta" class="filter-input filter-date">
+                    </div>
+                    <div class="filter-actions">
+                        <button class="btn-apply" onclick="applyFilterTec()">Filtrar</button>
+                        <button class="btn-clear" onclick="clearFilterTec()">Limpiar</button>
+                    </div>
+                </div>
+                <div id="map-tecnico"></div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <div class="section-header">
+                <h3>Incidencias asignadas a tu equipo</h3>
+            </div>
+
+            <div class="section-body" th:if="${!#lists.isEmpty(incidencias)}">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Categorías</th>
+                            <th>Descripción</th>
+                            <th>Ubicación</th>
+                            <th>Estado</th>
+                            <th>Fecha asignación</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="inc : ${incidencias}">
+                            <td th:text="${inc.id}"></td>
+                            <td>
+                                <div class="badge-list">
+                                    <span class="badge"
+                                          th:each="cat : ${inc.categorias}"
+                                          th:text="${cat.descripcion}">
+                                    </span>
+                                </div>
+                            </td>
+                            <td th:text="${inc.descripcion}"></td>
+                            <td th:text="${inc.ubicacion}"></td>
+                            <td>
+                                <span class="badge-estado"
+                                      th:classappend="${'badge-' + inc.estado.name()}"
+                                      th:text="${inc.estado.descripcion}"></span>
+                            </td>
+                            <td th:text="${inc.fechaAsignacion != null ? #temporals.format(inc.fechaAsignacion, 'dd/MM/yyyy HH:mm') : '-'}"></td>
+                            <td>
+                                <button th:if="${inc.estado.name() == 'ASIGNADA'}"
+                                        type="button" class="btn-accion btn-iniciar"
+                                        th:onclick="'iniciarAjax(' + ${inc.id} + ', this)'">▶ Iniciar</button>
+                                <form th:if="${inc.estado.name() == 'EN_CURSO'}"
+                                      th:id="'form-resolver-' + ${inc.id}"
+                                      method="post" th:action="@{/dashboard/tecnico/cambiar-estado}">
+                                    <input type="hidden" name="id" th:value="${inc.id}"/>
+                                    <input type="hidden" name="estado" value="RESUELTA"/>
+                                    <button type="button" class="btn-accion btn-resolver"
+                                            th:onclick="'openResolverModal(' + ${inc.id} + ')'">✓ Marcar resuelta</button>
+                                </form>
+                                <span th:if="${inc.estado.name() == 'RESUELTA'}" style="color:#94a3b8;font-size:.8rem;">—</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="empty-msg" th:if="${#lists.isEmpty(incidencias)}">
+                No tienes incidencias asignadas actualmente.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const generalCheckbox = document.getElementById('propositoGeneral');
+        const especialidadCheckboxes = document.querySelectorAll('.especialidad-checkbox');
+        const errorBox = document.getElementById('especialidadesError');
+        const toggleBtn = document.getElementById('toggleConfigBtn');
+        const formWrapper = document.getElementById('configFormWrapper');
+
+        function syncGeneralCheckbox() {
+            const allChecked = Array.from(especialidadCheckboxes).length > 0 &&
+                Array.from(especialidadCheckboxes).every(cb => cb.checked);
+            generalCheckbox.checked = allChecked;
+        }
+
+        function toggleAllEspecialidades(checked) {
+            especialidadCheckboxes.forEach(cb => cb.checked = checked);
+        }
+
+        function abrirFormulario() {
+            formWrapper.classList.remove('config-form-collapsed');
+        }
+
+        function cerrarFormulario() {
+            formWrapper.classList.add('config-form-collapsed');
+        }
+
+        function toggleFormulario() {
+            formWrapper.classList.toggle('config-form-collapsed');
+        }
+
+        generalCheckbox.addEventListener('change', function () {
+            toggleAllEspecialidades(this.checked);
+            if (this.checked) errorBox.style.display = 'none';
+        });
+
+        especialidadCheckboxes.forEach(cb => {
+            cb.addEventListener('change', function () {
+                syncGeneralCheckbox();
+                const anyChecked = Array.from(especialidadCheckboxes).some(item => item.checked);
+                if (anyChecked) errorBox.style.display = 'none';
+            });
+        });
+
+        toggleBtn.addEventListener('click', toggleFormulario);
+
+        function validarFormulario() {
+            const anyChecked = Array.from(especialidadCheckboxes).some(cb => cb.checked);
+            if (!anyChecked) {
+                errorBox.style.display = 'block';
+                return false;
+            }
+            errorBox.style.display = 'none';
+            return true;
+        }
+
+        function inicializarVisibilidadFormulario() {
+            const hasConfig = formWrapper.dataset.hasConfig === 'true';
+            const guardadoOk = new URLSearchParams(window.location.search).has('ok');
+            const hayError = new URLSearchParams(window.location.search).has('error');
+
+            if (hayError) {
+                abrirFormulario();
+                return;
+            }
+
+            if (guardadoOk && hasConfig) {
+                cerrarFormulario();
+                return;
+            }
+
+            if (hasConfig) {
+                cerrarFormulario();
+            } else {
+                abrirFormulario();
+            }
+        }
+
+        syncGeneralCheckbox();
+        inicializarVisibilidadFormulario();
+
+        /* ===== Mapa técnico ===== */
+        var mapTec = L.map('map-tecnico').setView([40.4168, -3.7038], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors', maxZoom: 19
+        }).addTo(mapTec);
+        var markersLayerTec = L.layerGroup().addTo(mapTec);
+        var allDataTec = [];
+
+        var estadoColorsTec = {
+            'ASIGNADA': '#818cf8',
+            'EN_CURSO': '#60a5fa',
+            'RESUELTA': '#86efac'
+        };
+
+        function parseDateTec(str) {
+            if (!str) return null;
+            var p = str.split(' ')[0].split('/');
+            return new Date(parseInt(p[2], 10), parseInt(p[1], 10) - 1, parseInt(p[0], 10));
+        }
+
+        function parseDateISOTec(str) {
+            if (!str) return null;
+            var p = str.split('-');
+            return new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+        }
+
+        function renderMarkersTec(data) {
+            markersLayerTec.clearLayers();
+            var bounds = [];
+            data.forEach(function(inc) {
+                if (inc.latitud && inc.longitud) {
+                    var color = estadoColorsTec[inc.estado] || '#64748b';
+                    var circle = L.circleMarker([inc.latitud, inc.longitud], {
+                        radius: 9, fillColor: color, color: '#fff', weight: 2, opacity: 1, fillOpacity: 0.85
+                    });
+                    circle.bindPopup(
+                        '<strong>ID ' + inc.id + '</strong><br/>' +
+                        '<span style="font-size:.82rem;color:#475569">' + inc.categorias.join(', ') + '</span><br/>' +
+                        inc.descripcion.substring(0, 120) + (inc.descripcion.length > 120 ? '...' : '') + '<br/>' +
+                        '<small>&#128205; ' + inc.ubicacion + '</small><br/>' +
+                        '<small>&#128197; Creación: ' + inc.fecha + '</small>' +
+                        (inc.fechaAsignacion ? '<br/><small>&#128203; Asignación: ' + inc.fechaAsignacion + '</small>' : '')
+                    );
+                    markersLayerTec.addLayer(circle);
+                    bounds.push([inc.latitud, inc.longitud]);
+                }
+            });
+            var n = markersLayerTec.getLayers().length;
+            document.getElementById('map-counter-tec').textContent =
+                'Mostrando ' + n + ' incidencia' + (n !== 1 ? 's' : '') + ' en el mapa';
+            if (bounds.length > 0) mapTec.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+        }
+
+        function applyFilterTec() {
+            var idVal   = document.getElementById('ftec-id').value.trim();
+            var catVal  = document.getElementById('ftec-cat').value;
+            var estVal  = document.getElementById('ftec-estado').value;
+            var crDesde = document.getElementById('ftec-crdesde').value;
+            var crHasta = document.getElementById('ftec-crhasta').value;
+            var asDesde = document.getElementById('ftec-asdesde').value;
+            var asHasta = document.getElementById('ftec-ashasta').value;
+            var filtered = allDataTec.filter(function(inc) {
+                if (idVal && String(inc.id) !== idVal) return false;
+                if (catVal && !inc.categorias.includes(catVal)) return false;
+                if (estVal && inc.estado !== estVal) return false;
+                if (crDesde || crHasta) {
+                    var f = parseDateTec(inc.fecha);
+                    if (crDesde && f < parseDateISOTec(crDesde)) return false;
+                    if (crHasta) { var h = parseDateISOTec(crHasta); h.setDate(h.getDate() + 1); if (f >= h) return false; }
+                }
+                if (asDesde || asHasta) {
+                    var fa = parseDateTec(inc.fechaAsignacion);
+                    if (!fa) return false;
+                    if (asDesde && fa < parseDateISOTec(asDesde)) return false;
+                    if (asHasta) { var ha = parseDateISOTec(asHasta); ha.setDate(ha.getDate() + 1); if (fa >= ha) return false; }
+                }
+                return true;
+            });
+            renderMarkersTec(filtered);
+        }
+
+        function clearFilterTec() {
+            document.getElementById('ftec-id').value = '';
+            document.getElementById('ftec-cat').value = '';
+            document.getElementById('ftec-estado').value = '';
+            document.getElementById('ftec-crdesde').value = '';
+            document.getElementById('ftec-crhasta').value = '';
+            document.getElementById('ftec-asdesde').value = '';
+            document.getElementById('ftec-ashasta').value = '';
+            renderMarkersTec(allDataTec);
+        }
+
+        fetch('/api/incidencias/mis-asignadas')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                allDataTec = data;
+                var cats = new Set();
+                data.forEach(function(inc) { inc.categorias.forEach(function(c) { cats.add(c); }); });
+                var catSel = document.getElementById('ftec-cat');
+                Array.from(cats).sort().forEach(function(c) {
+                    var opt = document.createElement('option');
+                    opt.value = c;
+                    opt.textContent = c;
+                    catSel.appendChild(opt);
+                });
+                renderMarkersTec(data);
+            });
+
+        function iniciarAjax(id, btn) {
+            var body = new URLSearchParams();
+            body.append('id', id);
+            body.append('estado', 'EN_CURSO');
+            fetch('/dashboard/tecnico/cambiar-estado', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body.toString()
+            }).then(function() {
+                var row = btn.closest('tr');
+                // Actualizar badge de estado
+                var badge = row.querySelector('.badge-estado');
+                if (badge) {
+                    badge.className = 'badge-estado badge-EN_CURSO';
+                    badge.textContent = 'EnCurso';
+                }
+                // Reemplazar botón por "Marcar resuelta"
+                var td = btn.parentElement;
+                var formId = 'form-resolver-' + id;
+                td.innerHTML =
+                    '<form id="' + formId + '" method="post" action="/dashboard/tecnico/cambiar-estado">' +
+                    '<input type="hidden" name="id" value="' + id + '"/>' +
+                    '<input type="hidden" name="estado" value="RESUELTA"/>' +
+                    '<button type="button" class="btn-accion btn-resolver" onclick="openResolverModal(' + id + ')">✓ Marcar resuelta</button>' +
+                    '</form>';
+                // Actualizar datos del mapa
+                var inc = allDataTec.find(function(i) { return i.id === id; });
+                if (inc) { inc.estado = 'EN_CURSO'; }
+                applyFilterTec();
+            });
+        }
+
+        var resolverIncidenciaId = null;
+
+        function openResolverModal(id) {
+            resolverIncidenciaId = id;
+            document.getElementById('resolver-modal-title').textContent = 'Marcar resuelta — Incidencia #' + id;
+            document.getElementById('resolverModal').style.display = 'flex';
+        }
+
+        function closeResolverModal() {
+            document.getElementById('resolverModal').style.display = 'none';
+            resolverIncidenciaId = null;
+        }
+
+        function confirmarResolver() {
+            if (resolverIncidenciaId === null) return;
+            var id = resolverIncidenciaId;
+            closeResolverModal();
+            var body = new URLSearchParams();
+            body.append('id', id);
+            body.append('estado', 'RESUELTA');
+            fetch('/dashboard/tecnico/cambiar-estado', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body.toString()
+            }).then(function() {
+                var form = document.getElementById('form-resolver-' + id);
+                if (!form) return;
+                var row = form.closest('tr');
+                // Actualizar badge de estado
+                var badge = row.querySelector('.badge-estado');
+                if (badge) {
+                    badge.className = 'badge-estado badge-RESUELTA';
+                    badge.textContent = 'Resuelta';
+                }
+                // Sustituir botón por guión (ya no hay acción disponible)
+                form.parentElement.innerHTML = '<span style="color:#94a3b8;font-size:.8rem;">—</span>';
+                // Actualizar datos del mapa
+                var inc = allDataTec.find(function(i) { return i.id === id; });
+                if (inc) { inc.estado = 'RESUELTA'; }
+                applyFilterTec();
+            });
+        }
+
+        window.addEventListener('click', function(e) {
+            if (e.target === document.getElementById('resolverModal')) closeResolverModal();
+        });
+    </script>
+
+    <!-- ========== MODAL: CONFIRMAR RESOLVER ========== -->
+    <div id="resolverModal" style="display:none;position:fixed;z-index:1000;inset:0;background:rgba(0,0,0,.45);align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:12px;padding:28px;width:90%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #f1f5f9;">
+                <h3 id="resolver-modal-title" style="font-size:1rem;font-weight:600;color:#0f172a;margin:0;">Marcar resuelta</h3>
+                <span onclick="closeResolverModal()" style="color:#94a3b8;font-size:1.4rem;cursor:pointer;line-height:1;">&times;</span>
+            </div>
+            <p style="color:#475569;font-size:.9rem;line-height:1.65;margin-bottom:20px;">
+                ¿Confirmas que esta incidencia ha sido <strong>resuelta</strong>? Esta acción no se puede deshacer fácilmente.
+            </p>
+            <div style="display:flex;gap:10px;">
+                <button onclick="confirmarResolver()" style="background:#15803d;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;flex:1;">✓ Sí, marcar resuelta</button>
+                <button onclick="closeResolverModal()" style="background:#f1f5f9;color:#374151;border:1.5px solid #e2e8f0;padding:8px 18px;border-radius:6px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
