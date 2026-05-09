@@ -16,6 +16,9 @@ import com.giu.giu.repository.EquipoTecnicoConfigRepository;
 import com.giu.giu.repository.IncidenciaRepository;
 import com.giu.giu.repository.SolicitudExtensionRepository;
 import com.giu.giu.repository.UsuarioRepository;
+
+import com.giu.giu.service.ConfiguracionPrioridadService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +47,9 @@ public class IncidenciaService {
 
     @Autowired
     private SolicitudExtensionRepository solicitudExtensionRepository;
+
+    @Autowired
+    private ConfiguracionPrioridadService configuracionPrioridadService;
 
     public Incidencia registrar(String descripcion, String ubicacion, Double latitud, Double longitud, Set<CategoriaIncidencia> categorias, String imagenNombre, Usuario usuario) {
         Incidencia incidencia = new Incidencia();
@@ -288,14 +294,11 @@ public class IncidenciaService {
         return solicitudExtensionRepository.findByEstadoOrderByFechaSolicitudDesc(EstadoSolicitud.PENDIENTE);
     }
 
-    private java.time.LocalDate calcularFechaLimite(PrioridadIncidencia prioridad, java.time.LocalDate desde) {
+    private LocalDate calcularFechaLimite(PrioridadIncidencia prioridad, LocalDate desde) {
         if (prioridad == null || desde == null) return null;
-        return switch (prioridad) {
-            case CRITICA -> desde.plusDays(4);
-            case ALTA    -> desde.plusDays(15);
-            case MEDIA   -> desde.plusMonths(1);
-            case BAJA    -> desde.plusMonths(2);
-        };
+
+        int dias = configuracionPrioridadService.obtenerDiasResolucion(prioridad);
+        return desde.plusDays(dias);
     }
 
     private int coincidenciasCategorias(Set<CategoriaIncidencia> categoriasIncidencia, Set<CategoriaIncidencia> categoriasEquipo) {

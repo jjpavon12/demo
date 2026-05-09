@@ -16,6 +16,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import com.giu.giu.model.CategoriaIncidencia;
+import com.giu.giu.model.PrioridadIncidencia;
+import com.giu.giu.service.ConfiguracionCategoriaService;
+import com.giu.giu.service.ConfiguracionPrioridadService;
 
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -38,10 +42,14 @@ public class DashboardController {
 
     private final IncidenciaService incidenciaService;
     private final UsuarioService usuarioService;
+    private final ConfiguracionPrioridadService configuracionPrioridadService;
+    private final ConfiguracionCategoriaService configuracionCategoriaService;
 
-    public DashboardController(IncidenciaService incidenciaService, UsuarioService usuarioService) {
+    public DashboardController(IncidenciaService incidenciaService, UsuarioService usuarioService, ConfiguracionPrioridadService configuracionPrioridadService, ConfiguracionCategoriaService configuracionCategoriaService) {
         this.incidenciaService = incidenciaService;
         this.usuarioService = usuarioService;
+        this.configuracionPrioridadService = configuracionPrioridadService;
+        this.configuracionCategoriaService = configuracionCategoriaService;
     }
 
     @GetMapping("/home")
@@ -148,7 +156,7 @@ public class DashboardController {
             model.addAttribute("comentariosPorIncidencia", comentariosPorIncidencia);
             model.addAttribute("solicitudPendientePorIncidencia", solicitudPendientePorIncidencia);
             model.addAttribute("totalSolicitudesPendientes", solicitudesPendientes.size());
-
+            model.addAttribute("categoriasConfig", configuracionCategoriaService.obtenerActivas());
             return "dashboard-operador";
         }
 
@@ -364,6 +372,8 @@ public class DashboardController {
             model.addAttribute("pendientes", usuarioService.obtenerPendientes());
             model.addAttribute("solicitudesRol", usuarioService.obtenerSolicitudesRol());
             model.addAttribute("todosUsuarios", usuarioService.obtenerTodos());
+            model.addAttribute("prioridadesConfig", configuracionPrioridadService.obtenerTodas());
+            model.addAttribute("categoriasConfig", configuracionCategoriaService.obtenerTodas());
             return "dashboard-admin";
         }
 
@@ -408,6 +418,20 @@ public class DashboardController {
         if (error != null) {
             return "redirect:/dashboard/admin";
         }
+        return "redirect:/dashboard/admin";
+    }
+
+    @PostMapping("/admin/configuracion/prioridades")
+    public String actualizarPrioridad(@RequestParam PrioridadIncidencia prioridad,
+                                    @RequestParam Integer diasResolucion) {
+        configuracionPrioridadService.actualizar(prioridad, diasResolucion);
+        return "redirect:/dashboard/admin";
+    }
+
+    @PostMapping("/admin/configuracion/categorias")
+    public String actualizarCategoria(@RequestParam CategoriaIncidencia categoria,
+                                    @RequestParam boolean activa) {
+        configuracionCategoriaService.cambiarEstado(categoria, activa);
         return "redirect:/dashboard/admin";
     }
 }
