@@ -285,7 +285,7 @@
 
         <div class="messages-section">
             <h2>Todos tus Mensajes</h2>
-            
+
             <div th:if="${#lists.isEmpty(mensajes)}" class="empty-state">
                 <div class="empty-state-icon">📬</div>
                 <h3>No tienes mensajes aún</h3>
@@ -298,12 +298,13 @@
                     <div class="message-content">
                         <div class="message-asunto" th:text="${mensaje.asunto}"></div>
                         <div class="message-meta">
-                            <span th:text="'Enviado: ' + ${#dates.format(mensaje.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span>
-                            <span th:if="${mensaje.respuestaAdmin}"> • Respondido: <span th:text="${#dates.format(mensaje.fechaRespuesta, 'dd/MM/yyyy HH:mm')}"></span></span>
+                            <span th:text="'Enviado: ' + ${#temporals.format(mensaje.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span>
                         </div>
                     </div>
                     <div class="message-actions">
-                        <span class="state-badge" th:classappend="${'state-' + mensaje.estado.name().toLowerCase()}" th:text="${mensaje.estado.label}"></span>
+                        <span class="state-badge"
+                              th:classappend="${'state-' + mensaje.estado.name().toLowerCase()}"
+                              th:text="${mensaje.estado.name()}"></span>
                         <a th:href="@{/soporte/mensaje/{id}(id=${mensaje.id})}" class="message-link">Ver Detalle</a>
                     </div>
                 </div>
