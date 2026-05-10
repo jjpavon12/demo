@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle del Ticket — GIU Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Sora', system-ui, sans-serif; background: linear-gradient(rgba(241,245,249,.85), rgba(241,245,249,.85)), url('/images/giu.jpg') center/cover fixed; }
+        nav.navbar {
+            background: #15803d; height: 60px; display: flex; align-items: center;
+            justify-content: space-between; padding: 0 28px; box-shadow: 0 1px 4px rgba(0,0,0,.15);
+        }
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-logo {
+            position: relative; display: inline-flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px; border-radius: 10px;
+            background: linear-gradient(135deg, #052e16, #14532d);
+            box-shadow: 0 4px 14px rgba(5,46,22,.55); border: 1px solid rgba(255,255,255,.18);
+            overflow: hidden; flex-shrink: 0;
+        }
+        .nav-logo::before { content: ""; position: absolute; inset: 5px; border: 1.5px solid rgba(255,255,255,.32); border-radius: 6px; }
+        .nav-logo::after { content: ""; position: absolute; right: -4px; top: -4px; width: 14px; height: 14px; border-radius: 5px; background: rgba(255,255,255,.22); }
+        .nav-title { color: #fff; font-weight: 600; font-size: .95rem; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-email { color: rgba(255,255,255,.8); font-size: .8rem; }
+        .admin-badge { display: inline-block; background: #f3e8ff; color: #7c3aed; padding: 4px 12px; border-radius: 20px; font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+        .nav-logout { color: #fff; text-decoration: none; padding: 6px 14px; border-radius: 6px; background: rgba(255,255,255,.15); font-size: .825rem; font-weight: 500; transition: background .14s; }
+        .nav-logout:hover { background: rgba(255,255,255,.28); }
+        .container { max-width: 860px; margin: 36px auto; padding: 0 24px; }
+        .breadcrumb { font-size: .82rem; color: #64748b; margin-bottom: 16px; }
+        .breadcrumb a { color: #15803d; text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+
+        .ticket-header {
+            background: #fff; border-radius: 12px; padding: 28px;
+            margin-bottom: 24px; box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            border-top: 3px solid #15803d;
+        }
+        .ticket-header h1 { font-family: 'Plus Jakarta Sans', 'Sora', sans-serif; font-size: 1.4rem; font-weight: 700; color: #0f172a; margin-bottom: 16px; }
+        .ticket-meta { display: flex; gap: 24px; flex-wrap: wrap; font-size: .88rem; color: #64748b; }
+        .meta-item { display: flex; flex-direction: column; gap: 4px; }
+        .meta-label { font-size: .75rem; font-weight: 600; color: #0f172a; text-transform: uppercase; letter-spacing: .4px; }
+        .state-badge { display: inline-block; padding: 5px 14px; border-radius: 20px; font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; width: fit-content; }
+        .state-pendiente { background: #fef3c7; color: #92400e; }
+        .state-respondido { background: #dbeafe; color: #1e40af; }
+        .state-cerrado { background: #e2e8f0; color: #334155; }
+
+        /* Hilo de mensajes */
+        .chat-section { margin-bottom: 24px; }
+        .chat-bubble-wrap { display: flex; flex-direction: column; gap: 16px; }
+        .bubble {
+            max-width: 80%;
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: .9rem;
+            line-height: 1.6;
+            color: #334155;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .bubble-user {
+            background: #f1f5f9;
+            border-left: 4px solid #94a3b8;
+            align-self: flex-start;
+        }
+        .bubble-admin {
+            background: #f0fdf4;
+            border-left: 4px solid #15803d;
+            align-self: flex-end;
+        }
+        .bubble-meta {
+            font-size: .75rem;
+            color: #94a3b8;
+            margin-top: 6px;
+        }
+        .bubble-author {
+            font-size: .78rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .bubble-author-user { color: #64748b; }
+        .bubble-author-admin { color: #15803d; }
+
+        /* Formulario respuesta */
+        .reply-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            border-top: 3px solid #3b82f6;
+        }
+        .reply-section h2 { font-size: 1rem; font-weight: 600; color: #0f172a; margin-bottom: 16px; }
+        .reply-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: .9rem;
+            color: #334155;
+            resize: vertical;
+            outline: none;
+            transition: border-color .14s;
+        }
+        .reply-textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
+        .reply-actions { display: flex; gap: 12px; margin-top: 16px; }
+        .btn {
+            padding: 10px 22px; border-radius: 8px; font-size: .9rem; font-weight: 600;
+            font-family: inherit; border: none; cursor: pointer; text-decoration: none;
+            display: inline-block; transition: all .14s;
+        }
+        .btn-primary { background: #3b82f6; color: #fff; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-secondary { background: #f1f5f9; color: #64748b; border: 1.5px solid #e2e8f0; }
+        .btn-secondary:hover { background: #e2e8f0; color: #334155; }
+        .btn-danger { background: #fef2f2; color: #dc2626; border: 1.5px solid #fecaca; }
+        .btn-danger:hover { background: #fee2e2; }
+
+        .alert { padding: 14px 16px; border-radius: 8px; font-size: .88rem; margin-bottom: 20px; }
+        .alert-success { background: #f0fdf4; color: #166534; border-left: 4px solid #15803d; }
+        .alert-error { background: #fef2f2; color: #991b1b; border-left: 4px solid #dc2626; }
+
+        .closed-notice {
+            background: #f8fafc; border-radius: 8px; padding: 16px;
+            text-align: center; color: #64748b; font-size: .88rem;
+            border: 1.5px dashed #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="nav-logo"></div>
+            <span class="nav-title">GIU — Gestor de Incidencias Urbanas</span>
+        </div>
+        <div class="nav-right">
+            <span class="nav-email" th:text="${usuario.email}"></span>
+            <span class="admin-badge">Administrador</span>
+            <a href="/logout" class="nav-logout">Cerrar sesión</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="/dashboard/home">Inicio</a> /
+            <a href="/soporte/admin/mensajes">Panel de Soporte</a> /
+            Detalle del Ticket
+        </div>
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+        <!-- Cabecera del ticket -->
+        <div class="ticket-header">
+            <h1 th:text="${ticket.asunto}"></h1>
+            <div class="ticket-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Estado</span>
+                    <span class="state-badge"
+                          th:classappend="${'state-' + ticket.estado.name().toLowerCase()}"
+                          th:text="${ticket.estado.name()}"></span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Usuario</span>
+                    <span th:text="${ticket.usuario.email}"></span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Fecha de Creación</span>
+                    <span th:text="${#temporals.format(ticket.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span>
+                </div>
+                <div class="meta-item" th:if="${ticket.fechaCierre != null}">
+                    <span class="meta-label">Fecha de Cierre</span>
+                    <span th:text="${#temporals.format(ticket.fechaCierre, 'dd/MM/yyyy HH:mm')}"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hilo de mensajes -->
+        <div class="chat-section">
+            <div class="chat-bubble-wrap">
+                <div th:each="r : ${ticket.respuestas}">
+
+                    <!-- Mensaje del usuario -->
+                    <div th:if="${r.tipoRemitente.name() == 'USUARIO'}" class="bubble bubble-user">
+                        <div class="bubble-author bubble-author-user"
+                             th:text="${ticket.usuario.email}"></div>
+                        <div th:text="${r.contenido}"></div>
+                        <div class="bubble-meta"
+                             th:text="${#temporals.format(r.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></div>
+                    </div>
+
+                    <!-- Respuesta del admin -->
+                    <div th:if="${r.tipoRemitente.name() == 'ADMINISTRADOR'}" class="bubble bubble-admin">
+                        <div class="bubble-author bubble-author-admin">
+                            Administrador — <span th:text="${r.usuario.email}"></span>
+                        </div>
+                        <div th:text="${r.contenido}"></div>
+                        <div class="bubble-meta"
+                             th:text="${#temporals.format(r.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario de respuesta (solo si no está cerrado) -->
+        <div th:if="${ticket.estado.name() != 'CERRADO'}" class="reply-section">
+            <h2>Enviar Respuesta</h2>
+            <form method="POST" th:action="@{/soporte/admin/responder/{id}(id=${ticket.id})}">
+                <textarea name="respuesta" class="reply-textarea"
+                          placeholder="Escribe tu respuesta al usuario..." required></textarea>
+                <div class="reply-actions">
+                    <button type="submit" class="btn btn-primary">Enviar Respuesta</button>
+                    <form method="POST" th:action="@{/soporte/admin/cerrar/{id}(id=${ticket.id})}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger"
+                                onclick="return confirm('¿Cerrar este ticket?')">Cerrar Ticket</button>
+                    </form>
+                    <a href="/soporte/admin/mensajes" class="btn btn-secondary">Volver</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Ticket cerrado -->
+        <div th:if="${ticket.estado.name() == 'CERRADO'}" class="closed-notice">
+            Este ticket está cerrado. No se pueden añadir más respuestas.
+            <br><br>
+            <a href="/soporte/admin/mensajes" class="btn btn-secondary">Volver al Panel</a>
+        </div>
+
+    </div>
+</body>
+</html>

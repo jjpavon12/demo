@@ -361,9 +361,11 @@
                 <div class="form-group">
                     <label>Categorías <span style="font-weight:400;text-transform:none;font-size:.75rem;color:#94a3b8">(selecciona al menos una)</span></label>
                     <div class="checkbox-grid" id="categoriasGrid">
-                        <label class="checkbox-item" th:each="cat : ${categorias}">
-                            <input type="checkbox" name="categorias" th:value="${cat.name()}" />
-                            <span th:text="${cat.descripcion}"></span>
+                        <label th:each="config : ${categoriasConfig}">
+                            <input type="checkbox"
+                                name="categorias"
+                                th:value="${config.categoria.name()}">
+                            <span th:text="${config.categoria.descripcion}"></span>
                         </label>
                     </div>
                     <p id="catError" style="display:none;color:#dc2626;font-size:.8rem;margin-top:6px">Selecciona al menos una categoría.</p>

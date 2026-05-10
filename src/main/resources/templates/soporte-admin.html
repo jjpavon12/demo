@@ -60,16 +60,6 @@
             transition: background .14s;
         }
         .nav-logout:hover { background: rgba(255,255,255,.28); }
-        .container { max-width: 1200px; margin: 36px auto; padding: 0 24px; }
-        .page-header {
-            background: #fff;
-            border-radius: 12px;
-            padding: 28px;
-            margin-bottom: 28px;
-            box-shadow: 0 1px 4px rgba(0,0,0,.07);
-        }
-        .page-header h1 { font-family: 'Plus Jakarta Sans', 'Sora', sans-serif; font-size: 1.65rem; font-weight: 700; color: #0f172a; margin-bottom: 8px; letter-spacing: -.01em; }
-        .page-header p { color: #64748b; font-size: .88rem; }
         .admin-badge {
             display: inline-block;
             background: #f3e8ff;
@@ -80,8 +70,17 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: .4px;
-            margin-left: 12px;
         }
+        .container { max-width: 1200px; margin: 36px auto; padding: 0 24px; }
+        .page-header {
+            background: #fff;
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 28px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+        }
+        .page-header h1 { font-family: 'Plus Jakarta Sans', 'Sora', sans-serif; font-size: 1.65rem; font-weight: 700; color: #0f172a; margin-bottom: 8px; letter-spacing: -.01em; }
+        .page-header p { color: #64748b; font-size: .88rem; }
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -95,17 +94,8 @@
             box-shadow: 0 1px 4px rgba(0,0,0,.07);
             border-left: 4px solid #15803d;
         }
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #15803d;
-            margin-bottom: 4px;
-        }
-        .stat-label {
-            font-size: .82rem;
-            color: #64748b;
-            font-weight: 500;
-        }
+        .stat-value { font-size: 1.8rem; font-weight: 700; color: #15803d; margin-bottom: 4px; }
+        .stat-label { font-size: .82rem; color: #64748b; font-weight: 500; }
         .filter-section {
             background: #fff;
             border-radius: 11px;
@@ -117,13 +107,7 @@
             gap: 12px;
             flex-wrap: wrap;
         }
-        .filter-label {
-            font-size: .82rem;
-            font-weight: 600;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: .4px;
-        }
+        .filter-label { font-size: .82rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .4px; }
         .filter-select {
             padding: 8px 12px;
             border: 1.5px solid #e2e8f0;
@@ -134,10 +118,7 @@
             outline: none;
             background: #fff;
         }
-        .filter-select:focus {
-            border-color: #15803d;
-            box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.1);
-        }
+        .filter-select:focus { border-color: #15803d; box-shadow: 0 0 0 3px rgba(21,128,61,.1); }
         .filter-btn {
             background: #15803d;
             color: #fff;
@@ -150,38 +131,18 @@
             cursor: pointer;
             transition: background .14s;
         }
-        .filter-btn:hover {
-            background: #14532d;
-        }
+        .filter-btn:hover { background: #14532d; }
         .messages-section {
             background: #fff;
             border-radius: 12px;
             padding: 28px;
             box-shadow: 0 1px 4px rgba(0,0,0,.07);
         }
-        .messages-section h2 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #0f172a;
-            margin-bottom: 20px;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-        }
-        .empty-state-icon {
-            font-size: 3rem;
-            margin-bottom: 12px;
-        }
-        .empty-state h3 {
-            font-size: 1rem;
-            color: #0f172a;
-            margin-bottom: 8px;
-        }
-        .empty-state p {
-            color: #64748b;
-            font-size: .9rem;
-        }
+        .messages-section h2 { font-size: 1.1rem; font-weight: 600; color: #0f172a; margin-bottom: 20px; }
+        .empty-state { text-align: center; padding: 40px 20px; }
+        .empty-state-icon { font-size: 3rem; margin-bottom: 12px; }
+        .empty-state h3 { font-size: 1rem; color: #0f172a; margin-bottom: 8px; }
+        .empty-state p { color: #64748b; font-size: .9rem; }
         .message-item {
             padding: 18px;
             border: 1.5px solid #e2e8f0;
@@ -189,22 +150,14 @@
             margin-bottom: 12px;
             transition: all .14s;
         }
-        .message-item:hover {
-            border-color: #15803d;
-            background: #f8fafc;
-        }
-        .message-header {
+        .message-item:hover { border-color: #15803d; background: #f8fafc; }
+        .message-header-row {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
-        .message-title {
-            font-size: .95rem;
-            font-weight: 600;
-            color: #0f172a;
-            flex: 1;
-        }
+        .message-title { font-size: .95rem; font-weight: 600; color: #0f172a; flex: 1; }
         .state-badge {
             display: inline-block;
             padding: 4px 12px;
@@ -214,40 +167,11 @@
             text-transform: uppercase;
             letter-spacing: .4px;
         }
-        .state-pendiente {
-            background: #fef3c7;
-            color: #92400e;
-        }
-        .state-respondido {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-        .state-cerrado {
-            background: #e2e8f0;
-            color: #334155;
-        }
-        .message-meta {
-            font-size: .82rem;
-            color: #64748b;
-            margin-bottom: 12px;
-        }
-        .message-preview {
-            background: #f8fafc;
-            padding: 12px;
-            border-radius: 6px;
-            font-size: .85rem;
-            color: #334155;
-            line-height: 1.5;
-            margin-bottom: 12px;
-            max-height: 80px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .message-actions {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
+        .state-pendiente { background: #fef3c7; color: #92400e; }
+        .state-respondido { background: #dbeafe; color: #1e40af; }
+        .state-cerrado { background: #e2e8f0; color: #334155; }
+        .message-meta { font-size: .82rem; color: #64748b; margin-bottom: 10px; }
+        .message-actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .btn-small {
             display: inline-block;
             padding: 6px 12px;
@@ -258,105 +182,97 @@
             border: none;
             cursor: pointer;
             transition: all .14s;
+            font-family: inherit;
         }
-        .btn-view {
-            background: #15803d;
-            color: #fff;
-        }
-        .btn-view:hover {
-            background: #14532d;
-        }
-        .btn-respond {
-            background: #3b82f6;
-            color: #fff;
-        }
-        .btn-respond:hover {
-            background: #1d4ed8;
-        }
-        .btn-close {
-            background: #f1f5f9;
-            color: #64748b;
-            border: 1.5px solid #e2e8f0;
-        }
-        .btn-close:hover {
-            background: #e2e8f0;
-        }
-        .btn-delete {
-            background: #fef2f2;
-            color: #dc2626;
-            border: 1.5px solid #fecaca;
-        }
-        .btn-delete:hover {
-            background: #fee2e2;
-        }
+        .btn-view { background: #15803d; color: #fff; }
+        .btn-view:hover { background: #14532d; }
+        .btn-respond { background: #3b82f6; color: #fff; }
+        .btn-respond:hover { background: #1d4ed8; }
+        .btn-close-ticket { background: #f1f5f9; color: #64748b; border: 1.5px solid #e2e8f0; }
+        .btn-close-ticket:hover { background: #e2e8f0; }
+        .btn-delete { background: #fef2f2; color: #dc2626; border: 1.5px solid #fecaca; }
+        .btn-delete:hover { background: #fee2e2; }
+        .alert { padding: 14px 16px; border-radius: 8px; font-size: .88rem; margin-bottom: 20px; }
+        .alert-success { background: #f0fdf4; color: #166534; border-left: 4px solid #15803d; }
+        .alert-error { background: #fef2f2; color: #991b1b; border-left: 4px solid #dc2626; }
+        .breadcrumb { font-size: .82rem; color: #64748b; margin-bottom: 16px; }
+        .breadcrumb a { color: #15803d; text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: rgba(0,0,0,.5);
             z-index: 1000;
             align-items: center;
             justify-content: center;
         }
-        .modal.active {
-            display: flex;
-        }
+        .modal.active { display: flex; }
         .modal-content {
             background: #fff;
             border-radius: 12px;
             padding: 28px;
-            max-width: 600px;
+            max-width: 680px;
             width: 90%;
-            max-height: 80vh;
+            max-height: 85vh;
             overflow-y: auto;
             box-shadow: 0 10px 40px rgba(0,0,0,.2);
         }
         .modal-header {
-            font-size: 1.1rem;
-            font-weight: 600;
+            font-family: 'Plus Jakarta Sans', 'Sora', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
             color: #0f172a;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #e2e8f0;
         }
-        .modal-field {
-            margin-bottom: 16px;
+        .modal-field { margin-bottom: 14px; }
+        .modal-label { font-size: .82rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 6px; display: block; }
+        .modal-value { font-size: .9rem; color: #334155; background: #f8fafc; padding: 10px 12px; border-radius: 6px; }
+
+        /* Hilo de chat en modal */
+        .chat-thread { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+        .chat-bubble {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: .88rem;
+            line-height: 1.6;
+            max-width: 90%;
         }
-        .modal-label {
-            font-size: .85rem;
-            font-weight: 600;
-            color: #0f172a;
-            margin-bottom: 6px;
-            display: block;
-        }
-        .modal-value {
-            font-size: .9rem;
+        .chat-bubble-user {
+            background: #f1f5f9;
             color: #334155;
-            background: #f8fafc;
-            padding: 10px 12px;
-            border-radius: 6px;
+            border-left: 3px solid #94a3b8;
+            align-self: flex-start;
+        }
+        .chat-bubble-admin {
+            background: #f0fdf4;
+            color: #166534;
+            border-left: 3px solid #15803d;
+            align-self: flex-end;
+        }
+        .chat-bubble-meta {
+            font-size: .75rem;
+            color: #94a3b8;
+            margin-top: 4px;
         }
         .modal-textarea {
             width: 100%;
-            min-height: 120px;
+            min-height: 100px;
             padding: 10px 12px;
             border: 1.5px solid #e2e8f0;
             border-radius: 6px;
             font-family: inherit;
             font-size: .9rem;
             resize: vertical;
+            color: #334155;
         }
-        .modal-textarea:focus {
-            border-color: #15803d;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.1);
-        }
-        .modal-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 24px;
-        }
+        .modal-textarea:focus { border-color: #15803d; outline: none; box-shadow: 0 0 0 3px rgba(21,128,61,.1); }
+        .modal-actions { display: flex; gap: 12px; margin-top: 20px; }
         .btn-modal {
             flex: 1;
             padding: 10px;
@@ -366,50 +282,12 @@
             font-weight: 600;
             cursor: pointer;
             transition: all .14s;
+            font-family: inherit;
         }
-        .btn-modal-primary {
-            background: #15803d;
-            color: #fff;
-        }
-        .btn-modal-primary:hover {
-            background: #14532d;
-        }
-        .btn-modal-cancel {
-            background: #f1f5f9;
-            color: #64748b;
-            border: 1.5px solid #e2e8f0;
-        }
-        .btn-modal-cancel:hover {
-            background: #e2e8f0;
-        }
-        .alert {
-            padding: 14px 16px;
-            border-radius: 8px;
-            font-size: .88rem;
-            margin-bottom: 20px;
-        }
-        .alert-success {
-            background: #f0fdf4;
-            color: #166534;
-            border-left: 4px solid #15803d;
-        }
-        .alert-error {
-            background: #fef2f2;
-            color: #991b1b;
-            border-left: 4px solid #dc2626;
-        }
-        .breadcrumb {
-            font-size: .82rem;
-            color: #64748b;
-            margin-bottom: 16px;
-        }
-        .breadcrumb a {
-            color: #15803d;
-            text-decoration: none;
-        }
-        .breadcrumb a:hover {
-            text-decoration: underline;
-        }
+        .btn-modal-primary { background: #15803d; color: #fff; }
+        .btn-modal-primary:hover { background: #14532d; }
+        .btn-modal-cancel { background: #f1f5f9; color: #64748b; border: 1.5px solid #e2e8f0; }
+        .btn-modal-cancel:hover { background: #e2e8f0; }
     </style>
 </head>
 <body>
@@ -452,10 +330,10 @@
             <span class="filter-label">Filtrar por Estado:</span>
             <form method="GET" th:action="@{/soporte/admin/mensajes}" style="display: flex; gap: 12px; align-items: center;">
                 <select name="filtro" class="filter-select">
-                    <option value="TODOS" th:selected="${filtroActual == 'TODOS'}">Todos</option>
-                    <option value="PENDIENTE" th:selected="${filtroActual == 'PENDIENTE'}">Pendientes</option>
+                    <option value="TODOS"      th:selected="${filtroActual == 'TODOS'}">Todos</option>
+                    <option value="PENDIENTE"  th:selected="${filtroActual == 'PENDIENTE'}">Pendientes</option>
                     <option value="RESPONDIDO" th:selected="${filtroActual == 'RESPONDIDO'}">Respondidos</option>
-                    <option value="CERRADO" th:selected="${filtroActual == 'CERRADO'}">Cerrados</option>
+                    <option value="CERRADO"    th:selected="${filtroActual == 'CERRADO'}">Cerrados</option>
                 </select>
                 <button type="submit" class="filter-btn">Aplicar Filtro</button>
             </form>
@@ -472,33 +350,34 @@
 
             <div th:if="${not #lists.isEmpty(mensajes)}">
                 <div th:each="mensaje : ${mensajes}" class="message-item">
-                    <div class="message-header">
+                    <div class="message-header-row">
                         <div class="message-title" th:text="${mensaje.asunto}"></div>
-                        <span class="state-badge" th:classappend="${'state-' + mensaje.estado.name().toLowerCase()}" th:text="${mensaje.estado.label}"></span>
+                        <span class="state-badge"
+                              th:classappend="${'state-' + mensaje.estado.name().toLowerCase()}"
+                              th:text="${mensaje.estado.name()}"></span>
                     </div>
 
                     <div class="message-meta">
-                        <strong th:text="${mensaje.usuario.email}"></strong> • 
-                        <span th:text="${#dates.format(mensaje.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span>
-                        <span th:if="${mensaje.respuestaAdmin}"> • Respondido por: <strong th:text="${mensaje.adminRespondio.email}"></strong></span>
+                        <strong th:text="${mensaje.usuario.email}"></strong> •
+                        <span th:text="${#temporals.format(mensaje.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span>
                     </div>
 
-                    <div class="message-preview" th:text="${mensaje.mensaje}"></div>
-
                     <div class="message-actions">
-                        <button type="button" class="btn-small btn-view" th:onclick="'showDetailModal(' + ${mensaje.id} + ', &quot;' + ${#strings.escapeJavaScript(mensaje.mensaje)} + '&quot;, &quot;' + ${#strings.escapeJavaScript(mensaje.usuario.email)} + '&quot;, &quot;' + ${#dates.format(mensaje.fechaCreacion, 'dd/MM/yyyy HH:mm')} + '&quot;)'">
-                            Ver Detalle
-                        </button>
+                        <a th:href="@{/soporte/admin/mensaje/{id}(id=${mensaje.id})}" class="btn-small btn-view">
+                            Ver Detalle y Responder
+                        </a>
 
-                        <button th:if="${mensaje.estado.name() == 'PENDIENTE'}" type="button" class="btn-small btn-respond" th:onclick="'showResponseModal(' + ${mensaje.id} + ', &quot;' + ${#strings.escapeJavaScript(mensaje.asunto)} + '&quot;)'">
-                            Responder
-                        </button>
+                        <form th:if="${mensaje.estado.name() == 'RESPONDIDO'}"
+                              method="POST"
+                              th:action="@{/soporte/admin/cerrar/{id}(id=${mensaje.id})}"
+                              style="display: inline;">
+                            <button type="submit" class="btn-small btn-close-ticket">Cerrar</button>
+                        </form>
 
-                        <button th:if="${mensaje.estado.name() == 'RESPONDIDO'}" type="button" class="btn-small btn-close" th:onclick="'confirmClose(' + ${mensaje.id} + ')'">
-                            Cerrar
-                        </button>
-
-                        <form method="POST" th:action="@{/soporte/admin/eliminar/{id}(id=${mensaje.id})}" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este mensaje?');">
+                        <form method="POST"
+                              th:action="@{/soporte/admin/eliminar/{id}(id=${mensaje.id})}"
+                              style="display: inline;"
+                              onsubmit="return confirm('¿Estás seguro de que deseas eliminar este mensaje?');">
                             <button type="submit" class="btn-small btn-delete">Eliminar</button>
                         </form>
                     </div>

@@ -232,37 +232,50 @@
             <div class="message-meta">
                 <div class="meta-item">
                     <span class="meta-label">Estado</span>
-                    <span class="state-badge" th:classappend="${'state-' + mensaje.estado.name().toLowerCase()}" th:text="${mensaje.estado.label}"></span>
+                    <span class="state-badge" th:classappend="${'state-' + mensaje.estado.name().toLowerCase()}" th:text="${mensaje.estado.name()}"></span>
                 </div>
                 <div class="meta-item">
                     <span class="meta-label">Fecha de Envío</span>
-                    <span th:text="${#dates.format(mensaje.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span>
+                    <span th:text="${#temporals.format(mensaje.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span>
                 </div>
-                <div class="meta-item" th:if="${mensaje.respuestaAdmin}">
-                    <span class="meta-label">Fecha de Respuesta</span>
-                    <span th:text="${#dates.format(mensaje.fechaRespuesta, 'dd/MM/yyyy HH:mm')}"></span>
-                </div>
+                
             </div>
         </div>
 
         <div class="message-content">
-            <div class="content-section">
-                <h3>Tu Mensaje</h3>
-                <div class="content-text" th:text="${mensaje.mensaje}"></div>
-            </div>
+    <!-- Hilo de mensajes -->
+    <div th:each="r : ${mensaje.respuestas}" style="margin-bottom: 16px;">
+        
+        <!-- Mensaje del usuario -->
+        <div th:if="${r.tipoRemitente.name() == 'USUARIO'}" class="content-section">
+            <h3>Tu Mensaje</h3>
+            <div class="content-text" th:text="${r.contenido}"></div>
+            <small style="color:#94a3b8;" 
+                   th:text="${#temporals.format(r.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></small>
+        </div>
 
-            <div th:if="${mensaje.respuestaAdmin}" class="response-section">
-                <h3>Respuesta del Administrador</h3>
-                <div class="response-admin">
-                    Respondido por: <strong th:text="${mensaje.adminRespondio.email}"></strong>
-                </div>
-                <div class="content-text" th:text="${mensaje.respuestaAdmin}"></div>
+        <!-- Respuesta del admin -->
+        <div th:if="${r.tipoRemitente.name() == 'ADMINISTRADOR'}" class="response-section">
+            <h3>Respuesta del Administrador</h3>
+            <div class="response-admin">
+                Respondido por: <strong th:text="${r.usuario.email}"></strong>
             </div>
+            <div class="content-text" th:text="${r.contenido}"></div>
+            <small style="color:#94a3b8;" 
+                   th:text="${#temporals.format(r.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></small>
+        </div>
+    </div>
 
-            <div th:unless="${mensaje.respuestaAdmin}" class="no-response">
-                Tu mensaje está siendo revisado. El administrador se pondrá en contacto pronto.
-            </div>
+    <!-- Sin respuestas aún -->
+    <div th:if="${#lists.isEmpty(mensaje.respuestas)}" class="no-response">
+        Tu mensaje está siendo revisado. El administrador se pondrá en contacto pronto.
+    </div>
 
+    <div class="action-buttons">
+        <a href="/soporte/mis-mensajes" class="btn btn-primary">Volver a mis Mensajes</a>
+        <a href="/soporte/enviar" class="btn btn-secondary">Enviar Otro Mensaje</a>
+    </div>
+</div>
             <div class="action-buttons">
                 <a href="/soporte/mis-mensajes" class="btn btn-primary">Volver a mis Mensajes</a>
                 <a href="/soporte/enviar" class="btn btn-secondary">Enviar Otro Mensaje</a>

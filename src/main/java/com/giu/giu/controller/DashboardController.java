@@ -17,6 +17,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import com.giu.giu.model.CategoriaIncidencia;
+import com.giu.giu.model.PrioridadIncidencia;
+import com.giu.giu.service.ConfiguracionCategoriaService;
+import com.giu.giu.service.ConfiguracionPrioridadService;
 
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -452,6 +456,8 @@ public class DashboardController {
             model.addAttribute("pendientes", usuarioService.obtenerPendientes());
             model.addAttribute("solicitudesRol", usuarioService.obtenerSolicitudesRol());
             model.addAttribute("todosUsuarios", usuarioService.obtenerTodos());
+            model.addAttribute("prioridadesConfig", configuracionPrioridadService.obtenerTodas());
+            model.addAttribute("categoriasConfig", configuracionCategoriaService.obtenerTodas());
             return "dashboard-admin";
         }
 
