@@ -37,6 +37,9 @@ public class IncidenciaController {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private ConfiguracionCategoriaService configuracionCategoriaService;
+
     @GetMapping("/registrar")
     public String mostrarFormulario(Model model) {
         Usuario usuario = getUsuarioAutenticado();

@@ -44,11 +44,19 @@ public class DashboardController {
     private final IncidenciaService incidenciaService;
     private final UsuarioService usuarioService;
     private final NotificationService notificationService;
+    private final ConfiguracionPrioridadService configuracionPrioridadService;
+    private final ConfiguracionCategoriaService configuracionCategoriaService;
 
-    public DashboardController(IncidenciaService incidenciaService, UsuarioService usuarioService, NotificationService notificationService) {
+    public DashboardController(IncidenciaService incidenciaService,
+                               UsuarioService usuarioService,
+                               NotificationService notificationService,
+                               ConfiguracionPrioridadService configuracionPrioridadService,
+                               ConfiguracionCategoriaService configuracionCategoriaService) {
         this.incidenciaService = incidenciaService;
         this.usuarioService = usuarioService;
         this.notificationService = notificationService;
+        this.configuracionPrioridadService = configuracionPrioridadService;
+        this.configuracionCategoriaService = configuracionCategoriaService;
     }
 
     @GetMapping("/home")
