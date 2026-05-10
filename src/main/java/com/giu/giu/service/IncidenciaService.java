@@ -261,6 +261,7 @@ public class IncidenciaService {
         SolicitudExtension solicitud = solOpt.get();
         solicitud.setEstado(aprobada ? EstadoSolicitud.APROBADA : EstadoSolicitud.RECHAZADA);
         solicitud.setMotivoDecision(motivoDecision != null && !motivoDecision.isBlank() ? motivoDecision.trim() : null);
+        solicitud.setFechaDecision(LocalDateTime.now());
         solicitudExtensionRepository.save(solicitud);
 
         String decision = aprobada ? "APROBADA" : "RECHAZADA";
@@ -278,6 +279,9 @@ public class IncidenciaService {
         comentario.setTipo(TipoComentario.DECISION_EXTENSION);
         comentarioIncidenciaRepository.save(comentario);
 
+        if (aprobada) {
+            solicitud.getIncidencia().setFechaLimiteResolucion(solicitud.getFechaSolicitada());
+        }
         solicitud.getIncidencia().setTieneSolicitudExtensionPendiente(false);
         incidenciaRepository.save(solicitud.getIncidencia());
 

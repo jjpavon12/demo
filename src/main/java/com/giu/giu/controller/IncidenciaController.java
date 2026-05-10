@@ -5,6 +5,7 @@ import com.giu.giu.model.Incidencia;
 import com.giu.giu.model.Usuario;
 import com.giu.giu.security.CustomUserDetails;
 import com.giu.giu.service.IncidenciaService;
+import com.giu.giu.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,6 +32,9 @@ public class IncidenciaController {
 
     @Autowired
     private IncidenciaService incidenciaService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @GetMapping("/registrar")
     public String mostrarFormulario(Model model) {
@@ -96,6 +100,16 @@ public class IncidenciaController {
         model.addAttribute("incidencias", incidencias);
         model.addAttribute("usuario", usuario);
         return "mis-incidencias";
+    }
+
+    @GetMapping("/notificaciones/estado")
+    public String abrirNotificacionesEstado() {
+        Usuario usuario = getUsuarioAutenticado();
+        if (usuario == null) return "redirect:/login";
+        var resumen = notificationService.buildFor(usuario);
+        String ids = notificationService.idsParam(resumen.getCitizenStateChangeIds());
+        notificationService.markCitizenStateSeen(usuario);
+        return "redirect:/ciudadano/incidencias/mis-incidencias?highlight=" + ids;
     }
 
     private boolean fueraDeCAM(Double lat, Double lon) {

@@ -10,6 +10,7 @@ import com.giu.giu.model.SolicitudExtension;
 import com.giu.giu.model.Usuario;
 import com.giu.giu.security.CustomUserDetails;
 import com.giu.giu.service.IncidenciaService;
+import com.giu.giu.service.NotificationService;
 import com.giu.giu.service.UsuarioService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,10 +39,12 @@ public class DashboardController {
 
     private final IncidenciaService incidenciaService;
     private final UsuarioService usuarioService;
+    private final NotificationService notificationService;
 
-    public DashboardController(IncidenciaService incidenciaService, UsuarioService usuarioService) {
+    public DashboardController(IncidenciaService incidenciaService, UsuarioService usuarioService, NotificationService notificationService) {
         this.incidenciaService = incidenciaService;
         this.usuarioService = usuarioService;
+        this.notificationService = notificationService;
     }
 
     @GetMapping("/home")
@@ -68,9 +71,13 @@ public class DashboardController {
 
         if (auth != null && auth.getPrincipal() instanceof CustomUserDetails) {
             CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-            Usuario usuario = userDetails.getUsuario();
+            Long usuarioId = userDetails.getUsuario().getId();
+            Optional<Usuario> usuarioOpt = usuarioService.obtenerPorId(usuarioId);
+            if (usuarioOpt.isEmpty()) return "redirect:/logout";
+            Usuario usuario = usuarioOpt.get();
             model.addAttribute("usuario", usuario);
             model.addAttribute("rol", "CIUDADANO");
+            model.addAttribute("notificaciones", notificationService.buildFor(usuario));
             return "dashboard-ciudadano";
         }
 
@@ -88,7 +95,10 @@ public class DashboardController {
 
         if (auth != null && auth.getPrincipal() instanceof CustomUserDetails) {
             CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-            Usuario usuario = userDetails.getUsuario();
+            Long usuarioId = userDetails.getUsuario().getId();
+            Optional<Usuario> usuarioOpt = usuarioService.obtenerPorId(usuarioId);
+            if (usuarioOpt.isEmpty()) return "redirect:/logout";
+            Usuario usuario = usuarioOpt.get();
 
             List<Incidencia> todas = incidenciaService.obtenerTodas();
 
@@ -148,6 +158,7 @@ public class DashboardController {
             model.addAttribute("comentariosPorIncidencia", comentariosPorIncidencia);
             model.addAttribute("solicitudPendientePorIncidencia", solicitudPendientePorIncidencia);
             model.addAttribute("totalSolicitudesPendientes", solicitudesPendientes.size());
+            model.addAttribute("notificaciones", notificationService.buildFor(usuario));
 
             return "dashboard-operador";
         }
@@ -257,6 +268,7 @@ public class DashboardController {
             model.addAttribute("estados", EstadoIncidencia.values());
             model.addAttribute("comentariosPorIncidencia", comentariosPorIncidencia);
             model.addAttribute("incidenciasConSolicitudPendiente", solicitudPendientePorIncidencia.keySet());
+            model.addAttribute("notificaciones", notificationService.buildFor(usuario));
 
             return "dashboard-tecnico";
         }
@@ -330,6 +342,82 @@ public class DashboardController {
             return "redirect:/dashboard/tecnico?errorExtension=1";
         }
         return "redirect:/dashboard/tecnico?extensionEnviada=1";
+    }
+
+    @GetMapping("/ciudadano/notificaciones/estados")
+    public String abrirNotificacionesCiudadanoEstados() {
+        Usuario usuario = getUsuarioAutenticado();
+        if (usuario == null) return "redirect:/login";
+        var resumen = notificationService.buildFor(usuario);
+        String ids = notificationService.idsParam(resumen.getCitizenStateChangeIds());
+        notificationService.markCitizenStateSeen(usuario);
+        return "redirect:/ciudadano/incidencias/mis-incidencias?highlight=" + ids;
+    }
+
+    @GetMapping("/operador/notificaciones/nuevas")
+    public String abrirNotificacionesOperadorNuevas() {
+        Usuario usuario = getUsuarioAutenticado();
+        if (usuario == null) return "redirect:/login";
+        var resumen = notificationService.buildFor(usuario);
+        String ids = notificationService.idsParam(resumen.getOperatorNewIncidentIds());
+        notificationService.markOperatorNewSeen(usuario);
+        return "redirect:/dashboard/operador?view=pendientes&highlight=" + ids;
+    }
+
+    @GetMapping("/operador/notificaciones/cambios")
+    public String abrirNotificacionesOperadorCambios() {
+        Usuario usuario = getUsuarioAutenticado();
+        if (usuario == null) return "redirect:/login";
+        var resumen = notificationService.buildFor(usuario);
+        String ids = notificationService.idsParam(resumen.getOperatorStateChangeIds());
+        notificationService.markOperatorChangesSeen(usuario);
+        return "redirect:/dashboard/operador?view=verificadas&highlight=" + ids;
+    }
+
+    @GetMapping("/tecnico/notificaciones/asignadas")
+    public String abrirNotificacionesTecnicoAsignadas() {
+        Usuario usuario = getUsuarioAutenticado();
+        if (usuario == null) return "redirect:/login";
+        var resumen = notificationService.buildFor(usuario);
+        String ids = notificationService.idsParam(resumen.getTechnicianNewAssignmentIds());
+        notificationService.markTechnicianAssignmentsSeen(usuario);
+        return "redirect:/dashboard/tecnico?status=ASIGNADA&highlight=" + ids;
+    }
+
+    @GetMapping("/tecnico/notificaciones/extensiones")
+    public String abrirNotificacionesTecnicoExtensiones() {
+        Usuario usuario = getUsuarioAutenticado();
+        if (usuario == null) return "redirect:/login";
+        var resumen = notificationService.buildFor(usuario);
+        String ids = notificationService.idsParam(resumen.getTechnicianApprovedExtensionIds());
+        notificationService.markTechnicianExtensionsSeen(usuario);
+        return "redirect:/dashboard/tecnico?status=" + estadoPrimeraIncidencia(resumen.getTechnicianApprovedExtensionIds(), "EN_CURSO") + "&highlight=" + ids;
+    }
+
+    @GetMapping("/tecnico/notificaciones/limite")
+    public String abrirNotificacionesTecnicoLimite() {
+        Usuario usuario = getUsuarioAutenticado();
+        if (usuario == null) return "redirect:/login";
+        var resumen = notificationService.buildFor(usuario);
+        String ids = notificationService.idsParam(resumen.getTechnicianDueSoonIds());
+        notificationService.markTechnicianDueSoonSeen(usuario);
+        return "redirect:/dashboard/tecnico?status=" + estadoPrimeraIncidencia(resumen.getTechnicianDueSoonIds(), "EN_CURSO") + "&highlight=" + ids;
+    }
+
+    private Usuario getUsuarioAutenticado() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof CustomUserDetails userDetails) {
+            Long id = userDetails.getUsuario().getId();
+            return usuarioService.obtenerPorId(id).orElse(userDetails.getUsuario());
+        }
+        return null;
+    }
+
+    private String estadoPrimeraIncidencia(List<Long> ids, String fallback) {
+        if (ids == null || ids.isEmpty()) return fallback;
+        return incidenciaService.obtenerPorId(ids.get(0))
+            .map(i -> i.getEstado().name())
+            .orElse(fallback);
     }
 
     @PostMapping("/operador/comentar")

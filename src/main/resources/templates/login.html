@@ -1,19 +1,25 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar sesión — GIU</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Sora', system-ui, sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
             background: linear-gradient(rgba(15,23,42,.45), rgba(15,23,42,.45)), url('/images/giu.jpg') center/cover fixed;
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
+        }
+        .main-wrap {
+            flex: 1;
+            display: flex;
             align-items: center;
             justify-content: center;
+            padding: 40px 16px;
         }
         .card {
             background: #fff;
@@ -117,6 +123,7 @@
     </style>
 </head>
 <body>
+<main class="main-wrap">
     <div class="card">
         <div class="card-header">
             <div class="logo-mark"><span style="position:relative;z-index:1;color:#fff;font-size:.92rem;font-weight:800;letter-spacing:.08em;">GIU</span></div>
@@ -146,5 +153,7 @@
             ¿No tienes cuenta? <a href="/registro">Regístrate aquí</a>
         </div>
     </div>
+</main>
+<footer style="width:100%;background:rgba(15,23,42,.95);color:#94a3b8;text-align:center;padding:24px 16px;font-size:.82rem;margin-top:32px;">© 2025 GIU — Gestión de Incidencias Urbanas</footer>
 </body>
 </html>

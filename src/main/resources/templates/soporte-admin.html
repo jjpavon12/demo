@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Sora', system-ui, sans-serif; background: linear-gradient(rgba(241,245,249,.85), rgba(241,245,249,.85)), url('/images/giu.jpg') center/cover fixed; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(160deg, rgba(5,46,22,.58) 0%, rgba(9,35,70,.52) 100%), url('/images/giu.jpg') center/cover fixed; }
         nav.navbar {
             background: #15803d;
             height: 60px;
@@ -23,8 +23,8 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 36px; height: 36px;
-            border-radius: 10px;
+            width: 44px; height: 44px;
+            border-radius: 11px;
             background: linear-gradient(135deg, #052e16, #14532d);
             box-shadow: 0 4px 14px rgba(5,46,22,.55);
             border: 1px solid rgba(255,255,255,.18);
@@ -46,7 +46,7 @@
             border-radius: 5px;
             background: rgba(255,255,255,.22);
         }
-        .nav-title { color: #fff; font-weight: 600; font-size: .95rem; }
+        .nav-title { color: #fff; font-weight: 700; font-size: 1.15rem; }
         .nav-right { display: flex; align-items: center; gap: 12px; }
         .nav-email { color: rgba(255,255,255,.8); font-size: .8rem; }
         .nav-logout {
@@ -91,7 +91,7 @@
         .stat-card {
             background: #fff;
             padding: 18px;
-            border-radius: 10px;
+            border-radius: 11px;
             box-shadow: 0 1px 4px rgba(0,0,0,.07);
             border-left: 4px solid #15803d;
         }
@@ -108,7 +108,7 @@
         }
         .filter-section {
             background: #fff;
-            border-radius: 10px;
+            border-radius: 11px;
             padding: 14px 16px;
             margin-bottom: 20px;
             box-shadow: 0 1px 4px rgba(0,0,0,.07);
@@ -185,7 +185,7 @@
         .message-item {
             padding: 18px;
             border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
+            border-radius: 11px;
             margin-bottom: 12px;
             transition: all .14s;
         }
@@ -415,12 +415,11 @@
 <body>
     <nav class="navbar">
         <div class="nav-brand">
-            <div class="nav-logo"></div>
+            <div class="nav-logo"><span style="position:relative;z-index:1;color:#fff;font-size:.76rem;font-weight:800;letter-spacing:.08em;">GIU</span></div>
             <span class="nav-title">GIU — Gestor de Incidencias Urbanas</span>
         </div>
         <div class="nav-right">
             <span class="nav-email" th:text="${usuario.email}"></span>
-            <span class="admin-badge">Administrador</span>
             <a href="/logout" class="nav-logout">Cerrar sesión</a>
         </div>
     </nav>
@@ -596,5 +595,6 @@
             }
         }
     </script>
+<footer style="width:100%;background:rgba(15,23,42,.95);color:#94a3b8;text-align:center;padding:24px 16px;font-size:.82rem;margin-top:32px;">© 2025 GIU — Gestión de Incidencias Urbanas</footer>
 </body>
 </html>

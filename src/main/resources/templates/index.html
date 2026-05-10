@@ -10,9 +10,9 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Sora', system-ui, sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
             color: #1a1a1a;
-            background: linear-gradient(rgba(248,250,252,.92), rgba(248,250,252,.92)),
+            background: linear-gradient(rgba(248,250,252,.60), rgba(248,250,252,.60)),
                         url('/images/giu.jpg') center/cover fixed;
             min-height: 100vh;
         }
@@ -59,13 +59,15 @@
             border-radius: 5px;
             background: rgba(255,255,255,.18);
         }
+        .logo-mark::before { animation: logoPulse 4.8s ease-in-out infinite; }
         .logo-mark span {
             position: relative;
             z-index: 1;
             color: #fff;
             font-size: .78rem;
             font-weight: 800;
-            letter-spacing: .06em;
+            letter-spacing: .08em;
+            font-family: 'Sora', sans-serif;
         }
         .nav-brand-name {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -88,15 +90,15 @@
         .nav-link:hover { background: #f3f4f6; }
         .nav-btn {
             padding: 9px 20px;
-            background: #0f172a;
+            background: #15803d;
             color: #fff;
             text-decoration: none;
             font-size: .88rem;
             font-weight: 600;
             border-radius: 6px;
-            transition: background .12s;
+            transition: background .12s, box-shadow .12s;
         }
-        .nav-btn:hover { background: #1e293b; }
+        .nav-btn:hover { background: #14532d; box-shadow: 0 4px 14px rgba(21,128,61,.3); }
 
         /* ── HERO ── */
         .hero {
@@ -270,11 +272,22 @@
             overflow: hidden;
             background: #cbd5e1;
         }
+        .hero-right::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,.22) 42%, transparent 58%);
+            transform: translateX(-120%);
+            animation: calmShine 7s ease-in-out infinite;
+            pointer-events: none;
+        }
         .hero-right img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
+            animation: slowDrift 18s ease-in-out infinite alternate;
+            transform-origin: center;
         }
         .hero-badge {
             position: absolute;
@@ -289,6 +302,24 @@
             border-radius: 50px;
             box-shadow: 0 4px 24px rgba(0,0,0,.2);
             white-space: nowrap;
+            animation: badgeFloat 5.5s ease-in-out infinite;
+        }
+        @keyframes calmShine {
+            0%, 32% { transform: translateX(-120%); opacity: 0; }
+            45% { opacity: .75; }
+            64%, 100% { transform: translateX(120%); opacity: 0; }
+        }
+        @keyframes slowDrift {
+            from { transform: scale(1.02) translate3d(-6px, 0, 0); }
+            to { transform: scale(1.07) translate3d(8px, -4px, 0); }
+        }
+        @keyframes badgeFloat {
+            0%, 100% { transform: translate(-50%, 0); box-shadow: 0 4px 24px rgba(0,0,0,.2); }
+            50% { transform: translate(-50%, -8px); box-shadow: 0 12px 30px rgba(0,0,0,.18); }
+        }
+        @keyframes logoPulse {
+            0%, 100% { opacity: .75; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.04); }
         }
 
         /* ── MAP SECTION ── */
@@ -368,9 +399,9 @@
         /* ── FOOTER ── */
         .footer {
             background: rgba(15,23,42,.95);
-            color: #64748b;
+            color: #94a3b8;
             text-align: center;
-            padding: 28px;
+            padding: 24px 16px;
             font-size: .82rem;
         }
 
@@ -391,6 +422,14 @@
             .features-grid { grid-template-columns: 1fr; }
             .navbar { padding: 0 20px; }
             .nav-brand-name { font-size: .8rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .logo-mark::before,
+            .hero-right::after,
+            .hero-right img,
+            .hero-badge {
+                animation: none;
+            }
         }
     </style>
 </head>
@@ -504,6 +543,13 @@
         </div>
     </div>
 </section>
+
+<div style="text-align:center;padding:48px 80px 16px;">
+    <video id="mockup-index" muted playsinline loop
+           style="width:100%;max-width:920px;border-radius:14px;box-shadow:0 4px 32px rgba(0,0,0,.13);display:inline-block;">
+        <source src="/images/mockup.mp4" type="video/mp4">
+    </video>
+</div>
 
 <footer class="footer">© 2025 GIU — Gestión de Incidencias Urbanas</footer>
 
@@ -648,6 +694,22 @@ document.querySelectorAll('.cat-pill').forEach(function(pill) {
         }
     });
 });
+
+// ── AUTOPLAY VIDEO ON VIEWPORT ENTRY ──
+(function() {
+    var vid = document.getElementById('mockup-index');
+    if (!vid) return;
+    var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                vid.play();
+            } else {
+                vid.pause();
+            }
+        });
+    }, { threshold: 0.3 });
+    observer.observe(vid);
+})();
 
 // ── REGISTRAR BUTTON ──
 document.getElementById('btnRegistrar').addEventListener('click', function() {

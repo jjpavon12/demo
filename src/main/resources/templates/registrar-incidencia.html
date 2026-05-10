@@ -1,23 +1,23 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrar Incidencia — GIU</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Sora', system-ui, sans-serif; background: linear-gradient(rgba(241,245,249,.85), rgba(241,245,249,.85)), url('/images/giu.jpg') center/cover fixed; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(160deg, rgba(5,46,22,.58) 0%, rgba(9,35,70,.52) 100%), url('/images/giu.jpg') center/cover fixed; }
         nav.navbar {
-            background: #15803d;
+            background: rgba(4,36,18,.96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
             height: 60px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 28px;
-            box-shadow: 0 1px 4px rgba(0,0,0,.15);
+            box-shadow: 0 2px 18px rgba(0,0,0,.28);
         }
         .nav-brand { display: flex; align-items: center; gap: 10px; }
         .nav-logo {
@@ -25,8 +25,8 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 36px; height: 36px;
-            border-radius: 10px;
+            width: 44px; height: 44px;
+            border-radius: 11px;
             background: linear-gradient(135deg, #052e16, #14532d);
             box-shadow: 0 4px 14px rgba(5,46,22,.55);
             border: 1px solid rgba(255,255,255,.18);
@@ -48,7 +48,7 @@
             border-radius: 5px;
             background: rgba(255,255,255,.22);
         }
-        .nav-title { color: #fff; font-weight: 600; font-size: .95rem; }
+        .nav-title { color: #fff; font-weight: 700; font-size: 1.15rem; }
         .nav-right { display: flex; align-items: center; gap: 10px; }
         .nav-link {
             color: #fff;
@@ -129,7 +129,7 @@
         .btn-submit {
             width: 100%;
             padding: 12px;
-            background: #15803d;
+            background: rgba(4,36,18,.96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
             color: #fff;
             border: none;
             border-radius: 6px;
@@ -250,7 +250,7 @@
             gap: 5px;
         }
         .btn-mi-ubicacion:hover {
-            background: #15803d;
+            background: rgba(4,36,18,.96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
             color: #fff;
         }
         .btn-mi-ubicacion:disabled {
@@ -259,7 +259,7 @@
         }
         .foto-upload-zone {
             border: 2px dashed #e2e8f0;
-            border-radius: 10px;
+            border-radius: 11px;
             padding: 22px 16px;
             text-align: center;
             background: #f8fafc;
@@ -281,12 +281,12 @@
             cursor: pointer;
             transition: background .14s, color .14s;
         }
-        .btn-adjuntar:hover { background: #15803d; color: #fff; }
+        .btn-adjuntar:hover { background: rgba(4,36,18,.96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); color: #fff; }
         .foto-hint { font-size: .76rem; color: #94a3b8; margin-top: 8px; }
         .foto-preview-zone {
             display: none;
             border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
+            border-radius: 11px;
             padding: 14px;
             background: #f8fafc;
         }
@@ -309,7 +309,7 @@
             transition: all .14s;
         }
         .btn-cambiar { background: #fff; color: #15803d; border: 1.5px solid #15803d; }
-        .btn-cambiar:hover { background: #15803d; color: #fff; }
+        .btn-cambiar:hover { background: rgba(4,36,18,.96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); color: #fff; }
         .btn-eliminar { background: #fff; color: #dc2626; border: 1.5px solid #dc2626; }
         .btn-eliminar:hover { background: #dc2626; color: #fff; }
     </style>
@@ -317,7 +317,7 @@
 <body>
     <nav class="navbar">
         <div class="nav-brand">
-            <div class="nav-logo"><span style="position:relative;z-index:1;color:#fff;font-size:.62rem;font-weight:800;letter-spacing:.06em;">GIU</span></div>
+            <div class="nav-logo"><span style="position:relative;z-index:1;color:#fff;font-size:.76rem;font-weight:800;letter-spacing:.08em;">GIU</span></div>
             <span class="nav-title">Portal Ciudadano</span>
         </div>
         <div class="nav-right">
@@ -767,5 +767,6 @@
         }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
     }
     </script>
+<footer style="width:100%;background:rgba(15,23,42,.95);color:#94a3b8;text-align:center;padding:24px 16px;font-size:.82rem;margin-top:32px;">© 2025 GIU — Gestión de Incidencias Urbanas</footer>
 </body>
 </html>

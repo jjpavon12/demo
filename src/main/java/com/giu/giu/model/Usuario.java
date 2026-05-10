@@ -1,6 +1,7 @@
 package com.giu.giu.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "usuarios")
@@ -26,6 +27,27 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     private Rol rolSolicitado;
+
+    @Column
+    private LocalDateTime notificacionesVistasHasta;
+
+    @Column
+    private LocalDateTime notifCiudadanoEstadosVistaHasta;
+
+    @Column
+    private LocalDateTime notifOperadorNuevasVistaHasta;
+
+    @Column
+    private LocalDateTime notifOperadorCambiosVistaHasta;
+
+    @Column
+    private LocalDateTime notifTecnicoAsignadasVistaHasta;
+
+    @Column
+    private LocalDateTime notifTecnicoExtensionesVistaHasta;
+
+    @Column
+    private LocalDateTime notifTecnicoLimiteVistaHasta;
 
     public Usuario() {
     }
@@ -85,4 +107,25 @@ public class Usuario {
     public void setRolSolicitado(Rol rolSolicitado) {
         this.rolSolicitado = rolSolicitado;
     }
+
+    public LocalDateTime getNotificacionesVistasHasta() {
+        return notificacionesVistasHasta;
+    }
+
+    public void setNotificacionesVistasHasta(LocalDateTime notificacionesVistasHasta) {
+        this.notificacionesVistasHasta = notificacionesVistasHasta;
+    }
+
+    public LocalDateTime getNotifCiudadanoEstadosVistaHasta() { return notifCiudadanoEstadosVistaHasta; }
+    public void setNotifCiudadanoEstadosVistaHasta(LocalDateTime value) { this.notifCiudadanoEstadosVistaHasta = value; }
+    public LocalDateTime getNotifOperadorNuevasVistaHasta() { return notifOperadorNuevasVistaHasta; }
+    public void setNotifOperadorNuevasVistaHasta(LocalDateTime value) { this.notifOperadorNuevasVistaHasta = value; }
+    public LocalDateTime getNotifOperadorCambiosVistaHasta() { return notifOperadorCambiosVistaHasta; }
+    public void setNotifOperadorCambiosVistaHasta(LocalDateTime value) { this.notifOperadorCambiosVistaHasta = value; }
+    public LocalDateTime getNotifTecnicoAsignadasVistaHasta() { return notifTecnicoAsignadasVistaHasta; }
+    public void setNotifTecnicoAsignadasVistaHasta(LocalDateTime value) { this.notifTecnicoAsignadasVistaHasta = value; }
+    public LocalDateTime getNotifTecnicoExtensionesVistaHasta() { return notifTecnicoExtensionesVistaHasta; }
+    public void setNotifTecnicoExtensionesVistaHasta(LocalDateTime value) { this.notifTecnicoExtensionesVistaHasta = value; }
+    public LocalDateTime getNotifTecnicoLimiteVistaHasta() { return notifTecnicoLimiteVistaHasta; }
+    public void setNotifTecnicoLimiteVistaHasta(LocalDateTime value) { this.notifTecnicoLimiteVistaHasta = value; }
 }

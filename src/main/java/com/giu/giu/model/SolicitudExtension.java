@@ -39,6 +39,9 @@ public class SolicitudExtension {
     @Column(length = 1000)
     private String motivoDecision;
 
+    @Column
+    private LocalDateTime fechaDecision;
+
     @PrePersist
     protected void onCreate() {
         this.fechaSolicitud = LocalDateTime.now();
@@ -72,4 +75,7 @@ public class SolicitudExtension {
 
     public String getMotivoDecision() { return motivoDecision; }
     public void setMotivoDecision(String motivoDecision) { this.motivoDecision = motivoDecision; }
+
+    public LocalDateTime getFechaDecision() { return fechaDecision; }
+    public void setFechaDecision(LocalDateTime fechaDecision) { this.fechaDecision = fechaDecision; }
 }
