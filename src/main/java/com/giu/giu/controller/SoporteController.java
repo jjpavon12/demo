@@ -104,7 +104,7 @@ public class SoporteController {
         }
 
         model.addAttribute("usuario", usuario);
-        model.addAttribute("ticket", ticketOpt.get());
+        model.addAttribute("mensaje", ticketOpt.get());
         return "detalle-soporte";
     }
 

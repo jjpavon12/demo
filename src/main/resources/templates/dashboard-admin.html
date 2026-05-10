@@ -168,6 +168,30 @@
             color: #fff;
         }
         .btn-denegar:hover { background: #b91c1c; box-shadow: 0 2px 8px rgba(220,38,38,.3); }
+        .priority-input {
+            width: 90px;
+            padding: 6px 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: .85rem;
+        }
+
+        .btn-guardar {
+            padding: 5px 14px;
+            border: none;
+            border-radius: 6px;
+            background: #15803d;
+            color: #fff;
+            font-size: .78rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        .btn-guardar:hover {
+            background: #14532d;
+        }
     </style>
 </head>
 <body>
@@ -326,6 +350,99 @@
                                 </form>
                             </div>
                             <span th:if="${u.id == usuario.id}" style="color:#64748b; font-size:.85rem;">No disponible</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ========== GESTIÓN DE CATEGORÍAS Y PRIORIDADES ========== -->
+        <div class="page-header">
+            <h2>Gestión de Categorías y Prioridades</h2>
+        </div>
+
+        <div class="section-card">
+            <div class="section-header">
+                <h3>⚡ Prioridades</h3>
+                <span class="badge-count" th:text="${#lists.size(prioridadesConfig)} + ' prioridad(es)'"></span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Prioridad</th>
+                        <th>Días de resolución</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr th:each="config : ${prioridadesConfig}">
+                        <td th:text="${config.prioridad.descripcion}"></td>
+
+                        <td>
+                            <form th:id="'form-prioridad-' + ${config.prioridad}"
+                                th:action="@{/dashboard/admin/configuracion/prioridades}"
+                                method="post">
+                                <input type="hidden" name="prioridad" th:value="${config.prioridad}">
+                                <input class="priority-input"
+                                    type="number"
+                                    name="diasResolucion"
+                                    min="1"
+                                    th:value="${config.diasResolucion}">
+                            </form>
+                        </td>
+
+                        <td>
+                            <button type="submit"
+                                    class="btn-guardar"
+                                    th:form="'form-prioridad-' + ${config.prioridad}">
+                                Guardar
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section-card">
+            <div class="section-header">
+                <h3>🏷️ Categorías</h3>
+                <span class="badge-count" th:text="${#lists.size(categoriasConfig)} + ' categoría(s)'"></span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Categoría</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr th:each="config : ${categoriasConfig}">
+                        <td th:text="${config.categoria.descripcion}"></td>
+
+                        <td>
+                            <span class="status-badge status-activo" th:if="${config.activa}">
+                                Activa
+                            </span>
+                            <span class="status-badge status-pendiente" th:if="${!config.activa}">
+                                Inactiva
+                            </span>
+                        </td>
+
+                        <td>
+                            <form method="post" th:action="@{/dashboard/admin/configuracion/categorias}">
+                                <input type="hidden" name="categoria" th:value="${config.categoria}">
+                                <input type="hidden" name="activa" th:value="${!config.activa}">
+
+                                <button type="submit"
+                                        th:class="${config.activa} ? 'btn-denegar' : 'btn-aprobar'"
+                                        th:text="${config.activa} ? 'Desactivar' : 'Activar'">
+                                </button>
+                            </form>
                         </td>
                     </tr>
                 </tbody>

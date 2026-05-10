@@ -485,10 +485,13 @@
                                             <span class="cat-placeholder" th:if="${#sets.isEmpty(inc.categorias)}">Seleccionar…</span>
                                         </div>
                                         <div class="cat-dropdown">
-                                            <label th:each="cat : ${categorias}">
-                                                <input type="checkbox" name="categorias" th:value="${cat.name()}"
-                                                       th:checked="${inc.categorias.contains(cat)}" onchange="syncChips(this)"/>
-                                                <span th:text="${cat.descripcion}"></span>
+                                            <label th:each="config : ${categoriasConfig}">
+                                                <input type="checkbox"
+                                                    name="categorias"
+                                                    th:value="${config.categoria.name()}"
+                                                    th:checked="${inc.categorias.contains(config.categoria)}"
+                                                    onchange="syncChips(this)"/>
+                                                <span th:text="${config.categoria.descripcion}"></span>
                                             </label>
                                         </div>
                                     </div>
@@ -507,8 +510,11 @@
                                         th:data-current="${inc.prioridad}"
                                         th:onchange="'cambiarPrioridadAjax(this,' + ${inc.id} + ')'">
                                     <option value="" disabled th:selected="${!inc.prioridadAsignada}">Elegir prioridad</option>
-                                    <option th:each="p : ${prioridades}" th:value="${p}" th:text="${p.descripcion}"
-                                            th:selected="${inc.prioridadAsignada and inc.prioridad == p}"></option>
+                                    <option th:each="p : ${prioridades}"
+                                            th:value="${p.name()}"
+                                            th:text="${p.descripcion}"
+                                            th:selected="${inc.prioridadAsignada and inc.prioridad == p}">
+                                    </option>
                                 </select>
                             </td>
                             <td style="min-width:160px;">
@@ -828,7 +834,7 @@
     </div>
 </div>
 
-<script>
+<script th:inline="javascript">
 /* ===== Colores estado/prioridad ===== */
 var statusColors = {
     PENDIENTE_VALIDACION: { bg:'#fef3c7', color:'#92400e', border:'#f59e0b' },
@@ -882,24 +888,29 @@ function cambiarPrioridadAjax(sel, incidenciaId) {
     }).then(function() {
         sel.setAttribute('data-asignada', 'true');
         sel.setAttribute('data-current', prioridad);
+
         var row = sel.closest('tr');
         if (row) {
             row.setAttribute('data-prioridad-asignada', 'true');
             var warning = row.querySelector('.prioridad-warning');
             if (warning) warning.style.display = 'none';
         }
+
         var id = parseInt(incidenciaId, 10);
         var inc = allDataOp.find(function(i) { return i.id === id; });
-        if (inc) { inc.prioridad = prioridad; inc.prioridadAsignada = true; }
+        if (inc) {
+            inc.prioridad = prioridad;
+            inc.prioridadAsignada = true;
+        }
     });
 }
 
 /* ===== Cambio de vista (pestañas) ===== */
 var currentView = 'pendientes';
 var counts = {
-    pendientes: [[${#lists.size(incidencias)}]],
-    verificadas: [[${#lists.size(incidenciasVerificadas)}]],
-    rechazadas: [[${#lists.size(incidenciasRechazadas)}]]
+    pendientes: /*[[${#lists.size(incidencias)}]]*/ 0,
+    verificadas: /*[[${#lists.size(incidenciasVerificadas)}]]*/ 0,
+    rechazadas: /*[[${#lists.size(incidenciasRechazadas)}]]*/ 0
 };
 
 function switchView(view) {
