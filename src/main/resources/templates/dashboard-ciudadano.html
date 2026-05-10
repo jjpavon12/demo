@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Ciudadano — GIU</title>
+    <link rel="icon" th:href="@{/images/dibujo.png}" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -14,6 +15,8 @@
             background: linear-gradient(rgba(220,230,220,.38), rgba(210,225,215,.38)),
                         url('/images/giu.jpg') center/cover fixed;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         /* ── Navbar ── */
@@ -93,7 +96,7 @@
         .notif-empty { color: #94a3b8; font-style: italic; }
 
         /* ── Layout general ── */
-        .container { max-width: 1400px; margin: 32px auto; padding: 0 24px; }
+        .container { max-width: 1400px; margin: 32px auto; padding: 0 24px; flex: 1; width: 100%; }
 
         /* ── Cabecera de página ── */
         .page-header {
@@ -213,6 +216,22 @@
             transition: background .14s;
         }
         .card-link:hover { background: #14532d; }
+        @media (max-width: 700px) {
+            nav.navbar { padding: 0 12px; height: 52px; }
+            .nav-title { font-size: .88rem; }
+            .nav-email { display: none; }
+            .nav-logout { padding: 5px 9px; font-size: .74rem; }
+            .container { padding: 0 12px; margin: 14px auto; }
+            .page-header { flex-direction: column; align-items: flex-start; padding: 14px 16px; }
+            .page-header h2 { font-size: 1.5rem; }
+            .giu-mascota-float { height: 70px !important; }
+            .filter-bar { flex-direction: column; align-items: stretch; gap: 8px; }
+            .filter-group { width: 100%; }
+            .filter-input, .filter-select, .filter-date { width: 100% !important; min-width: 0; }
+            .filter-actions { width: 100%; }
+            .btn-apply, .btn-clear { flex: 1; }
+            #map-ciudadano { height: 260px; }
+        }
     </style>
 </head>
 <body>
@@ -234,11 +253,16 @@
                 <span class="notif-badge" th:if="${notificaciones.citizenStateChanges > 0}" th:text="${notificaciones.citizenStateChanges}"></span>
             </button>
             <div class="notif-panel">
-                <a th:if="${notificaciones.citizenStateChanges > 0}" href="/dashboard/ciudadano/notificaciones/estados">
-                    <strong th:text="${notificaciones.citizenStateChanges}"></strong>
-                    incidencia(s) cambiaron de estado.
-                </a>
-                <span class="notif-empty" th:if="${notificaciones.citizenStateChanges == 0}">No tienes notificaciones nuevas.</span>
+                <div th:if="${notificaciones.citizenStateChanges > 0}">
+                    <div style="padding:8px 13px 4px;font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;">Actualizaciones pendientes</div>
+                    <a th:each="incId : ${notificaciones.citizenStateChangeIds}"
+                       th:href="@{/dashboard/ciudadano/notificaciones/estados(id=${incId})}"
+                       style="display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:8px;color:#0f172a;text-decoration:none;font-size:.85rem;line-height:1.4;transition:background .12s;">
+                        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#15803d;flex-shrink:0;"></span>
+                        <span>Incidencia <strong th:text="'#' + ${incId}"></strong> — estado actualizado</span>
+                    </a>
+                </div>
+                <span class="notif-empty" th:if="${notificaciones.citizenStateChanges == 0}">Sin notificaciones nuevas.</span>
             </div>
         </div>
 

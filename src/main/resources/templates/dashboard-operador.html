@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Operador — GIU</title>
+    <link rel="icon" th:href="@{/images/dibujo.png}" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -16,7 +17,7 @@
             --shadow-lg: 0 8px 32px rgba(0,0,0,.13), 0 2px 8px rgba(0,0,0,.09);
         }
         body { font-family: 'Inter', system-ui, sans-serif; font-size: 15px; color: var(--text);
-            background: linear-gradient(160deg, rgba(5,46,22,.58) 0%, rgba(9,35,70,.52) 100%), url('/images/giu.jpg') center/cover fixed; min-height: 100vh; }
+            background: linear-gradient(160deg, rgba(5,46,22,.58) 0%, rgba(9,35,70,.52) 100%), url('/images/giu.jpg') center/cover fixed; min-height: 100vh; display: flex; flex-direction: column; }
 
         /* ---- Navbar ---- */
         nav.navbar { background: rgba(4,36,18,1); height: 62px;
@@ -78,7 +79,7 @@
         .tab-btn.active .tab-badge { background: var(--accent); color: #fff; }
 
         /* ---- Main layout ---- */
-        .main-wrap { max-width: 1420px; margin: 0 auto; padding: 26px 32px 48px; }
+        .main-wrap { max-width: 1420px; margin: 0 auto; padding: 26px 32px 48px; flex: 1; width: 100%; }
 
         /* ---- Panel card ---- */
         .panel-card { background: #fff; border-radius: 14px; box-shadow: var(--shadow);
@@ -93,6 +94,7 @@
         /* ---- Filter ---- */
         .filter-fields { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
         .filter-group { display: flex; flex-direction: column; gap: 4px; }
+        .filter-actions { display: flex; gap: 8px; align-items: center; flex-basis: 100%; margin-top: 4px; }
         .filter-label { font-size: .7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
         .filter-input { padding: 7px 11px; border: 1.5px solid var(--border); border-radius: 8px;
             font-size: .88rem; font-family: inherit; color: #334155; outline: none;
@@ -102,7 +104,6 @@
             transition: border-color .14s, box-shadow .14s; background: #fff; min-width: 155px; }
         .filter-date { width: 148px; }
         .filter-input:focus, .filter-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(21,128,61,.1); }
-        .filter-actions { display: flex; gap: 8px; align-items: flex-end; }
         .btn-apply { background: var(--accent); color: #fff; border: none; padding: 8px 20px;
             border-radius: 8px; font-size: .88rem; font-weight: 600; font-family: inherit; cursor: pointer;
             transition: background .14s; box-shadow: 0 2px 8px rgba(21,128,61,.28); }
@@ -173,7 +174,7 @@
         .btn-comentar-op:hover { background: #e0f2fe; }
 
         /* ---- Selects / campos ---- */
-        .estado-select { padding: 6px 10px; border: 1.5px solid var(--border); border-radius: 7px; font-size: .88rem; font-family: inherit; font-weight: 600; cursor: pointer; transition: border-color .14s; outline: none; min-width: 155px; }
+        .estado-select { padding: 4px 7px; border: 1.5px solid var(--border); border-radius: 7px; font-size: .76rem; font-family: inherit; font-weight: 500; cursor: pointer; transition: border-color .14s; outline: none; min-width: 0; width: 100%; }
         .estado-select:focus { border-color: var(--accent); }
         .prioridad-select { padding: 6px 10px; border: 1.5px solid var(--border); border-radius: 7px; font-size: .88rem; font-family: inherit; font-weight: 600; cursor: pointer; transition: border-color .14s; outline: none; min-width: 125px; }
         .prioridad-select:focus { border-color: var(--accent); background: #ffffff !important; color: #334155 !important; }
@@ -183,8 +184,8 @@
         .campo-bloqueado.prioridad-ALTA { background: #fed7aa; color: #7c2d12; border-color: #fb923c; }
         .campo-bloqueado.prioridad-CRITICA { background: #fecaca; color: #7f1d1d; border-color: #ef4444; }
         .estado-stack { display: flex; flex-direction: column; gap: 8px; min-width: 175px; }
-        .acciones-stack { display: flex; flex-direction: column; gap: 10px; min-width: 245px; }
-        .acciones-stack form { display: flex; flex-direction: column; gap: 8px; }
+        .acciones-stack { display: flex; flex-direction: column; gap: 6px; min-width: 0; width: 160px; }
+        .acciones-stack form { display: flex; flex-direction: column; gap: 5px; }
         .desc-link { color: var(--accent); cursor: pointer; text-decoration: none; font-size: .88rem; font-weight: 500; border-bottom: 1px dashed var(--accent); }
         .desc-link:hover { color: var(--accent-dark); }
         .row-highlight td { background: #fff7ed !important; transition: background 1.5s; }
@@ -235,11 +236,21 @@
         .ext-field { font-size:.86rem; color:#374151; margin-bottom:6px; }
 
         @media (max-width: 768px) {
-            nav.navbar { padding: 0 16px; }
-            .tab-bar-inner { padding: 0 8px; }
-            .tab-btn { font-size: .88rem; padding: 14px 8px; gap: 6px; }
-            .tab-badge { min-width: 20px; height: 20px; font-size: .72rem; }
-            .main-wrap { padding: 14px 14px 32px; }
+            nav.navbar { padding: 0 12px; height: 52px; }
+            .nav-email { display: none; }
+            .nav-role { display: none; }
+            .nav-title { font-size: .88rem; }
+            .nav-logout, .nav-link { padding: 5px 9px; font-size: .75rem; }
+            .tab-bar-inner { padding: 0 4px; overflow-x: auto; }
+            .tab-btn { font-size: .78rem; padding: 13px 10px; gap: 5px; flex: none; min-width: 90px; }
+            .tab-badge { min-width: 18px; height: 18px; font-size: .68rem; padding: 0 5px; }
+            .main-wrap { padding: 12px 12px 28px; }
+            .filter-fields { flex-direction: column; align-items: stretch; }
+            .filter-input, .filter-select, .filter-date { width: 100% !important; min-width: 0; }
+            .filter-actions { flex-basis: 100%; }
+            #map-operador { height: 260px; }
+            .panel-body { padding: 12px 14px; }
+            .panel-header { padding: 12px 14px; }
         }
     </style>
 </head>
@@ -555,8 +566,8 @@
                 <table id="table-verificadas">
                     <thead>
                         <tr>
-                            <th>ID</th><th>Categorías</th><th>Descripción</th><th>Ubicación</th>
-                            <th>Fecha creación</th><th>Fecha verificada</th><th>Email</th>
+                            <th>ID</th><th>Categorías</th><th>Información</th>
+                            <th>Fecha creación</th><th>Fecha verificada</th>
                             <th>Prioridad</th><th>Estado</th><th>Asignación técnico</th><th>Acciones</th>
                         </tr>
                     </thead>
@@ -574,11 +585,15 @@
                                     <span class="cat-chip" th:each="cat : ${inc.categorias}" th:text="${cat.descripcion}"></span>
                                 </div>
                             </td>
-                            <td><span class="desc-link" th:onclick="'openModal(this)'" th:data-desc="${inc.descripcion}" th:attr="data-imagen=${inc.imagenNombre}">Ver descripción</span></td>
-                            <td th:text="${inc.ubicacion}"></td>
+                            <td style="min-width:200px;max-width:260px;">
+                                <div style="display:flex;flex-direction:column;gap:4px;font-size:.82rem;">
+                                    <span><span class="desc-link" th:onclick="'openModal(this)'" th:data-desc="${inc.descripcion}" th:attr="data-imagen=${inc.imagenNombre}">Ver descripción</span></span>
+                                    <span style="color:#475569;">📍 <span th:text="${inc.ubicacion}"></span></span>
+                                    <span style="color:#64748b;">✉ <span th:text="${inc.usuario == null or inc.usuario.email == 'anonimo@giu.internal' ? 'Anónimo' : inc.usuario.email}"></span></span>
+                                </div>
+                            </td>
                             <td th:text="${#temporals.format(inc.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>
                             <td th:text="${inc.fechaModificacion != null ? #temporals.format(inc.fechaModificacion, 'dd/MM/yyyy HH:mm') : '—'}"></td>
-                            <td th:text="${inc.usuario == null or inc.usuario.email == 'anonimo@giu.internal' ? 'Anónimo' : inc.usuario.email}"></td>
                             <td>
                                 <span class="campo-bloqueado" th:classappend="${'prioridad-' + inc.prioridad}"
                                       th:text="${inc.prioridad.descripcion}"></span>
@@ -602,7 +617,7 @@
                                         <button type="submit" class="btn-cat-save"
                                                 th:text="${inc.estado == T(com.giu.giu.model.EstadoIncidencia).ASIGNADA ? 'Reasignar' : 'Asignar incidencia'}"></button>
                                     </form>
-                                    <div th:if="${inc.tecnicoAsignado != null}" class="campo-bloqueado" style="line-height:1.4;display:block;">
+                                    <div th:if="${inc.tecnicoAsignado != null}" class="campo-bloqueado" style="line-height:1.3;display:block;font-size:.72rem;word-break:break-all;">
                                         <strong>Actual:</strong> <span th:text="${inc.tecnicoAsignado.email}"></span>
                                     </div>
                                 </div>
@@ -1377,6 +1392,8 @@ function confirmarCerrar() {
         if (accionesTd) accionesTd.innerHTML = '<span style="color:#94a3b8;font-size:.8rem;">—</span>';
         var inc = allDataOp.find(function(i) { return i.id === id; });
         if (inc) { inc.estado = 'CERRADA'; }
+        var tbody = row.closest('tbody');
+        if (tbody) tbody.appendChild(row);
         renderMapForView(currentView, []);
     });
 }

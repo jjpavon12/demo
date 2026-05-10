@@ -121,7 +121,13 @@ public class DashboardController {
 
             List<Incidencia> verificadas = todas.stream()
                 .filter(i -> ESTADOS_VERIFICADOS.contains(i.getEstado()))
-                .sorted(Comparator.comparing(Incidencia::getFechaModificacion,
+                .sorted(Comparator
+                    .<Incidencia, Integer>comparing(i -> {
+                        if (i.getEstado() == EstadoIncidencia.CERRADA)  return 2;
+                        if (i.getEstado() == EstadoIncidencia.RESUELTA) return 1;
+                        return 0;
+                    })
+                    .thenComparing(Incidencia::getFechaModificacion,
                         Comparator.nullsLast(Comparator.reverseOrder())))
                 .collect(Collectors.toList());
 
@@ -357,13 +363,15 @@ public class DashboardController {
     }
 
     @GetMapping("/ciudadano/notificaciones/estados")
-    public String abrirNotificacionesCiudadanoEstados() {
+    public String abrirNotificacionesCiudadanoEstados(@RequestParam(required = false) Long id) {
         Usuario usuario = getUsuarioAutenticado();
         if (usuario == null) return "redirect:/login";
         var resumen = notificationService.buildFor(usuario);
-        String ids = notificationService.idsParam(resumen.getCitizenStateChangeIds());
         notificationService.markCitizenStateSeen(usuario);
-        return "redirect:/ciudadano/incidencias/mis-incidencias?highlight=" + ids;
+        String highlight = (id != null)
+            ? String.valueOf(id)
+            : notificationService.idsParam(resumen.getCitizenStateChangeIds());
+        return "redirect:/ciudadano/incidencias/mis-incidencias?highlight=" + highlight;
     }
 
     @GetMapping("/operador/notificaciones/nuevas")
@@ -414,6 +422,18 @@ public class DashboardController {
         String ids = notificationService.idsParam(resumen.getTechnicianDueSoonIds());
         notificationService.markTechnicianDueSoonSeen(usuario);
         return "redirect:/dashboard/tecnico?status=" + estadoPrimeraIncidencia(resumen.getTechnicianDueSoonIds(), "EN_CURSO") + "&highlight=" + ids;
+    }
+
+    @GetMapping("/tecnico/notificaciones/vencidas")
+    public String abrirNotificacionesTecnicoVencidas() {
+        Usuario usuario = getUsuarioAutenticado();
+        if (usuario == null) return "redirect:/login";
+        var resumen = notificationService.buildFor(usuario);
+        List<Long> overdueIds = resumen.getTechnicianOverdueIds();
+        String ids = notificationService.idsParam(overdueIds);
+        String firstId = overdueIds.isEmpty() ? "" : String.valueOf(overdueIds.get(0));
+        String status = estadoPrimeraIncidencia(overdueIds, "ASIGNADA");
+        return "redirect:/dashboard/tecnico?status=" + status + "&highlight=" + ids + "&forceExtension=" + firstId;
     }
 
     private Usuario getUsuarioAutenticado() {

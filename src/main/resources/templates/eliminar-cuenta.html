@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eliminar cuenta — GIU</title>
+    <link rel="icon" th:href="@{/images/dibujo.png}" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(160deg, rgba(5,46,22,.58) 0%, rgba(9,35,70,.52) 100%), url('/images/giu.jpg') center/cover fixed; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(160deg, rgba(5,46,22,.58) 0%, rgba(9,35,70,.52) 100%), url('/images/giu.jpg') center/cover fixed; min-height: 100vh; display: flex; flex-direction: column; }
         nav.navbar {
             background: rgba(4,36,18,.96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
             height: 60px;
@@ -60,7 +61,7 @@
             transition: background .14s;
         }
         .nav-link:hover { background: rgba(255,255,255,.28); }
-        .container { max-width: 520px; margin: 48px auto; padding: 0 24px; }
+        .container { max-width: 520px; margin: 48px auto; padding: 0 24px; flex: 1; width: 100%; }
         .back-link {
             display: inline-flex;
             align-items: center;

@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Soporte — GIU Admin</title>
+    <link rel="icon" th:href="@{/images/dibujo.png}" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(160deg, rgba(5,46,22,.58) 0%, rgba(9,35,70,.52) 100%), url('/images/giu.jpg') center/cover fixed; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(160deg, rgba(5,46,22,.58) 0%, rgba(9,35,70,.52) 100%), url('/images/giu.jpg') center/cover fixed; min-height: 100vh; display: flex; flex-direction: column; }
         nav.navbar {
             background: #15803d;
             height: 60px;
@@ -71,7 +72,7 @@
             text-transform: uppercase;
             letter-spacing: .4px;
         }
-        .container { max-width: 1200px; margin: 36px auto; padding: 0 24px; }
+        .container { max-width: 1200px; margin: 36px auto; padding: 0 24px; flex: 1; width: 100%; }
         .page-header {
             background: #fff;
             border-radius: 12px;

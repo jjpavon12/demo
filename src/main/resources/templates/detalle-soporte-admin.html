@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalle del Ticket — GIU Admin</title>
+    <link rel="icon" th:href="@{/images/dibujo.png}" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Sora', system-ui, sans-serif; background: linear-gradient(rgba(241,245,249,.85), rgba(241,245,249,.85)), url('/images/giu.jpg') center/cover fixed; }
+        body { font-family: 'Sora', system-ui, sans-serif; background: linear-gradient(rgba(241,245,249,.85), rgba(241,245,249,.85)), url('/images/giu.jpg') center/cover fixed; min-height: 100vh; display: flex; flex-direction: column; }
         nav.navbar {
             background: #15803d; height: 60px; display: flex; align-items: center;
             justify-content: space-between; padding: 0 28px; box-shadow: 0 1px 4px rgba(0,0,0,.15);
@@ -28,7 +29,7 @@
         .admin-badge { display: inline-block; background: #f3e8ff; color: #7c3aed; padding: 4px 12px; border-radius: 20px; font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
         .nav-logout { color: #fff; text-decoration: none; padding: 6px 14px; border-radius: 6px; background: rgba(255,255,255,.15); font-size: .825rem; font-weight: 500; transition: background .14s; }
         .nav-logout:hover { background: rgba(255,255,255,.28); }
-        .container { max-width: 860px; margin: 36px auto; padding: 0 24px; }
+        .container { max-width: 860px; margin: 36px auto; padding: 0 24px; flex: 1; width: 100%; }
         .breadcrumb { font-size: .82rem; color: #64748b; margin-bottom: 16px; }
         .breadcrumb a { color: #15803d; text-decoration: none; }
         .breadcrumb a:hover { text-decoration: underline; }

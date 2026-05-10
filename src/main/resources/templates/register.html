@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Registro — GIU</title>
+    <link rel="icon" th:href="@{/images/dibujo.png}" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -103,6 +104,10 @@
         .footer-link { text-align: center; margin-top: 20px; font-size: .85rem; color: #64748b; }
         .footer-link a { color: #15803d; font-weight: 500; text-decoration: none; }
         .footer-link a:hover { text-decoration: underline; }
+        @media (max-width: 480px) {
+            .card { padding: 28px 18px; }
+            .main-wrap { padding: 24px 12px; }
+        }
     </style>
 </head>
 <body>

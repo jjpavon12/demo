@@ -68,7 +68,8 @@ public class IncidenciaApiController {
             EnumSet<EstadoIncidencia> estados = EnumSet.of(
                     EstadoIncidencia.ASIGNADA,
                     EstadoIncidencia.EN_CURSO,
-                    EstadoIncidencia.RESUELTA);
+                    EstadoIncidencia.RESUELTA,
+                    EstadoIncidencia.CERRADA);
             return incidenciaService.obtenerAsignadasATecnico(usuario).stream()
                     .filter(inc -> estados.contains(inc.getEstado()))
                     .map(this::toMap)

@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis Incidencias — GIU</title>
+    <link rel="icon" th:href="@{/images/dibujo.png}" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(160deg, rgba(5,46,22,.58) 0%, rgba(9,35,70,.52) 100%), url('/images/giu.jpg') center/cover fixed; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(160deg, rgba(5,46,22,.58) 0%, rgba(9,35,70,.52) 100%), url('/images/giu.jpg') center/cover fixed; min-height: 100vh; display: flex; flex-direction: column; }
         nav.navbar {
             background: rgba(4,36,18,.96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
             height: 60px;
@@ -62,7 +63,7 @@
         }
         .nav-link:hover { background: rgba(255,255,255,.28); }
         .nav-link-ghost { background: rgba(255,255,255,.08); }
-        .container { max-width: 900px; margin: 36px auto; padding: 0 24px; }
+        .container { max-width: 900px; margin: 36px auto; padding: 0 24px; flex: 1; width: 100%; }
         .page-header {
             background: #fff;
             border-radius: 12px;
@@ -113,8 +114,8 @@
             background: #fff;
             border-radius: 11px;
             box-shadow: 0 1px 4px rgba(0,0,0,.07);
-            margin-bottom: 14px;
-            padding: 18px 22px;
+            margin-bottom: 16px;
+            padding: 20px 24px;
             border-left: 4px solid #e2e8f0;
         }
         .incidencia-card.estado-PENDIENTE_VALIDACION { border-left-color: #f59e0b; }
@@ -124,33 +125,36 @@
         .incidencia-card.estado-RESUELTA { border-left-color: #34d399; }
         .incidencia-card.estado-CERRADA { border-left-color: #94a3b8; }
         .incidencia-card.estado-RECHAZADA { border-left-color: #f87171; }
-        .incidencia-card.highlighted {
-            outline: 2px solid #22c55e;
-            box-shadow: 0 0 0 5px rgba(34,197,94,.14), 0 10px 28px rgba(21,128,61,.18);
+        @keyframes highlightPulse {
+            0%   { box-shadow: 0 0 0 0 rgba(34,197,94,.6), 0 6px 24px rgba(21,128,61,.22); background: #f0fdf4; }
+            50%  { box-shadow: 0 0 0 8px rgba(34,197,94,.0), 0 6px 24px rgba(21,128,61,.22); background: #dcfce7; }
+            100% { box-shadow: 0 0 0 0 rgba(34,197,94,.6), 0 6px 24px rgba(21,128,61,.22); background: #f0fdf4; }
         }
-        .card-top {
+        .incidencia-card.highlighted {
+            border-left-color: #16a34a !important;
+            border-left-width: 6px !important;
+            outline: 3px solid #16a34a;
+            outline-offset: 2px;
+            animation: highlightPulse 1.6s ease-in-out 3;
+            background: #f0fdf4;
+        }
+        /* Card header */
+        .card-header-row {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 8px;
+            margin-bottom: 14px;
         }
-        .card-categoria { font-weight: 600; color: #0f172a; font-size: .9rem; }
-        .card-categorias { display: flex; flex-wrap: wrap; gap: 5px; }
-        .card-categoria-tag {
-            display: inline-block;
-            background: #e0e7ff;
-            color: #3730a3;
-            padding: 2px 10px;
-            border-radius: 12px;
-            font-size: .76rem;
-            font-weight: 600;
-        }
+        .card-id { font-size: 1.05rem; font-weight: 800; color: #0f172a; }
+        .card-location { font-size: .82rem; color: #64748b; margin-top: 3px; }
+        /* Badge */
         .badge {
             display: inline-block;
             padding: 3px 10px;
             border-radius: 20px;
             font-size: .73rem;
             font-weight: 600;
+            flex-shrink: 0;
         }
         .badge-PENDIENTE_VALIDACION { background: #fef3c7; color: #92400e; }
         .badge-VALIDADA { background: #dcfce7; color: #166534; }
@@ -159,9 +163,133 @@
         .badge-RESUELTA { background: #d1fae5; color: #065f46; }
         .badge-CERRADA { background: #e2e8f0; color: #334155; }
         .badge-RECHAZADA { background: #fee2e2; color: #991b1b; }
-        .card-id { font-size: 1rem; font-weight: 700; color: #0f172a; }
-        .card-descripcion { color: #475569; font-size: .875rem; margin-bottom: 10px; line-height: 1.55; }
-        .card-meta { display: flex; gap: 18px; font-size: .78rem; color: #94a3b8; }
+        /* Card body */
+        .card-body {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 14px;
+            align-items: flex-start;
+        }
+        .card-img {
+            width: 110px;
+            height: 90px;
+            border-radius: 8px;
+            object-fit: cover;
+            flex-shrink: 0;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+        }
+        .card-info { flex: 1; min-width: 0; }
+        .card-descripcion {
+            font-size: .875rem;
+            color: #334155;
+            line-height: 1.55;
+            margin-bottom: 10px;
+        }
+        .cats-wrap { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+        .cat-badge {
+            background: #e0e7ff; color: #3730a3;
+            padding: 2px 8px; border-radius: 10px;
+            font-size: .7rem; font-weight: 600;
+        }
+        .card-meta { font-size: .78rem; color: #94a3b8; }
+        /* State timeline */
+        @keyframes tlPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(21,128,61,.5); }
+            50%       { box-shadow: 0 0 0 5px rgba(21,128,61,0); }
+        }
+        @keyframes tlWave {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .state-timeline {
+            display: flex;
+            align-items: center;
+            margin: 12px 0 24px;
+            padding: 0 4px;
+            gap: 0;
+        }
+        .tl-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .tl-label {
+            font-size: .62rem;
+            font-weight: 700;
+            color: #15803d;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+            white-space: nowrap;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .tl-dot {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: #15803d;
+            flex-shrink: 0;
+            position: relative;
+            cursor: default;
+            animation: tlPulse 2.4s ease-in-out infinite;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 2px #15803d;
+            transition: transform .15s;
+            z-index: 1;
+        }
+        .tl-dot:hover { transform: scale(1.5); }
+        .tl-dot::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0f172a;
+            color: #fff;
+            font-size: .68rem;
+            padding: 4px 8px;
+            border-radius: 5px;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity .18s;
+            z-index: 10;
+        }
+        .tl-dot:hover::after { opacity: 1; }
+        .tl-line {
+            flex: 1;
+            height: 4px;
+            min-width: 20px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #15803d, #4ade80, #86efac, #4ade80, #15803d);
+            background-size: 250% 100%;
+            animation: tlWave 2.2s ease-in-out infinite;
+        }
+        .tl-arrow {
+            flex-shrink: 0;
+            width: 0; height: 0;
+            border-top: 7px solid transparent;
+            border-bottom: 7px solid transparent;
+            border-left: 12px solid #15803d;
+            margin-left: 1px;
+            filter: drop-shadow(2px 0 3px rgba(21,128,61,.5));
+        }
+        /* Rechazo */
+        .rechazo-box {
+            margin-top: 10px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: .85rem;
+        }
+        .rechazo-label { font-weight: 700; color: #991b1b; }
+        .text-muted { color: #94a3b8; }
         .map-card {
             background: #fff;
             border-radius: 12px;
@@ -185,6 +313,25 @@
             font-size: .875rem;
             color: #64748b;
             margin-bottom: 14px;
+        }
+        @media (max-width: 700px) {
+            nav.navbar { padding: 0 12px; height: 52px; }
+            .nav-title { font-size: .88rem; }
+            .nav-link { padding: 5px 9px; font-size: .74rem; }
+            .container { padding: 0 12px; margin: 14px auto; }
+            .page-header { flex-direction: column; align-items: flex-start; padding: 14px 16px; gap: 10px; }
+            .page-header h2 { font-size: 1.2rem; }
+            .page-header p { font-size: .8rem; }
+            .btn-nueva { font-size: .78rem; padding: 7px 13px; }
+            .incidencia-card { padding: 14px 14px; }
+            .card-body { flex-direction: column; }
+            .card-img { width: 100%; height: 170px; }
+            .card-id { font-size: .9rem; }
+            .card-location { font-size: .76rem; }
+            #map-mis-incidencias { height: 230px; }
+            .map-card { padding: 14px 14px; }
+            .state-timeline { overflow-x: auto; padding-bottom: 30px; min-width: 0; }
+            .tl-label { font-size: .56rem; }
         }
     </style>
 </head>
@@ -226,37 +373,48 @@
         </div>
 
         <div th:each="inc : ${incidencias}"
-             th:data-id="${inc.id}"
+             th:attr="data-id=${inc.id}"
              th:classappend="'incidencia-card estado-' + ${inc.estado.name()}"
              class="incidencia-card">
-            <div class="card-top" style="margin-bottom:8px;">
-                <span class="card-id">ID de Incidencia: <span th:text="${inc.id}"></span></span>
-                <span class="badge"
-                      th:classappend="'badge-' + ${inc.estado.name()}"
-                      th:text="${inc.estado.descripcion}">
-                </span>
+
+            <!-- Cabecera -->
+            <div class="card-header-row">
+                <div>
+                    <div class="card-id">Incidencia: <span th:text="${inc.id}"></span></div>
+                    <div class="card-location">📍 <span th:text="${inc.ubicacion}"></span></div>
+                </div>
+                <span class="badge" th:classappend="'badge-' + ${inc.estado.name()}" th:text="${inc.estado.descripcion}"></span>
             </div>
-            <div class="card-categorias" style="margin-bottom:8px;">
-                <span class="card-categoria-tag" th:each="cat : ${inc.categorias}" th:text="${cat.descripcion}"></span>
+
+            <!-- Cuerpo de la card -->
+            <div class="card-body">
+                <img th:if="${inc.imagenNombre != null}"
+                     th:src="@{/api/incidencias/imagen/{n}(n=${inc.imagenNombre})}"
+                     alt="Foto" class="card-img"
+                     onclick="this.style.height=this.style.height==='auto'?'90px':'auto'"/>
+                <div class="card-info">
+                    <p class="card-descripcion"><span style="font-weight:700;color:#0f172a;">Descripción: </span><span th:text="${inc.descripcion}"></span></p>
+                    <div class="cats-wrap">
+                        <span class="cat-badge" th:each="cat : ${inc.categorias}" th:text="${cat.descripcion}"></span>
+                    </div>
+                    <span class="card-meta">🗓 Registrada: <span th:text="${#temporals.format(inc.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span></span>
+                    <span class="card-meta" th:if="${inc.fechaModificacion != null}">🔄 Última actualización: <span th:text="${#temporals.format(inc.fechaModificacion, 'dd/MM/yyyy HH:mm')}"></span></span>
+                </div>
             </div>
-            <p class="card-descripcion" th:text="${inc.descripcion}"></p>
-            <div class="card-meta">
-                <span>📍 <span th:text="${inc.ubicacion}"></span></span>
-                <span>🗓 <span th:text="${#temporals.format(inc.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span></span>
+
+            <!-- Línea de tiempo de estados -->
+            <div class="state-timeline"
+                 th:data-estado="${inc.estado.name()}"
+                 th:data-created="${#temporals.format(inc.fechaCreacion, 'dd/MM/yyyy HH:mm')}"
+                 th:data-assigned="${inc.fechaAsignacion != null ? #temporals.format(inc.fechaAsignacion, 'dd/MM/yyyy HH:mm') : ''}"
+                 th:data-modified="${inc.fechaModificacion != null ? #temporals.format(inc.fechaModificacion, 'dd/MM/yyyy HH:mm') : ''}">
             </div>
-            <div th:if="${inc.estado.name() == 'RECHAZADA'}"
-                 style="margin-top:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;">
-                <span style="font-size:.8rem;font-weight:700;color:#991b1b;">Motivo del rechazo: </span>
-                <span th:if="${inc.motivoRechazo != null and !#strings.isEmpty(inc.motivoRechazo)}"
-                      style="font-size:.85rem;color:#7f1d1d;" th:text="${inc.motivoRechazo}"></span>
-                <span th:if="${inc.motivoRechazo == null or #strings.isEmpty(inc.motivoRechazo)}"
-                      style="font-size:.85rem;color:#94a3b8;">No se proporcionó motivo.</span>
-            </div>
-            <div th:if="${inc.imagenNombre != null}" style="margin-top:12px;">
-                <img th:src="@{/api/incidencias/imagen/{n}(n=${inc.imagenNombre})}"
-                     alt="Foto de la incidencia"
-                     style="max-width:100%;max-height:220px;border-radius:8px;object-fit:cover;cursor:pointer;border:1px solid #e2e8f0;"
-                     onclick="this.style.maxHeight=this.style.maxHeight==='none'?'220px':'none'"/>
+
+            <!-- Motivo rechazo -->
+            <div th:if="${inc.estado.name() == 'RECHAZADA'}" class="rechazo-box">
+                <span class="rechazo-label">Motivo del rechazo: </span>
+                <span th:if="${inc.motivoRechazo != null and !#strings.isEmpty(inc.motivoRechazo)}" th:text="${inc.motivoRechazo}"></span>
+                <span th:if="${inc.motivoRechazo == null or #strings.isEmpty(inc.motivoRechazo)}" class="text-muted">No se proporcionó motivo.</span>
             </div>
         </div>
     </div>
@@ -309,17 +467,63 @@
             }
         });
 
-    (function highlightFromNotification() {
-        var ids = new URLSearchParams(window.location.search).get('highlight');
-        if (!ids) return;
-        var first = null;
-        ids.split(',').forEach(function(id) {
-            var card = document.querySelector('.incidencia-card[data-id="' + id + '"]');
-            if (!card) return;
-            card.classList.add('highlighted');
-            if (!first) first = card;
+    // ── STATE TIMELINE ──
+    (function buildTimelines() {
+        var ORDER = ['PENDIENTE_VALIDACION','VALIDADA','ASIGNADA','EN_CURSO','RESUELTA','CERRADA'];
+        var LABELS = {
+            PENDIENTE_VALIDACION: 'Pendiente', VALIDADA: 'Validada',
+            ASIGNADA: 'Asignada', EN_CURSO: 'En curso',
+            RESUELTA: 'Resuelta', CERRADA: 'Cerrada', RECHAZADA: 'Rechazada'
+        };
+        document.querySelectorAll('.state-timeline').forEach(function(el) {
+            var estado   = el.dataset.estado;
+            var created  = el.dataset.created;
+            var assigned = el.dataset.assigned;
+            var modified = el.dataset.modified;
+            var dots = [];
+            if (estado === 'RECHAZADA') {
+                dots = [
+                    { label: 'Registrada', date: created },
+                    { label: 'Rechazada',  date: modified }
+                ];
+            } else {
+                var idx = ORDER.indexOf(estado);
+                if (idx < 0) idx = 0;
+                for (var i = 0; i <= idx; i++) {
+                    var s = ORDER[i], d = '';
+                    if (s === 'PENDIENTE_VALIDACION') d = created;
+                    else if (s === 'ASIGNADA' && assigned) d = assigned;
+                    else if (i === idx) d = modified;
+                    dots.push({ label: LABELS[s], date: d });
+                }
+            }
+            var html = '';
+            dots.forEach(function(dot, i) {
+                if (i > 0) html += '<div class="tl-line"></div>';
+                var tip = dot.date || '—';
+                html += '<div class="tl-step">'
+                      + '<span class="tl-label">' + dot.label + '</span>'
+                      + '<div class="tl-dot" data-tip="' + tip + '"></div>'
+                      + '</div>';
+            });
+            html += '<div class="tl-line"></div><div class="tl-arrow"></div>';
+            el.innerHTML = html;
         });
-        if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    })();
+
+    (function highlightFromNotification() {
+        var param = new URLSearchParams(window.location.search).get('highlight');
+        if (!param) return;
+        var highlightSet = new Set(param.split(',').map(function(s) { return s.trim(); }));
+        if (highlightSet.size === 0 || (highlightSet.size === 1 && highlightSet.has(''))) return;
+        var first = null;
+        document.querySelectorAll('.incidencia-card[data-id]').forEach(function(card) {
+            if (highlightSet.has(String(card.dataset.id))) {
+                card.classList.add('highlighted');
+                if (!first) first = card;
+            }
+        });
+        if (first) setTimeout(function() { first.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 80);
     })();
     </script>
 <footer style="width:100%;background:rgba(15,23,42,.95);color:#94a3b8;text-align:center;padding:24px 16px;font-size:.82rem;margin-top:32px;">© 2025 GIU — Gestión de Incidencias Urbanas</footer>

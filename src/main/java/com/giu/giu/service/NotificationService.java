@@ -48,6 +48,7 @@ public class NotificationService {
         List<Long> technicianNew = List.of();
         List<Long> technicianApproved = List.of();
         List<Long> technicianDueSoon = List.of();
+        List<Long> technicianOverdue = List.of();
 
         if (usuario.getRol() == Rol.CIUDADANO) {
             citizenChanged = incidenciaRepository
@@ -98,6 +99,14 @@ public class NotificationService {
                 })
                 .map(Incidencia::getId)
                 .toList();
+
+            technicianOverdue = incidenciaRepository.findByTecnicoAsignadoOrderByFechaAsignacionDesc(usuario)
+                .stream()
+                .filter(i -> i.getEstado() == EstadoIncidencia.ASIGNADA || i.getEstado() == EstadoIncidencia.EN_CURSO)
+                .filter(i -> i.getFechaLimiteResolucion() != null)
+                .filter(i -> i.getFechaLimiteResolucion().isBefore(hoy))
+                .map(Incidencia::getId)
+                .toList();
         }
 
         return new NotificationSummary(
@@ -107,12 +116,14 @@ public class NotificationService {
             technicianNew.size(),
             technicianApproved.size(),
             technicianDueSoon.size(),
+            technicianOverdue.size(),
             citizenChanged,
             operatorNew,
             operatorChanged,
             technicianNew,
             technicianApproved,
-            technicianDueSoon
+            technicianDueSoon,
+            technicianOverdue
         );
     }
 
