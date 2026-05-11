@@ -1,0 +1,785 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Incidencia — GIU</title>
+    <link rel="icon" th:href="@{/images/dibujo.png}" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(160deg, rgba(5,46,22,.58) 0%, rgba(9,35,70,.52) 100%), url('/images/giu.jpg') center/cover fixed; min-height: 100vh; display: flex; flex-direction: column; }
+        nav.navbar {
+            background: rgba(4,36,18,.96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            box-shadow: 0 2px 18px rgba(0,0,0,.28);
+        }
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-logo {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px; height: 44px;
+            border-radius: 11px;
+            background: linear-gradient(135deg, #052e16, #14532d);
+            box-shadow: 0 4px 14px rgba(5,46,22,.55);
+            border: 1px solid rgba(255,255,255,.18);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .nav-logo::before {
+            content: "";
+            position: absolute;
+            inset: 5px;
+            border: 1.5px solid rgba(255,255,255,.32);
+            border-radius: 6px;
+        }
+        .nav-logo::after {
+            content: "";
+            position: absolute;
+            right: -4px; top: -4px;
+            width: 14px; height: 14px;
+            border-radius: 5px;
+            background: rgba(255,255,255,.22);
+        }
+        .nav-title { color: #fff; font-weight: 700; font-size: 1.15rem; }
+        .nav-right { display: flex; align-items: center; gap: 10px; }
+        .nav-link {
+            color: #fff;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: rgba(255,255,255,.15);
+            font-size: .82rem;
+            font-weight: 500;
+            transition: background .14s;
+        }
+        .nav-link:hover { background: rgba(255,255,255,.28); }
+        .nav-link-ghost { background: rgba(255,255,255,.08); }
+        .container { max-width: 680px; margin: 40px auto; padding: 0 24px; flex: 1; width: 100%; }
+        .form-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            padding: 36px;
+        }
+        .form-card h2 { font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+        .form-card .subtitle { color: #64748b; font-size: .84rem; margin-bottom: 28px; }
+        .form-group { margin-bottom: 20px; }
+        label {
+            display: block;
+            font-size: .78rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 13px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: .9rem;
+            font-family: inherit;
+            color: #1e293b;
+            background: #fff;
+            transition: border-color .14s, box-shadow .14s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #15803d;
+            box-shadow: 0 0 0 3px rgba(21,128,61,.12);
+        }
+        textarea { resize: vertical; min-height: 110px; }
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 4px 10px;
+            padding: 10px 12px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 6px;
+            background: #fff;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: .84rem;
+            font-weight: 400;
+            color: #334155;
+            text-transform: none;
+            letter-spacing: 0;
+            cursor: pointer;
+            padding: 4px 0;
+        }
+        .checkbox-item input[type="checkbox"] {
+            width: 16px; height: 16px;
+            accent-color: #15803d;
+            cursor: pointer;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: rgba(4,36,18,.96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: .9rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background .14s, box-shadow .14s;
+        }
+        .btn-submit:hover { background: #14532d; box-shadow: 0 4px 14px rgba(21,128,61,.3); }
+        .back-link {
+            display: inline-block;
+            margin-top: 16px;
+            color: #64748b;
+            font-size: .84rem;
+            text-decoration: none;
+        }
+        .back-link:hover { color: #15803d; text-decoration: underline; }
+        #map-registrar {
+            height: 300px;
+            border-radius: 6px;
+            border: 1.5px solid #e2e8f0;
+            margin-bottom: 5px;
+            z-index: 0;
+        }
+        .map-hint { font-size: .78rem; color: #64748b; margin-bottom: 4px; }
+        .coords-display {
+            font-size: .78rem;
+            color: #15803d;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+        .search-wrapper {
+            position: relative;
+            margin-bottom: 8px;
+        }
+        .search-wrapper input {
+            width: 100%;
+            padding-right: 40px;
+        }
+        .search-spinner {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px; height: 18px;
+            border: 2px solid #e2e8f0;
+            border-top-color: #15803d;
+            border-radius: 50%;
+            animation: spin .6s linear infinite;
+            display: none;
+        }
+        @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: #fff;
+            border: 1.5px solid #15803d;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 220px;
+            overflow-y: auto;
+            box-shadow: 0 8px 24px rgba(0,0,0,.12);
+            display: none;
+        }
+        .suggestions.show { display: block; }
+        .suggestion-item {
+            padding: 10px 13px;
+            font-size: .84rem;
+            color: #334155;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background .1s;
+        }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:hover, .suggestion-item.active {
+            background: #f0fdf4;
+            color: #15803d;
+        }
+        .suggestion-item small {
+            display: block;
+            color: #94a3b8;
+            font-size: .74rem;
+            margin-top: 2px;
+        }
+        .search-error {
+            color: #dc2626;
+            font-size: .78rem;
+            margin-bottom: 6px;
+            display: none;
+        }
+        .ubicacion-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .ubicacion-row .search-wrapper {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        .btn-mi-ubicacion {
+            padding: 10px 14px;
+            background: #fff;
+            color: #15803d;
+            border: 1.5px solid #15803d;
+            border-radius: 6px;
+            font-size: .82rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background .14s, color .14s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-mi-ubicacion:hover {
+            background: rgba(4,36,18,.96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            color: #fff;
+        }
+        .btn-mi-ubicacion:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+        .foto-upload-zone {
+            border: 2px dashed #e2e8f0;
+            border-radius: 11px;
+            padding: 22px 16px;
+            text-align: center;
+            background: #f8fafc;
+            transition: border-color .14s;
+        }
+        .foto-upload-zone:hover { border-color: #15803d; }
+        .btn-adjuntar {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 20px;
+            background: #fff;
+            color: #15803d;
+            border: 1.5px solid #15803d;
+            border-radius: 6px;
+            font-size: .85rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background .14s, color .14s;
+        }
+        .btn-adjuntar:hover { background: rgba(4,36,18,.96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); color: #fff; }
+        .foto-hint { font-size: .76rem; color: #94a3b8; margin-top: 8px; }
+        .foto-preview-zone {
+            display: none;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 11px;
+            padding: 14px;
+            background: #f8fafc;
+        }
+        .foto-preview-zone img {
+            max-width: 100%;
+            max-height: 220px;
+            border-radius: 6px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
+        .foto-actions { display: flex; gap: 8px; margin-top: 10px; justify-content: center; }
+        .btn-foto-accion {
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: .8rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all .14s;
+        }
+        .btn-cambiar { background: #fff; color: #15803d; border: 1.5px solid #15803d; }
+        .btn-cambiar:hover { background: rgba(4,36,18,.96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); color: #fff; }
+        .btn-eliminar { background: #fff; color: #dc2626; border: 1.5px solid #dc2626; }
+        .btn-eliminar:hover { background: #dc2626; color: #fff; }
+        @media (max-width: 700px) {
+            nav.navbar { padding: 0 12px; height: 52px; }
+            .nav-title { font-size: .88rem; }
+            .nav-link { padding: 5px 9px; font-size: .74rem; }
+            .container { padding: 0 12px; margin: 14px auto; }
+            .form-card { padding: 20px 14px; }
+            .form-card h2 { font-size: 1rem; }
+            .ubicacion-row { flex-direction: column; }
+            .btn-mi-ubicacion { width: 100%; justify-content: center; }
+            #map-registrar { height: 220px; }
+            .checkbox-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="nav-logo"><span style="position:relative;z-index:1;color:#fff;font-size:.76rem;font-weight:800;letter-spacing:.08em;">GIU</span></div>
+            <span class="nav-title">Portal Ciudadano</span>
+        </div>
+        <div class="nav-right">
+            <a href="/dashboard/ciudadano" class="nav-link">← Panel principal</a>
+            <a href="/logout" class="nav-link nav-link-ghost">Cerrar sesión</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="form-card">
+            <h2>Registrar incidencia</h2>
+            <p class="subtitle">Rellena el formulario para notificar una incidencia en la vía pública.</p>
+
+            <form th:action="@{/ciudadano/incidencias/registrar}" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="descripcion">Descripción</label>
+                    <textarea id="descripcion" name="descripcion" placeholder="Describe la incidencia con el mayor detalle posible..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="ubicacionBuscar">Ubicación</label>
+                    <p class="map-hint">Busca una dirección, haz clic en el mapa, o usa tu ubicación actual. Solo se permiten ubicaciones dentro de la <strong>Comunidad de Madrid</strong> (zona sin sombreado).</p>
+                    <div class="ubicacion-row">
+                        <div class="search-wrapper">
+                            <input type="text" id="ubicacionBuscar" placeholder="Escribe una dirección… (ej: Calle Mayor, 12, Madrid)" autocomplete="off" />
+                            <div class="search-spinner" id="searchSpinner"></div>
+                            <div class="suggestions" id="sugerencias"></div>
+                        </div>
+                        <button type="button" class="btn-mi-ubicacion" id="btnMiUbicacion" onclick="usarMiUbicacion()">📍 Mi ubicación</button>
+                    </div>
+                    <p id="searchError" class="search-error">No se encontró la dirección. Intenta con otra o haz clic en el mapa.</p>
+                    <div id="map-registrar"></div>
+                    <p id="coordsInfo" class="coords-display"></p>
+                    <input type="hidden" id="latitud" name="latitud" />
+                    <input type="hidden" id="longitud" name="longitud" />
+                    <input type="hidden" id="ubicacion" name="ubicacion" />
+                    <p id="ubicacionDisplay" style="font-size:.85rem;color:#334155;margin-top:3px;"></p>
+                    <p id="ubicacionError" style="display:none;color:#dc2626;font-size:.8rem;margin-top:4px">Selecciona una ubicación en el mapa o busca una dirección.</p>
+                    <p id="ubicacionFueraError" style="display:none;color:#dc2626;font-size:.8rem;margin-top:1px;font-weight:600;">&#9888; La ubicación seleccionada está fuera de la Comunidad de Madrid. Solo se pueden registrar incidencias dentro de la zona.</p>
+                    <p th:if="${errorUbicacion}" style="color:#dc2626;font-size:.8rem;margin-top:4px;font-weight:600;" th:text="${errorUbicacion}"></p>
+                </div>
+                <div class="form-group">
+                    <label>Categorías <span style="font-weight:400;text-transform:none;font-size:.75rem;color:#94a3b8">(selecciona al menos una)</span></label>
+                    <div class="checkbox-grid" id="categoriasGrid">
+                        <label class="checkbox-item" th:each="config : ${categoriasConfig}">
+                            <input type="checkbox"
+                                name="categorias"
+                                th:value="${config.categoria.name()}">
+                            <span th:text="${config.categoria.descripcion}"></span>
+                        </label>
+                    </div>
+                    <p id="catError" style="display:none;color:#dc2626;font-size:.8rem;margin-top:6px">Selecciona al menos una categoría.</p>
+                </div>
+                <div class="form-group">
+                    <label>Foto de la incidencia <span style="font-weight:400;text-transform:none;font-size:.75rem;color:#94a3b8">(opcional)</span></label>
+                    <div class="foto-upload-zone" id="fotoUploadZone">
+                        <button type="button" class="btn-adjuntar" onclick="document.getElementById('imagen').click()">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            Adjuntar imagen
+                        </button>
+                        <p class="foto-hint">Formatos permitidos: .jpg, .jpeg, .png · Máximo 5 MB</p>
+                    </div>
+                    <div class="foto-preview-zone" id="fotoPreviewZone">
+                        <img id="fotoPreviewImg" src="" alt="Vista previa"/>
+                        <div class="foto-actions">
+                            <button type="button" class="btn-foto-accion btn-cambiar" onclick="document.getElementById('imagen').click()">Cambiar imagen</button>
+                            <button type="button" class="btn-foto-accion btn-eliminar" onclick="eliminarImagen()">Eliminar</button>
+                        </div>
+                    </div>
+                    <input type="file" id="imagen" name="imagen" accept=".jpg,.jpeg,.png" style="display:none" onchange="previewImagen(this)"/>
+                    <p id="errorFoto" style="display:none;color:#dc2626;font-size:.8rem;margin-top:6px;"></p>
+                    <p th:if="${errorImagen}" style="color:#dc2626;font-size:.8rem;margin-top:6px;" th:text="${errorImagen}"></p>
+                </div>
+                <button type="submit" class="btn-submit" onclick="return validarFormulario()">Registrar incidencia</button>
+            </form>
+
+            <a class="back-link" href="/ciudadano/incidencias/mis-incidencias">← Volver a mis incidencias</a>
+        </div>
+    </div>
+    <script th:inline="none">
+    function previewImagen(input) {
+        var errEl = document.getElementById('errorFoto');
+        var file = input.files[0];
+        if (!file) return;
+        var valid = ['image/jpeg', 'image/png'];
+        if (!valid.includes(file.type)) {
+            errEl.textContent = 'Solo se permiten imágenes .jpg, .jpeg o .png';
+            errEl.style.display = 'block';
+            input.value = '';
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            errEl.textContent = 'La imagen no puede superar los 5 MB';
+            errEl.style.display = 'block';
+            input.value = '';
+            return;
+        }
+        errEl.style.display = 'none';
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('fotoPreviewImg').src = e.target.result;
+            document.getElementById('fotoUploadZone').style.display = 'none';
+            document.getElementById('fotoPreviewZone').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function eliminarImagen() {
+        document.getElementById('imagen').value = '';
+        document.getElementById('fotoPreviewImg').src = '';
+        document.getElementById('fotoPreviewZone').style.display = 'none';
+        document.getElementById('fotoUploadZone').style.display = 'block';
+    }
+
+    function validarFormulario() {
+        var checks = document.querySelectorAll('input[name="categorias"]:checked');
+        var catErr = document.getElementById('catError');
+        var ubErr = document.getElementById('ubicacionError');
+        var lat = document.getElementById('latitud').value;
+        var ub = document.getElementById('ubicacion').value;
+        var ok = true;
+
+        if (checks.length === 0) { catErr.style.display = 'block'; ok = false; }
+        else { catErr.style.display = 'none'; }
+
+        if (!lat || !ub) { ubErr.style.display = 'block'; ok = false; }
+        else { ubErr.style.display = 'none'; }
+
+        return ok;
+    }
+
+    // --- Mapa Leaflet ---
+    var map = L.map('map-registrar').setView([40.52, -3.82], 8);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(map);
+
+    var marker = null;
+
+    // Polígono de reserva (se usa si falla la carga dinámica)
+    var camCoordsFallback = [
+        [40.090,-4.577],[40.230,-4.574],[40.370,-4.571],[40.500,-4.556],
+        [40.620,-4.490],[40.730,-4.397],[40.822,-4.261],[40.895,-4.143],
+        [40.938,-4.055],[40.975,-3.965],[41.003,-3.872],[41.017,-3.804],
+        [41.009,-3.757],[41.013,-3.723],[41.025,-3.678],[41.054,-3.636],
+        [41.099,-3.603],[41.141,-3.580],[41.151,-3.577],[41.091,-3.525],
+        [40.981,-3.408],[40.858,-3.278],[40.700,-3.138],[40.556,-3.062],
+        [40.428,-3.059],[40.282,-3.068],[40.143,-3.138],[40.043,-3.268],
+        [39.966,-3.428],[39.929,-3.533],[39.889,-3.658],[39.877,-3.818],
+        [39.892,-3.972],[39.981,-4.136],[40.047,-4.313],[40.090,-4.577]
+    ];
+
+    function dibujarLimiteCam(geom) {
+        // Borde preciso cargado desde OpenStreetMap
+        L.geoJSON({ type: 'Feature', geometry: geom }, {
+            style: { color: '#15803d', weight: 2, fillOpacity: 0, dashArray: '7, 4' },
+            interactive: false
+        }).addTo(map);
+
+        // Obtener el anillo exterior principal
+        var camRing;
+        if (geom.type === 'Polygon') {
+            camRing = geom.coordinates[0];
+        } else {
+            // MultiPolygon: usar el anillo más grande (territorio principal)
+            camRing = geom.coordinates.reduce(function(a, b) {
+                return a[0].length > b[0].length ? a : b;
+            })[0];
+        }
+
+        // Máscara: sombrea el exterior de la CAM
+        L.geoJSON({
+            type: 'Feature',
+            geometry: {
+                type: 'Polygon',
+                coordinates: [
+                    [[-180,-90],[180,-90],[180,90],[-180,90],[-180,-90]],
+                    camRing
+                ]
+            }
+        }, {
+            style: { fillColor: '#64748b', fillOpacity: 0.38, weight: 0, stroke: false },
+            interactive: false
+        }).addTo(map);
+    }
+
+    function dibujarFallback() {
+        var ring = camCoordsFallback.map(function(c) { return [c[1], c[0]]; });
+        dibujarLimiteCam({ type: 'Polygon', coordinates: [ring] });
+    }
+
+    // Carga el contorno oficial de la CAM desde Nominatim (OpenStreetMap)
+    fetch('https://nominatim.openstreetmap.org/search?q=Comunidad+de+Madrid&format=geojson&polygon_geojson=1&countrycodes=es&limit=1')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data && data.features && data.features.length > 0) {
+                dibujarLimiteCam(data.features[0].geometry);
+            } else {
+                dibujarFallback();
+            }
+        })
+        .catch(function() { dibujarFallback(); });
+
+    // Coloca el marcador visualmente pero NO establece valores del formulario
+    // (los valores se confirman solo tras validar que la ubicación es CAM)
+    function colocarMarcadorVisual(lat, lng) {
+        var latlng = L.latLng(lat, lng);
+        document.getElementById('latitud').value = '';
+        document.getElementById('longitud').value = '';
+        document.getElementById('ubicacion').value = '';
+        document.getElementById('coordsInfo').textContent = '';
+        document.getElementById('ubicacionDisplay').textContent = '';
+        document.getElementById('ubicacionFueraError').style.display = 'none';
+        document.getElementById('ubicacionError').style.display = 'none';
+        document.getElementById('searchError').style.display = 'none';
+        if (marker) {
+            marker.setLatLng(latlng);
+        } else {
+            marker = L.marker(latlng, { draggable: true }).addTo(map);
+            marker.on('dragend', function(ev) {
+                var pos = ev.target.getLatLng();
+                colocarMarcadorVisual(pos.lat, pos.lng);
+                reverseGeocodeValidado(pos.lat, pos.lng);
+            });
+        }
+    }
+
+    // Confirma la ubicación tras validación exitosa
+    function confirmarUbicacion(lat, lng, addressText) {
+        document.getElementById('latitud').value = lat;
+        document.getElementById('longitud').value = lng;
+        document.getElementById('coordsInfo').textContent = '📍 ' + lat.toFixed(6) + ', ' + lng.toFixed(6);
+        document.getElementById('ubicacionFueraError').style.display = 'none';
+        document.getElementById('ubicacionError').style.display = 'none';
+        if (addressText) actualizarUbicacionTexto(addressText);
+    }
+
+    // Rechaza la ubicación (fuera de la CAM o error de red)
+    function rechazarUbicacion(esFuera) {
+        if (marker) { map.removeLayer(marker); marker = null; }
+        document.getElementById('latitud').value = '';
+        document.getElementById('longitud').value = '';
+        document.getElementById('ubicacion').value = '';
+        document.getElementById('coordsInfo').textContent = '';
+        document.getElementById('ubicacionDisplay').textContent = '';
+        document.getElementById('ubicacionFueraError').style.display = esFuera ? 'block' : 'none';
+    }
+
+    function formatearDireccion(data, busquedaUsuario) {
+        if (!data || !data.address) return data ? data.display_name : '';
+        var a = data.address;
+        var partes = [];
+        var calle = a.road || a.pedestrian || a.footway || a.street || '';
+        var numero = a.house_number || '';
+        if (calle && !numero) {
+            var dn = data.display_name;
+            var match = dn.match(new RegExp('(?:,\\s*)(\\d+[\\w]*)(?:,\\s*' + calle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'i'))
+                     || dn.match(new RegExp(calle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?:[,\\s]+)(\\d+[\\w]*)', 'i'))
+                     || dn.match(/^[^,]*?,\s*(\d+[A-Za-z]?)\s*,/);
+            if (match) numero = match[1];
+            if (!numero && busquedaUsuario) {
+                var qMatch = busquedaUsuario.match(/\b(\d+[A-Za-z]?)\b/);
+                if (qMatch) numero = qMatch[1];
+            }
+        }
+        if (calle) partes.push(numero ? calle + ' ' + numero : calle);
+        if (a.postcode) partes.push(a.postcode);
+        var ciudad = a.city || a.town || a.village || a.municipality || '';
+        if (ciudad) partes.push(ciudad);
+        return partes.length > 0 ? partes.join(', ') : data.display_name;
+    }
+
+    function actualizarUbicacionTexto(texto) {
+        document.getElementById('ubicacion').value = texto;
+        document.getElementById('ubicacionDisplay').textContent = '📍 ' + texto;
+        document.getElementById('ubicacionBuscar').value = texto;
+    }
+
+    // Clic en el mapa → marcador visual + validación async
+    map.on('click', function(e) {
+        colocarMarcadorVisual(e.latlng.lat, e.latlng.lng);
+        reverseGeocodeValidado(e.latlng.lat, e.latlng.lng);
+    });
+
+    // Geocodificación inversa con validación de Comunidad de Madrid
+    function reverseGeocodeValidado(lat, lng) {
+        fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng
+              + '&zoom=18&addressdetails=1&accept-language=es')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data || !data.address) { rechazarUbicacion(false); return; }
+                var estado = (data.address.state || '').trim().toLowerCase();
+                if (estado !== 'comunidad de madrid') { rechazarUbicacion(true); return; }
+                confirmarUbicacion(lat, lng, formatearDireccion(data));
+            })
+            .catch(function() { rechazarUbicacion(false); });
+    }
+
+    // Geocodificación directa — autocomplete restringido a la CAM
+    var debounceTimer = null;
+    var activeIndex = -1;
+    var sugerenciasData = [];
+    var sugerenciasDiv = document.getElementById('sugerencias');
+    var spinner = document.getElementById('searchSpinner');
+    var inputBuscar = document.getElementById('ubicacionBuscar');
+
+    inputBuscar.addEventListener('input', function() {
+        var query = this.value.trim();
+        clearTimeout(debounceTimer);
+        activeIndex = -1;
+        if (query.length < 3) { cerrarSugerencias(); return; }
+        spinner.style.display = 'block';
+        debounceTimer = setTimeout(function() {
+            fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query)
+                  + '&limit=8&addressdetails=1&countrycodes=es'
+                  + '&viewbox=-4.58,41.17,-3.05,39.88&bounded=0&accept-language=es')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    spinner.style.display = 'none';
+                    sugerenciasData = (data || []).filter(function(item) {
+                        var est = ((item.address && item.address.state) || '').trim().toLowerCase();
+                        return est === 'comunidad de madrid';
+                    });
+                    renderSugerencias();
+                })
+                .catch(function() { spinner.style.display = 'none'; cerrarSugerencias(); });
+        }, 350);
+    });
+
+    function renderSugerencias() {
+        sugerenciasDiv.innerHTML = '';
+        if (sugerenciasData.length === 0) {
+            document.getElementById('searchError').textContent =
+                'No se encontró la dirección en la Comunidad de Madrid.';
+            document.getElementById('searchError').style.display = 'block';
+            cerrarSugerencias();
+            return;
+        }
+        document.getElementById('searchError').style.display = 'none';
+        sugerenciasData.forEach(function(item, i) {
+            var div = document.createElement('div');
+            div.className = 'suggestion-item';
+            div.setAttribute('data-index', i);
+            var corta = formatearDireccion(item, inputBuscar.value.trim());
+            var a = item.address || {};
+            var extra = a.state || a.country || '';
+            div.innerHTML = corta + (extra ? '<small>' + extra + '</small>' : '');
+            div.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                seleccionarSugerencia(i);
+            });
+            sugerenciasDiv.appendChild(div);
+        });
+        sugerenciasDiv.classList.add('show');
+    }
+
+    // Los resultados ya están filtrados a CAM, confirmamos directamente
+    function seleccionarSugerencia(i) {
+        var result = sugerenciasData[i];
+        if (!result) return;
+        var lat = parseFloat(result.lat);
+        var lng = parseFloat(result.lon);
+        var busqueda = inputBuscar.value.trim();
+        colocarMarcadorVisual(lat, lng);
+        confirmarUbicacion(lat, lng, formatearDireccion(result, busqueda));
+        map.setView([lat, lng], 17);
+        cerrarSugerencias();
+    }
+
+    function cerrarSugerencias() {
+        sugerenciasDiv.classList.remove('show');
+        sugerenciasDiv.innerHTML = '';
+        sugerenciasData = [];
+        activeIndex = -1;
+    }
+
+    inputBuscar.addEventListener('keydown', function(e) {
+        var items = sugerenciasDiv.querySelectorAll('.suggestion-item');
+        if (!items.length) { if (e.key === 'Enter') e.preventDefault(); return; }
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeIndex = Math.min(activeIndex + 1, items.length - 1);
+            actualizarActivo(items);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeIndex = Math.max(activeIndex - 1, 0);
+            actualizarActivo(items);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (activeIndex >= 0) seleccionarSugerencia(activeIndex);
+            else if (items.length > 0) seleccionarSugerencia(0);
+        } else if (e.key === 'Escape') {
+            cerrarSugerencias();
+        }
+    });
+
+    function actualizarActivo(items) {
+        items.forEach(function(el, i) { el.classList.toggle('active', i === activeIndex); });
+        if (items[activeIndex]) items[activeIndex].scrollIntoView({ block: 'nearest' });
+    }
+
+    inputBuscar.addEventListener('blur', function() { setTimeout(cerrarSugerencias, 150); });
+
+    document.getElementById('ubicacionBuscar').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') e.preventDefault();
+    });
+
+    // Pre-fill desde el index (valida también que sea CAM)
+    (function() {
+        var raw = localStorage.getItem('giu_prefill');
+        if (!raw) return;
+        try {
+            var data = JSON.parse(raw);
+            localStorage.removeItem('giu_prefill');
+            if (data.latitud && data.longitud) {
+                colocarMarcadorVisual(data.latitud, data.longitud);
+                map.setView([data.latitud, data.longitud], 17);
+                reverseGeocodeValidado(data.latitud, data.longitud);
+            }
+            if (data.ubicacion) actualizarUbicacionTexto(data.ubicacion);
+            if (data.categorias && data.categorias.length > 0) {
+                data.categorias.forEach(function(cat) {
+                    var cb = document.querySelector('input[name="categorias"][value="' + cat + '"]');
+                    if (cb) cb.checked = true;
+                });
+            }
+        } catch(e) {}
+    })();
+
+    // Botón "Mi ubicación" — valida que el GPS esté en la CAM
+    function usarMiUbicacion() {
+        var btn = document.getElementById('btnMiUbicacion');
+        if (!navigator.geolocation) { alert('Tu navegador no soporta geolocalización.'); return; }
+        btn.disabled = true;
+        btn.textContent = '⏳ Localizando…';
+        navigator.geolocation.getCurrentPosition(function(pos) {
+            var lat = pos.coords.latitude;
+            var lng = pos.coords.longitude;
+            colocarMarcadorVisual(lat, lng);
+            map.setView([lat, lng], 17);
+            reverseGeocodeValidado(lat, lng);
+            btn.disabled = false;
+            btn.textContent = '📍 Mi ubicación';
+        }, function(err) {
+            btn.disabled = false;
+            btn.textContent = '📍 Mi ubicación';
+            if (err.code === 1) alert('Has denegado el acceso a tu ubicación. Actívalo en los permisos del navegador.');
+            else alert('No se pudo obtener tu ubicación. Intenta de nuevo.');
+        }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+    }
+    </script>
+<footer style="width:100%;background:rgba(15,23,42,.95);color:#94a3b8;text-align:center;padding:24px 16px;font-size:.82rem;margin-top:32px;">© 2025 GIU — Gestión de Incidencias Urbanas</footer>
+</body>
+</html>

@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Ciudadano — GIU</title>
+    <link rel="icon" th:href="@{/images/dibujo.png}" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            background: linear-gradient(rgba(220,230,220,.38), rgba(210,225,215,.38)),
+                        url('/images/giu.jpg') center/cover fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Navbar ── */
+        nav.navbar {
+            background: rgba(255,255,255,.97);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 3px solid #14532d;
+            height: 62px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 28px;
+            box-shadow: 0 2px 10px rgba(5,46,22,.10);
+            position: sticky; top: 0; z-index: 200;
+        }
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-logo {
+            position: relative; display: inline-flex;
+            align-items: center; justify-content: center;
+            width: 44px; height: 44px; border-radius: 11px;
+            background: linear-gradient(135deg, #052e16, #14532d);
+            box-shadow: 0 4px 14px rgba(5,46,22,.30);
+            border: 1px solid rgba(255,255,255,.18);
+            overflow: hidden; flex-shrink: 0;
+        }
+        .nav-logo::before {
+            content: ""; position: absolute; inset: 5px;
+            border: 1.5px solid rgba(255,255,255,.32); border-radius: 6px;
+        }
+        .nav-logo::after {
+            content: ""; position: absolute; right: -4px; top: -4px;
+            width: 14px; height: 14px; border-radius: 5px;
+            background: rgba(255,255,255,.22);
+        }
+        .nav-title { color: #0f172a; font-weight: 700; font-size: 1.1rem; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-email { color: #64748b; font-size: .8rem; }
+        .nav-logout {
+            color: #fff; text-decoration: none;
+            padding: 6px 14px; border-radius: 6px;
+            background: #0f172a;
+            font-size: .825rem; font-weight: 500;
+            transition: background .14s;
+        }
+        .nav-logout:hover { background: #1e293b; }
+
+        /* ── Notificaciones ── */
+        .notif-menu { position: relative; }
+        .notif-btn {
+            position: relative; display: inline-flex;
+            align-items: center; justify-content: center;
+            width: 38px; height: 38px; border-radius: 999px;
+            border: 1px solid #fecaca;
+            background: #fff1f2;
+            color: #dc2626; cursor: pointer; outline: none;
+            transition: background .14s;
+        }
+        .notif-btn:hover { background: #fee2e2; }
+        .notif-btn svg { width: 18px; height: 18px; }
+        .notif-badge {
+            position: absolute; top: -5px; right: -5px;
+            min-width: 18px; height: 18px; padding: 0 5px;
+            border-radius: 999px; background: #ef4444;
+            color: #fff; font-size: .68rem; font-weight: 800;
+            line-height: 18px; text-align: center;
+        }
+        .notif-panel {
+            display: none; position: absolute; right: 0; top: calc(100% + 10px);
+            width: 310px; background: #fff; border: 1px solid #e2e8f0;
+            border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.13);
+            padding: 8px; z-index: 1000;
+        }
+        .notif-panel.open { display: block; }
+        .notif-panel a, .notif-empty {
+            display: block; padding: 11px 13px; border-radius: 8px;
+            color: #0f172a; text-decoration: none; font-size: .84rem; line-height: 1.4;
+        }
+        .notif-panel a:hover { background: #f0fdf4; color: #15803d; }
+        .notif-empty { color: #94a3b8; font-style: italic; }
+
+        /* ── Layout general ── */
+        .container { max-width: 1400px; margin: 32px auto; padding: 0 24px; flex: 1; width: 100%; }
+
+        /* ── Cabecera de página ── */
+        .page-header {
+            background: #fff;
+            border-radius: 12px;
+            padding: 22px 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .page-header h2 {
+            font-family: 'Plus Jakarta Sans', 'Sora', sans-serif;
+            font-size: 2.8rem; font-weight: 800; color: #0f172a;
+            margin-bottom: 6px; letter-spacing: -.03em;
+        }
+        .page-header p { color: #64748b; font-size: .87rem; }
+        .role-badge {
+            background: #f0fdf4; color: #15803d;
+            padding: 5px 14px; border-radius: 20px;
+            font-size: .76rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .5px;
+            border: 1px solid #bbf7d0;
+            white-space: nowrap;
+        }
+
+        /* ── Grid principal ── */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 22px;
+            align-items: start;
+        }
+        @media (max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr; } }
+        .left-col { display: flex; flex-direction: column; gap: 22px; }
+
+        /* ── Mapa ── */
+        .map-section {
+            background: #fff; border-radius: 12px;
+            padding: 22px 24px; box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            isolation: isolate;
+        }
+        .map-section-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 6px;
+        }
+        .map-section-subtitle { font-size: .95rem; color: #64748b; margin-bottom: 14px; }
+
+        /* ── Filtros ── */
+        .filter-bar {
+            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
+            padding: 13px 15px; margin-bottom: 12px;
+            display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end;
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 3px; }
+        .filter-label { font-size: .69rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .4px; }
+        .filter-input, .filter-select {
+            padding: 6px 9px; border: 1.5px solid #e2e8f0; border-radius: 6px;
+            font-size: .81rem; font-family: inherit; color: #334155;
+            outline: none; background: #fff; transition: border-color .14s;
+        }
+        .filter-input { width: 85px; }
+        .filter-select { min-width: 160px; }
+        .filter-date { width: 136px; }
+        .filter-input:focus, .filter-select:focus { border-color: #15803d; }
+        .filter-actions { display: flex; gap: 7px; align-items: flex-end; }
+        .btn-apply {
+            background: #15803d; color: #fff; border: none;
+            padding: 7px 16px; border-radius: 6px;
+            font-size: .81rem; font-weight: 600; font-family: inherit;
+            cursor: pointer; transition: background .14s;
+        }
+        .btn-apply:hover { background: #14532d; }
+        .btn-clear {
+            background: #fff; color: #64748b; border: 1.5px solid #e2e8f0;
+            padding: 6px 12px; border-radius: 6px;
+            font-size: .81rem; font-weight: 500; font-family: inherit;
+            cursor: pointer; transition: all .14s;
+        }
+        .btn-clear:hover { border-color: #94a3b8; color: #334155; }
+        .map-counter { font-size: .79rem; color: #64748b; margin-bottom: 10px; }
+        #map-ciudadano { height: 430px; border-radius: 10px; }
+
+        /* ── Sidebar de tarjetas ── */
+        .features { display: flex; flex-direction: column; gap: 16px; }
+        .feature-card {
+            background: #fff; border-radius: 12px;
+            padding: 20px 18px; box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            border-top: 3px solid #15803d;
+            text-decoration: none; display: block;
+            transition: box-shadow .16s, transform .14s;
+        }
+        .feature-card:hover {
+            box-shadow: 0 4px 18px rgba(21,128,61,.13);
+            transform: translateY(-2px);
+        }
+        .feature-card-icon {
+            width: 38px; height: 38px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 11px; flex-shrink: 0;
+        }
+        .feature-card-icon svg { width: 19px; height: 19px; }
+        .icon--green  { background: #f0fdf4; color: #15803d; }
+        .icon--blue   { background: #eff6ff; color: #2563eb; }
+        .icon--purple { background: #faf5ff; color: #7c3aed; }
+        .icon--orange { background: #fff7ed; color: #ea580c; }
+        .feature-card h3 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: .9rem; font-weight: 700; color: #0f172a; margin-bottom: 6px;
+        }
+        .feature-card p { color: #64748b; font-size: .8rem; margin-bottom: 14px; line-height: 1.5; }
+        .card-link {
+            display: inline-block;
+            background: #15803d;
+            color: #fff; text-decoration: none;
+            padding: 7px 15px; border-radius: 6px;
+            font-size: .8rem; font-weight: 600;
+            transition: background .14s;
+        }
+        .card-link:hover { background: #14532d; }
+        @media (max-width: 700px) {
+            nav.navbar { padding: 0 12px; height: 52px; }
+            .nav-title { font-size: .88rem; }
+            .nav-email { display: none; }
+            .nav-logout { padding: 5px 9px; font-size: .74rem; }
+            .container { padding: 0 12px; margin: 14px auto; }
+            .page-header { flex-direction: column; align-items: flex-start; padding: 14px 16px; }
+            .page-header h2 { font-size: 1.5rem; }
+            .giu-mascota-float { height: 70px !important; }
+            .filter-bar { flex-direction: column; align-items: stretch; gap: 8px; }
+            .filter-group { width: 100%; }
+            .filter-input, .filter-select, .filter-date { width: 100% !important; min-width: 0; }
+            .filter-actions { width: 100%; }
+            .btn-apply, .btn-clear { flex: 1; }
+            #map-ciudadano { height: 260px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-brand">
+        <div class="nav-logo"><span style="position:relative;z-index:1;color:#fff;font-size:.76rem;font-weight:800;letter-spacing:.08em;">GIU</span></div>
+        <span class="nav-title">Portal Ciudadano</span>
+    </div>
+    <div class="nav-right">
+        <span class="nav-email" th:text="${usuario.email}"></span>
+
+        <div class="notif-menu">
+            <button class="notif-btn" type="button" onclick="toggleNotifPanel(this)" aria-label="Notificaciones">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                <span class="notif-badge" th:if="${notificaciones.citizenStateChanges > 0}" th:text="${notificaciones.citizenStateChanges}"></span>
+            </button>
+            <div class="notif-panel">
+                <div th:if="${notificaciones.citizenStateChanges > 0}">
+                    <div style="padding:8px 13px 4px;font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;">Actualizaciones pendientes</div>
+                    <a th:each="incId : ${notificaciones.citizenStateChangeIds}"
+                       th:href="@{/dashboard/ciudadano/notificaciones/estados(id=${incId})}"
+                       style="display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:8px;color:#0f172a;text-decoration:none;font-size:.85rem;line-height:1.4;transition:background .12s;">
+                        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#15803d;flex-shrink:0;"></span>
+                        <span>Incidencia <strong th:text="'#' + ${incId}"></strong> — estado actualizado</span>
+                    </a>
+                </div>
+                <span class="notif-empty" th:if="${notificaciones.citizenStateChanges == 0}">Sin notificaciones nuevas.</span>
+            </div>
+        </div>
+
+        <a href="/logout" class="nav-logout">Cerrar sesión</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div class="page-header">
+        <div>
+            <h2>¡Bienvenido a tu portal!</h2>
+            <p>Gestiona tus incidencias urbanas desde aquí.</p>
+        </div>
+        <img src="/images/dibujo.png" alt="" class="giu-mascota-float" style="height:145px;width:auto;object-fit:contain;flex-shrink:0;border-radius:8px;">
+    </div>
+
+    <div class="dashboard-grid">
+
+        <div class="left-col">
+        <!-- Mapa -->
+        <div class="map-section">
+            <p class="map-section-title">🗺️ Mapa de incidencias de Madrid</p>
+            <p class="map-section-subtitle">Visualiza las incidencias urbanas reportadas en tu municipio.</p>
+
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <span class="filter-label">Identificador</span>
+                    <input type="text" id="filt-id" class="filter-input" placeholder="Ej. 12">
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Categoría</span>
+                    <select id="filt-cat" class="filter-select">
+                        <option value="">Todas las categorías</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Desde</span>
+                    <input type="date" id="filt-desde" class="filter-input filter-date">
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Hasta</span>
+                    <input type="date" id="filt-hasta" class="filter-input filter-date">
+                </div>
+                <div class="filter-actions">
+                    <button class="btn-apply" onclick="applyFilters()">Aplicar</button>
+                    <button class="btn-clear" onclick="clearFilters()">Limpiar</button>
+                </div>
+            </div>
+
+            <p id="map-counter" class="map-counter"></p>
+            <div id="map-ciudadano"></div>
+        </div>
+
+        <!-- Vídeo paso a paso -->
+        <div style="display:flex;justify-content:center;">
+            <div style="position:relative;width:78%;">
+                <p style="position:absolute;top:-18px;left:12px;z-index:10;display:inline-block;font-family:'Plus Jakarta Sans',sans-serif;font-size:.95rem;font-weight:700;color:#0f172a;padding:12px 26px;border-radius:50px;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,.18);white-space:nowrap;">PASO A PASO:</p>
+                <video id="video-ciudadano" autoplay muted playsinline loop style="width:100%;border-radius:10px;display:block;background:#000;">
+                    <source src="/images/mockup.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+        </div><!-- end left-col -->
+
+        <!-- Sidebar -->
+        <aside class="features">
+            <a href="/ciudadano/incidencias/registrar" class="feature-card">
+                <div class="feature-card-icon icon--green">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+                    </svg>
+                </div>
+                <h3>Registrar incidencia</h3>
+                <p>Notifica una nueva incidencia en la vía pública de tu municipio.</p>
+                <span class="card-link">Registrar</span>
+            </a>
+
+            <a href="/ciudadano/incidencias/mis-incidencias" class="feature-card">
+                <div class="feature-card-icon icon--blue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                    </svg>
+                </div>
+                <h3>Mis incidencias</h3>
+                <p>Consulta el estado de las incidencias que has enviado.</p>
+                <span class="card-link">Ver incidencias</span>
+            </a>
+
+            <a href="/ciudadano/perfil" class="feature-card">
+                <div class="feature-card-icon icon--purple">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </div>
+                <h3>Mi información</h3>
+                <p>Visualiza y actualiza tus datos de perfil.</p>
+                <span class="card-link">Ver perfil</span>
+            </a>
+
+            <a href="/soporte/mis-mensajes" class="feature-card">
+                <div class="feature-card-icon icon--orange">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                </div>
+                <h3>Soporte</h3>
+                <p>¿Dudas o problemas? Contacta con nuestro equipo de soporte.</p>
+                <span class="card-link">Ir a Soporte</span>
+            </a>
+        </aside>
+    </div>
+
+
+</div>
+
+<script>
+    function toggleNotifPanel(btn) {
+        var panel = btn.nextElementSibling;
+        var wasOpen = panel.classList.contains('open');
+        document.querySelectorAll('.notif-panel').forEach(function(p) { p.classList.remove('open'); });
+        if (!wasOpen) panel.classList.add('open');
+    }
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.notif-menu')) {
+            document.querySelectorAll('.notif-panel').forEach(function(p) { p.classList.remove('open'); });
+        }
+    });
+
+    var mapCiu = L.map('map-ciudadano').setView([40.4168, -3.7038], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(mapCiu);
+
+    var estadosVisibles = ['PENDIENTE_VALIDACION', 'VALIDADA', 'ASIGNADA', 'EN_CURSO'];
+    var allDataCiu = [];
+    var markersLayerCiu = L.layerGroup().addTo(mapCiu);
+
+    function parseFecha(str) {
+        var parts = str.split(' ')[0].split('/');
+        return new Date(parts[2], parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+    }
+    function parseFechaISO(str) {
+        if (!str) return null;
+        var p = str.split('-');
+        return new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+    }
+
+    function renderMarkers(data) {
+        markersLayerCiu.clearLayers();
+        var bounds = [];
+        data.forEach(function(inc) {
+            if (!estadosVisibles.includes(inc.estado)) return;
+            if (inc.latitud && inc.longitud) {
+                var circle = L.circleMarker([inc.latitud, inc.longitud], {
+                    radius: 9, fillColor: '#15803d', color: '#fff',
+                    weight: 2, opacity: 1, fillOpacity: 0.82
+                });
+                circle.bindPopup(
+                    '<strong>Incidencia #' + inc.id + '</strong><br/>' +
+                    '<span style="font-size:.82rem;color:#475569">' + inc.categorias.join(', ') + '</span><br/>' +
+                    '<span style="font-size:.82rem">' + inc.descripcion.substring(0, 120) + (inc.descripcion.length > 120 ? '...' : '') + '</span><br/>' +
+                    '<small>📍 ' + inc.ubicacion + '</small><br/>' +
+                    '<small>🗓 ' + inc.fecha + '</small>'
+                );
+                markersLayerCiu.addLayer(circle);
+                bounds.push([inc.latitud, inc.longitud]);
+            }
+        });
+        var n = markersLayerCiu.getLayers().length;
+        document.getElementById('map-counter').textContent =
+            'Mostrando ' + n + ' incidencia' + (n !== 1 ? 's' : '') + ' en el mapa';
+        if (bounds.length > 0) mapCiu.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+    }
+
+    function applyFilters() {
+        var idVal    = document.getElementById('filt-id').value.trim();
+        var catVal   = document.getElementById('filt-cat').value;
+        var desdeVal = document.getElementById('filt-desde').value;
+        var hastaVal = document.getElementById('filt-hasta').value;
+        var filtered = allDataCiu.filter(function(inc) {
+            if (idVal && String(inc.id) !== idVal) return false;
+            if (catVal && !inc.categorias.includes(catVal)) return false;
+            if (desdeVal || hastaVal) {
+                var f = parseFecha(inc.fecha);
+                if (desdeVal && f < parseFechaISO(desdeVal)) return false;
+                if (hastaVal) {
+                    var h = parseFechaISO(hastaVal);
+                    h.setDate(h.getDate() + 1);
+                    if (f >= h) return false;
+                }
+            }
+            return true;
+        });
+        renderMarkers(filtered);
+    }
+
+    function clearFilters() {
+        document.getElementById('filt-id').value = '';
+        document.getElementById('filt-cat').value = '';
+        document.getElementById('filt-desde').value = '';
+        document.getElementById('filt-hasta').value = '';
+        renderMarkers(allDataCiu);
+    }
+
+    fetch('/api/incidencias')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            allDataCiu = data;
+            var cats = new Set();
+            data.forEach(function(inc) {
+                if (estadosVisibles.includes(inc.estado)) {
+                    inc.categorias.forEach(function(c) { cats.add(c); });
+                }
+            });
+            var sel = document.getElementById('filt-cat');
+            Array.from(cats).sort().forEach(function(c) {
+                var opt = document.createElement('option');
+                opt.value = c; opt.textContent = c;
+                sel.appendChild(opt);
+            });
+            renderMarkers(data);
+        });
+</script>
+<footer style="width:100%;background:rgba(15,23,42,.95);color:#94a3b8;text-align:center;padding:24px 16px;font-size:.82rem;margin-top:32px;">© 2025 GIU — Gestión de Incidencias Urbanas</footer>
+
+<style>
+.giu-mascota-float {
+    animation: saludarMano 1.8s ease-in-out 1;
+    transform-origin: 70% 35%;
+}
+@keyframes saludarMano {
+    0%   { transform: rotate(0deg); }
+    15%  { transform: rotate(12deg); }
+    30%  { transform: rotate(-10deg); }
+    45%  { transform: rotate(12deg); }
+    60%  { transform: rotate(-8deg); }
+    75%  { transform: rotate(10deg); }
+    100% { transform: rotate(0deg); }
+}
+</style>
+</body>
+</html>

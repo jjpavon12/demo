@@ -1,0 +1,325 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Mensajes de Soporte — GIU</title>
+    <link rel="icon" th:href="@{/images/dibujo.png}" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(160deg, rgba(5,46,22,.58) 0%, rgba(9,35,70,.52) 100%), url('/images/giu.jpg') center/cover fixed; min-height: 100vh; display: flex; flex-direction: column; }
+        nav.navbar {
+            background: rgba(4,36,18,.96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            box-shadow: 0 2px 18px rgba(0,0,0,.28);
+        }
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-logo {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px; height: 44px;
+            border-radius: 11px;
+            background: linear-gradient(135deg, #052e16, #14532d);
+            box-shadow: 0 4px 14px rgba(5,46,22,.55);
+            border: 1px solid rgba(255,255,255,.18);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .nav-logo::before {
+            content: "";
+            position: absolute;
+            inset: 5px;
+            border: 1.5px solid rgba(255,255,255,.32);
+            border-radius: 6px;
+        }
+        .nav-logo::after {
+            content: "";
+            position: absolute;
+            right: -4px; top: -4px;
+            width: 14px; height: 14px;
+            border-radius: 5px;
+            background: rgba(255,255,255,.22);
+        }
+        .nav-title { color: #fff; font-weight: 700; font-size: 1.15rem; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-email { color: rgba(255,255,255,.8); font-size: .8rem; }
+        .nav-logout {
+            color: #fff;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: rgba(255,255,255,.15);
+            font-size: .825rem;
+            font-weight: 500;
+            transition: background .14s;
+        }
+        .nav-logout:hover { background: rgba(255,255,255,.28); }
+        .container { max-width: 1000px; margin: 36px auto; padding: 0 24px; flex: 1; width: 100%; }
+        .page-header {
+            background: #fff;
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 28px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .header-content h1 { font-family: 'Plus Jakarta Sans', 'Sora', sans-serif; font-size: 1.65rem; font-weight: 700; color: #0f172a; margin-bottom: 8px; letter-spacing: -.01em; }
+        .header-content p { color: #64748b; font-size: .88rem; }
+        .btn-new {
+            background: rgba(4,36,18,.96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: .9rem;
+            font-weight: 600;
+            transition: background .14s;
+        }
+        .btn-new:hover { background: #14532d; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .stat-card {
+            background: #fff;
+            padding: 18px;
+            border-radius: 11px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            border-left: 4px solid #15803d;
+        }
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #15803d;
+            margin-bottom: 4px;
+        }
+        .stat-label {
+            font-size: .82rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+        .messages-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+        }
+        .messages-section h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 20px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+        .empty-state h3 {
+            font-size: 1rem;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+        .empty-state p {
+            color: #64748b;
+            font-size: .9rem;
+            margin-bottom: 20px;
+        }
+        .empty-state a {
+            display: inline-block;
+            background: rgba(4,36,18,.96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: .85rem;
+            font-weight: 600;
+        }
+        .message-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background .14s;
+        }
+        .message-item:hover {
+            background: #f8fafc;
+        }
+        .message-item:last-child {
+            border-bottom: none;
+        }
+        .message-content {
+            flex: 1;
+        }
+        .message-asunto {
+            font-weight: 600;
+            color: #0f172a;
+            font-size: .95rem;
+            margin-bottom: 4px;
+        }
+        .message-meta {
+            font-size: .82rem;
+            color: #64748b;
+        }
+        .message-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .state-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: .75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+        }
+        .state-pendiente {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .state-respondido {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .state-cerrado {
+            background: #e2e8f0;
+            color: #334155;
+        }
+        .message-link {
+            color: #15803d;
+            text-decoration: none;
+            font-size: .85rem;
+            font-weight: 600;
+        }
+        .message-link:hover {
+            text-decoration: underline;
+        }
+        .alert {
+            padding: 14px 16px;
+            border-radius: 8px;
+            font-size: .88rem;
+            margin-bottom: 20px;
+        }
+        .alert-success {
+            background: #f0fdf4;
+            color: #166534;
+            border-left: 4px solid #15803d;
+        }
+        .alert-error {
+            background: #fef2f2;
+            color: #991b1b;
+            border-left: 4px solid #dc2626;
+        }
+        .breadcrumb {
+            font-size: .82rem;
+            color: #64748b;
+            margin-bottom: 16px;
+        }
+        .breadcrumb a {
+            color: #15803d;
+            text-decoration: none;
+        }
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 700px) {
+            nav.navbar { padding: 0 12px; height: 52px; }
+            .nav-title { font-size: .88rem; }
+            .nav-email { display: none; }
+            .nav-logout { padding: 5px 9px; font-size: .74rem; }
+            .container { padding: 0 12px; margin: 14px auto; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="nav-logo"><span style="position:relative;z-index:1;color:#fff;font-size:.76rem;font-weight:800;letter-spacing:.08em;">GIU</span></div>
+            <span class="nav-title">GIU — Gestor de Incidencias Urbanas</span>
+        </div>
+        <div class="nav-right">
+            <span class="nav-email" th:text="${usuario.email}"></span>
+            <a href="/dashboard/ciudadano" class="nav-logout">← Panel principal</a>
+            <a href="/logout" class="nav-logout">Cerrar sesión</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="/dashboard/home">Inicio</a> / Soporte
+        </div>
+
+        <div class="page-header">
+            <div class="header-content">
+                <h1>Mis Mensajes de Soporte</h1>
+                <p>Gestiona tus consultas, dudas y quejas con el administrador</p>
+            </div>
+            <a href="/soporte/enviar" class="btn-new">Nuevo Mensaje</a>
+        </div>
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" th:text="${totalMensajes}"></div>
+                <div class="stat-label">Mensajes Enviados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" th:text="${pendientes}"></div>
+                <div class="stat-label">Pendientes de Respuesta</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" th:text="${respondidos}"></div>
+                <div class="stat-label">Respondidos</div>
+            </div>
+        </div>
+
+        <div class="messages-section">
+            <h2>Todos tus Mensajes</h2>
+
+            <div th:if="${#lists.isEmpty(mensajes)}" class="empty-state">
+                <div class="empty-state-icon">📬</div>
+                <h3>No tienes mensajes aún</h3>
+                <p>Envía tu primer mensaje de soporte para contactar al administrador</p>
+                <a href="/soporte/enviar">Enviar Mensaje</a>
+            </div>
+
+            <div th:if="${not #lists.isEmpty(mensajes)}">
+                <div th:each="mensaje : ${mensajes}" class="message-item">
+                    <div class="message-content">
+                        <div class="message-asunto" th:text="${mensaje.asunto}"></div>
+                        <div class="message-meta">
+                            <span th:text="'Enviado: ' + ${#temporals.format(mensaje.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span>
+                        </div>
+                    </div>
+                    <div class="message-actions">
+                        <span class="state-badge"
+                              th:classappend="${'state-' + mensaje.estado.name().toLowerCase()}"
+                              th:text="${mensaje.estado.name()}"></span>
+                        <a th:href="@{/soporte/mensaje/{id}(id=${mensaje.id})}" class="message-link">Ver Detalle</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<footer style="width:100%;background:rgba(15,23,42,.95);color:#94a3b8;text-align:center;padding:24px 16px;font-size:.82rem;margin-top:32px;">© 2025 GIU — Gestión de Incidencias Urbanas</footer>
+</body>
+</html>

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrador — GIU</title>
+    <link rel="icon" th:href="@{/images/dibujo.png}" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --accent: #15803d; --accent-dark: #14532d; --accent-bg: #f0fdf4; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(160deg, rgba(5,46,22,.58) 0%, rgba(9,35,70,.52) 100%), url('/images/giu.jpg') center/cover fixed; min-height: 100vh; display: flex; flex-direction: column; }
+        nav.navbar {
+            background: var(--accent);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.15);
+        }
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-logo {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px; height: 44px;
+            border-radius: 11px;
+            background: linear-gradient(135deg, #052e16, #14532d);
+            box-shadow: 0 4px 14px rgba(5,46,22,.55);
+            border: 1px solid rgba(255,255,255,.18);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .nav-logo::before {
+            content: "";
+            position: absolute;
+            inset: 5px;
+            border: 1.5px solid rgba(255,255,255,.32);
+            border-radius: 6px;
+        }
+        .nav-logo::after {
+            content: "";
+            position: absolute;
+            right: -4px; top: -4px;
+            width: 14px; height: 14px;
+            border-radius: 5px;
+            background: rgba(255,255,255,.22);
+        }
+        .nav-title { color: #fff; font-weight: 700; font-size: 1.15rem; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-email { color: rgba(255,255,255,.8); font-size: .8rem; }
+        .nav-logout {
+            color: #fff;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: rgba(255,255,255,.15);
+            font-size: .82rem;
+            font-weight: 500;
+            transition: background .14s;
+        }
+        .nav-logout:hover { background: rgba(255,255,255,.28); }
+
+        /* ── TAB BAR ── */
+        .tab-bar {
+            background: rgba(4,36,18,.96);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 0 28px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 12px rgba(0,0,0,.22);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .tab-bar::-webkit-scrollbar { display: none; }
+        .tab-btn {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 14px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: rgba(255,255,255,.6);
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: .85rem;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: color .15s, border-color .15s;
+            position: relative;
+        }
+        .tab-btn:hover { color: rgba(255,255,255,.9); }
+        .tab-btn.active {
+            color: #4ade80;
+            border-bottom-color: #4ade80;
+            font-weight: 700;
+        }
+        .tab-badge {
+            background: rgba(255,255,255,.15);
+            color: rgba(255,255,255,.8);
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-size: .7rem;
+            font-weight: 700;
+        }
+        .tab-btn.active .tab-badge {
+            background: rgba(74,222,128,.2);
+            color: #4ade80;
+        }
+
+        /* ── CONTENT ── */
+        .container { max-width: 1000px; margin: 32px auto; padding: 0 24px; flex: 1; width: 100%; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        .section-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            overflow: hidden;
+            margin-bottom: 28px;
+        }
+        .section-header {
+            padding: 16px 22px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .section-header h3 { font-size: .95rem; font-weight: 600; color: #0f172a; }
+        .section-header .badge-count {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: .75rem;
+            font-weight: 700;
+        }
+        .empty-msg {
+            padding: 36px 24px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: .9rem;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: #f8fafc;
+            padding: 11px 16px;
+            text-align: left;
+            font-size: .75rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        td {
+            padding: 13px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: .875rem;
+            color: #334155;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fafafa; }
+        .td-id { color: #94a3b8; font-size: .8rem; }
+        .role-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: .73rem;
+            font-weight: 600;
+        }
+        .role-CIUDADANO { background: #dbeafe; color: #1e40af; }
+        .role-OPERADOR { background: #fff7ed; color: #c2410c; }
+        .role-TECNICO { background: #f0fdf4; color: #166534; }
+        .role-ADMINISTRADOR { background: #fef2f2; color: #991b1b; }
+        .status-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: .73rem;
+            font-weight: 600;
+        }
+        .status-activo { background: #dcfce7; color: #166534; }
+        .status-pendiente { background: #fef3c7; color: #92400e; }
+        .btn-actions { display: flex; gap: 6px; }
+        .btn-aprobar, .btn-denegar {
+            padding: 5px 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: .78rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background .14s, box-shadow .14s;
+        }
+        .btn-aprobar { background: #16a34a; color: #fff; }
+        .btn-aprobar:hover { background: #15803d; box-shadow: 0 2px 8px rgba(22,163,74,.3); }
+        .btn-denegar { background: #dc2626; color: #fff; }
+        .btn-denegar:hover { background: #b91c1c; box-shadow: 0 2px 8px rgba(220,38,38,.3); }
+        .priority-input {
+            width: 90px;
+            padding: 6px 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: .85rem;
+        }
+        .btn-guardar {
+            padding: 5px 14px;
+            border: none;
+            border-radius: 6px;
+            background: #15803d;
+            color: #fff;
+            font-size: .78rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+        }
+        .btn-guardar:hover { background: #14532d; }
+        @media (max-width: 700px) {
+            nav.navbar { padding: 0 12px; height: 52px; }
+            .nav-title { font-size: .88rem; }
+            .nav-email { display: none; }
+            .nav-logout { padding: 5px 8px; font-size: .74rem; }
+            .tab-btn { padding: 12px 14px; font-size: .78rem; }
+            .container { padding: 0 12px; }
+            .section-card { overflow-x: auto; }
+            table { min-width: 480px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="nav-logo"><span style="position:relative;z-index:1;color:#fff;font-size:.76rem;font-weight:800;letter-spacing:.08em;">GIU</span></div>
+            <span class="nav-title">Panel Administrativo</span>
+        </div>
+        <div class="nav-right">
+            <span class="nav-email" th:text="${usuario.email}"></span>
+            <a href="/soporte/admin/mensajes" class="nav-logout" style="background:rgba(249,115,22,.25);">Soporte</a>
+            <a href="/logout" class="nav-logout">Cerrar sesión</a>
+        </div>
+    </nav>
+
+    <!-- TAB BAR -->
+    <div class="tab-bar">
+        <button class="tab-btn active" data-tab="pendientes">
+            Pendientes
+            <span class="tab-badge" th:text="${#lists.size(pendientes)}"></span>
+        </button>
+        <button class="tab-btn" data-tab="cambio-rol">
+            Cambio de Rol
+            <span class="tab-badge" th:text="${#lists.size(solicitudesRol)}"></span>
+        </button>
+        <button class="tab-btn" data-tab="usuarios">
+            Usuarios
+            <span class="tab-badge" th:text="${#lists.size(todosUsuarios)}"></span>
+        </button>
+        <button class="tab-btn" data-tab="prioridades">
+            Prioridades
+        </button>
+        <button class="tab-btn" data-tab="categorias">
+            Categorías
+        </button>
+    </div>
+
+    <div class="container">
+
+        <!-- ========== PANEL: PENDIENTES ========== -->
+        <div class="tab-panel active" id="tab-pendientes">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>Cuentas pendientes de aprobación</h3>
+                    <span class="badge-count" th:text="${#lists.size(pendientes)} + ' pendiente(s)'"></span>
+                </div>
+                <div th:if="${#lists.isEmpty(pendientes)}" class="empty-msg">
+                    No hay cuentas pendientes de aprobación.
+                </div>
+                <table th:if="${!#lists.isEmpty(pendientes)}">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Email</th>
+                            <th>Rol solicitado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u : ${pendientes}">
+                            <td class="td-id" th:text="${u.id}"></td>
+                            <td th:text="${u.email}"></td>
+                            <td>
+                                <span class="role-badge"
+                                      th:classappend="'role-' + ${u.rol.name()}"
+                                      th:text="${u.rol.name()}"></span>
+                            </td>
+                            <td>
+                                <div class="btn-actions">
+                                    <form method="post" th:action="@{/dashboard/admin/aprobar-usuario}">
+                                        <input type="hidden" name="id" th:value="${u.id}"/>
+                                        <button type="submit" class="btn-aprobar">✓ Aprobar</button>
+                                    </form>
+                                    <form method="post" th:action="@{/dashboard/admin/denegar-usuario}"
+                                          onsubmit="return confirm('¿Seguro que quieres eliminar esta cuenta?')">
+                                        <input type="hidden" name="id" th:value="${u.id}"/>
+                                        <button type="submit" class="btn-denegar">✗ Denegar</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ========== PANEL: CAMBIO DE ROL ========== -->
+        <div class="tab-panel" id="tab-cambio-rol">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>Solicitudes de cambio de rol</h3>
+                    <span class="badge-count" th:text="${#lists.size(solicitudesRol)} + ' solicitud(es)'"></span>
+                </div>
+                <div th:if="${#lists.isEmpty(solicitudesRol)}" class="empty-msg">
+                    No hay solicitudes de cambio de rol pendientes.
+                </div>
+                <table th:if="${!#lists.isEmpty(solicitudesRol)}">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Email</th>
+                            <th>Rol actual</th>
+                            <th>Rol solicitado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u : ${solicitudesRol}">
+                            <td class="td-id" th:text="${u.id}"></td>
+                            <td th:text="${u.email}"></td>
+                            <td>
+                                <span class="role-badge"
+                                      th:classappend="'role-' + ${u.rol.name()}"
+                                      th:text="${u.rol.name()}"></span>
+                            </td>
+                            <td>
+                                <span class="role-badge"
+                                      th:classappend="'role-' + ${u.rolSolicitado.name()}"
+                                      th:text="${u.rolSolicitado.name()}"></span>
+                            </td>
+                            <td>
+                                <div class="btn-actions">
+                                    <form method="post" th:action="@{/dashboard/admin/aprobar-rol}">
+                                        <input type="hidden" name="id" th:value="${u.id}"/>
+                                        <button type="submit" class="btn-aprobar">✓ Aprobar</button>
+                                    </form>
+                                    <form method="post" th:action="@{/dashboard/admin/denegar-rol}"
+                                          onsubmit="return confirm('¿Denegar la solicitud de cambio de rol?')">
+                                        <input type="hidden" name="id" th:value="${u.id}"/>
+                                        <button type="submit" class="btn-denegar">✗ Denegar</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ========== PANEL: USUARIOS ========== -->
+        <div class="tab-panel" id="tab-usuarios">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>Todos los usuarios</h3>
+                    <span class="badge-count" th:text="${#lists.size(todosUsuarios)} + ' usuario(s)'"></span>
+                </div>
+                <div th:if="${#lists.isEmpty(todosUsuarios)}" class="empty-msg">
+                    No hay usuarios registrados.
+                </div>
+                <table th:if="${!#lists.isEmpty(todosUsuarios)}">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u : ${todosUsuarios}">
+                            <td class="td-id" th:text="${u.id}"></td>
+                            <td th:text="${u.email}"></td>
+                            <td>
+                                <span class="role-badge"
+                                      th:classappend="'role-' + ${u.rol.name()}"
+                                      th:text="${u.rol.name()}"></span>
+                            </td>
+                            <td>
+                                <span class="status-badge status-activo" th:if="${u.activo}">Activo</span>
+                                <span class="status-badge status-pendiente" th:if="${!u.activo}">Pendiente</span>
+                            </td>
+                            <td>
+                                <div th:if="${u.id != usuario.id}">
+                                    <form method="post" th:action="@{/dashboard/admin/eliminar-usuario}"
+                                          onsubmit="return confirm('¿Estás seguro de que quieres eliminar la cuenta de ' + this.querySelector('input[name=\'email\']').value + '?')">
+                                        <input type="hidden" name="id" th:value="${u.id}"/>
+                                        <input type="hidden" name="email" th:value="${u.email}"/>
+                                        <button type="submit" class="btn-denegar">Eliminar</button>
+                                    </form>
+                                </div>
+                                <span th:if="${u.id == usuario.id}" style="color:#64748b; font-size:.85rem;">No disponible</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ========== PANEL: PRIORIDADES ========== -->
+        <div class="tab-panel" id="tab-prioridades">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>Prioridades</h3>
+                    <span class="badge-count" th:text="${#lists.size(prioridadesConfig)} + ' prioridad(es)'"></span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Prioridad</th>
+                            <th>Días de resolución</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="config : ${prioridadesConfig}">
+                            <td th:text="${config.prioridad.descripcion}"></td>
+                            <td>
+                                <form th:id="'form-prioridad-' + ${config.prioridad}"
+                                    th:action="@{/dashboard/admin/configuracion/prioridades}"
+                                    method="post">
+                                    <input type="hidden" name="prioridad" th:value="${config.prioridad}">
+                                    <input class="priority-input"
+                                        type="number"
+                                        name="diasResolucion"
+                                        min="1"
+                                        th:value="${config.diasResolucion}">
+                                </form>
+                            </td>
+                            <td>
+                                <button type="submit"
+                                        class="btn-guardar"
+                                        th:form="'form-prioridad-' + ${config.prioridad}">
+                                    Guardar
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ========== PANEL: CATEGORÍAS ========== -->
+        <div class="tab-panel" id="tab-categorias">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>Categorías</h3>
+                    <span class="badge-count" th:text="${#lists.size(categoriasConfig)} + ' categoría(s)'"></span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Categoría</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="config : ${categoriasConfig}">
+                            <td th:text="${config.categoria.descripcion}"></td>
+                            <td>
+                                <span class="status-badge status-activo" th:if="${config.activa}">Activa</span>
+                                <span class="status-badge status-pendiente" th:if="${!config.activa}">Inactiva</span>
+                            </td>
+                            <td>
+                                <form method="post" th:action="@{/dashboard/admin/configuracion/categorias}">
+                                    <input type="hidden" name="categoria" th:value="${config.categoria}">
+                                    <input type="hidden" name="activa" th:value="${!config.activa}">
+                                    <button type="submit"
+                                            th:class="${config.activa} ? 'btn-denegar' : 'btn-aprobar'"
+                                            th:text="${config.activa} ? 'Desactivar' : 'Activar'">
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <footer style="width:100%;background:rgba(15,23,42,.95);color:#94a3b8;text-align:center;padding:24px 16px;font-size:.82rem;margin-top:32px;">© 2025 GIU — Gestión de Incidencias Urbanas</footer>
+
+    <script>
+        const tabs = document.querySelectorAll('.tab-btn');
+        const panels = document.querySelectorAll('.tab-panel');
+
+        tabs.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                panels.forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
